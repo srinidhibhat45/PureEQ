@@ -2,6 +2,10 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.3.1
+- You can now delete any profile, the active one too (the ⋮ on its card). PureEQ warns first, then switches to your newest other profile, or turns the system-wide EQ off if it was your only one.
+- Coming from 1.1? Since then: a 2-minute hearing check, a cleaner fit against well-tuned headphones, a shorter taste test, a louder EQ, and your headphone model's measured correction from AutoEq. Redo the hearing check for the full benefit.
+
 ## 1.3.0
 - Your headphones' measured response: pick your model from AutoEq's database of over 6,000 headphones (measured by oratory1990, crinacle, Rtings and others) and PureEQ brings it to the Harman target, including the narrow peaks and dips a hearing check can't see.
 - The hearing check then only corrects what's left, your ears and how the headphones sit, so nothing is corrected twice.

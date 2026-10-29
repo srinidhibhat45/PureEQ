@@ -25,7 +25,7 @@ The first install is by hand: open `https://github.com/srinidhibhat45/pureeq-upd
 
    A whole new profile takes about 5 to 6 minutes.
 4. **Your sound.** Listen with EQ on/off (loudness-matched), adjust *Hearing correction* (75 % default), Bass/Warmth/Vocals/Treble and Balance, then **Save**. All of these sit in one **Fine-tuning** card (here and in *Fine-tune*). Its **Reset** button puts every slider back to what PureEQ suggested from your tests, with *Undo*, and the card names what you've changed. A slider you move shows *Suggested +4.5 dB* (or whatever PureEQ suggested) under it; tap that to put back just that slider. **Redo taste test** (in *Fine-tune*) runs only the A/B part again for a saved profile and keeps its hearing result, name, correction and balance. The outcome replaces bass and treble (warmth and vocals go back to 0) and becomes what Reset returns to; backing out before it finishes changes nothing. Profiles saved by 1.0.0 didn't keep the taste test's result, so until you redo their taste test, Reset restores only correction and balance.
-5. On the home screen, **Apply to all audio** turns on the system-wide EQ, or use **Export**.
+5. On the home screen, **Apply to all audio** turns on the system-wide EQ, or use **Export**. The ⋮ on any profile, the active one included, deletes it after a warning; deleting the active profile switches to your newest other one, and deleting the last one turns the system-wide EQ off.
 
 ### Exports
 

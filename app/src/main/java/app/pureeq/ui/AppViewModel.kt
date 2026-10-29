@@ -909,7 +909,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setActive(id: String) = store.setActive(id)
 
-    fun deleteProfile(id: String) = store.delete(id)
+    /** Any profile can be deleted, the active one too; with none left the system EQ turns off. */
+    fun deleteProfile(id: String) {
+        store.delete(id)
+        if (store.profiles.value.isEmpty() && store.settings.value.systemEqEnabled) setSystemEq(false)
+    }
 
     fun setSystemEq(enabled: Boolean) {
         store.updateSettings { it.copy(systemEqEnabled = enabled) }

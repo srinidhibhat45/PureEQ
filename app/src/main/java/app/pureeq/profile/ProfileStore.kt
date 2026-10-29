@@ -51,12 +51,17 @@ class ProfileStore(context: Context) {
         saveProfiles()
     }
 
+    /** Deletes a profile. If it was the active one, the newest remaining profile takes over (none if it was the last). */
     @Synchronized
     fun delete(id: String) {
+        val next = successorOf(id)
         _profiles.update { list -> list.filter { it.id != id } }
-        if (_activeId.value == id) setActive(_profiles.value.firstOrNull()?.id)
+        if (_activeId.value == id) setActive(next?.id)
         saveProfiles()
     }
+
+    /** The profile that becomes active when [id] is deleted while active: the newest of the others. */
+    fun successorOf(id: String): Profile? = _profiles.value.filter { it.id != id }.maxByOrNull { it.createdAt }
 
     fun setActive(id: String?) {
         _activeId.value = id

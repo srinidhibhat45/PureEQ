@@ -154,6 +154,8 @@ fun HomeScreen(vm: AppViewModel) {
                     onToggle = { if (it) enableSystemEq() else vm.setSystemEq(false) },
                     onEdit = { vm.go(Screen.Editor(active.id)) },
                     onExport = { vm.go(Screen.Export(active.id)) },
+                    successor = vm.store.successorOf(active.id),
+                    onDelete = { vm.deleteProfile(active.id) },
                 )
             }
             if (askToAllow) item { AllowUpdatesCard(onAllow = { openInstallSettings(context) }, onDismiss = vm::dismissUpdatePrompt) }
@@ -284,8 +286,13 @@ private fun ActiveProfileCard(
     onToggle: (Boolean) -> Unit,
     onEdit: () -> Unit,
     onExport: () -> Unit,
+    /** The profile that takes over if this one is deleted; null if it's the only one. */
+    successor: Profile?,
+    onDelete: () -> Unit,
 ) {
     val eq by produceState<ProfileEq?>(null, profile) { value = withContext(Dispatchers.Default) { ProfileEq(profile) } }
+    var menu by remember { mutableStateOf(false) }
+    var confirmDelete by remember { mutableStateOf(false) }
     SectionCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -293,6 +300,12 @@ private fun ActiveProfileCard(
                 Text(subtitle(profile), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Pill("Active", MaterialTheme.colorScheme.secondary)
+            Box {
+                IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, "More") }
+                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                    DropdownMenuItem(text = { Text("Delete") }, leadingIcon = { Icon(Icons.Rounded.Delete, null) }, onClick = { menu = false; confirmDelete = true })
+                }
+            }
         }
         eq?.let { e ->
             EqChart(curvesFor(e, MaterialTheme.colorScheme.primary), height = 130.dp)
@@ -324,6 +337,26 @@ private fun ActiveProfileCard(
                 Text("Export")
             }
         }
+    }
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text("Delete ${profile.name}?") },
+            text = {
+                Text(
+                    "This is the profile PureEQ is using right now. Its hearing results and taste choices will be removed from this phone. " +
+                        if (successor != null) {
+                            "PureEQ will switch to ${successor.name} (${subtitle(successor)})."
+                        } else {
+                            "It's your only profile, so the system-wide EQ turns off until you make a new one."
+                        },
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
+        )
     }
 }
 
