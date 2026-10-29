@@ -2,10 +2,13 @@ package app.pureeq.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.profile.Exporters
+import app.pureeq.profile.Profile
 import app.pureeq.taste.TasteBand
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
@@ -49,6 +53,7 @@ import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.StepScaffold
 import app.pureeq.ui.theme.EarColors
 import app.pureeq.ui.theme.NumberStyle
+import app.pureeq.ui.theme.StatusColors
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -61,27 +66,20 @@ fun EditorScreen(vm: AppViewModel) {
     val scope = rememberCoroutineScope()
     val e = ui ?: return
     val p = e.profile
-    val rec = p.recommended()
     val reset = {
         vm.resetEditor()?.let { before ->
             scope.launch {
                 snackbar.currentSnackbarData?.dismiss()
-                val r = snackbar.showSnackbar("Back to the recommended sound", actionLabel = "Undo", duration = SnackbarDuration.Long)
+                val r = snackbar.showSnackbar("Back to PureEQ's suggestion", actionLabel = "Undo", duration = SnackbarDuration.Long)
                 if (r == SnackbarResult.ActionPerformed) vm.restoreAdjustments(before)
             }
         }
+        Unit
     }
     StepScaffold(
         title = if (e.isDraft) "Your sound" else "Fine-tune",
         onBack = { vm.back() },
         step = if (e.isDraft) 8 else null,
-        actions = {
-            TextButton(onClick = { reset() }, enabled = !p.isRecommended) {
-                Icon(Icons.Rounded.RestartAlt, null, Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text("Reset")
-            }
-        },
         snackbarHost = { SnackbarHost(snackbar) },
         bottom = {
             if (e.isDraft) {
@@ -147,87 +145,135 @@ fun EditorScreen(vm: AppViewModel) {
             )
             MusicPicker(vm)
         }
-        if (p.hearing != null) {
-            SectionCard {
-                ValueHeader(
-                    "Hearing correction",
-                    percent(p.hearingStrength),
-                    recommended = percent(rec.hearingStrength).takeIf { p.hearingStrength != rec.hearingStrength },
+        FineTuning(p, isDraft = e.isDraft, onReset = reset, onRedoTaste = { vm.redoTaste(p.id) }, edit = vm::editProfile)
+    }
+}
+
+/**
+ * Every adjustment in one card, under one Reset that returns them all to what PureEQ suggested
+ * from the tests. A moved control shows its suggested value, and tapping that restores just it.
+ */
+@Composable
+private fun FineTuning(p: Profile, isDraft: Boolean, onReset: () -> Unit, onRedoTaste: () -> Unit, edit: ((Profile) -> Profile) -> Unit) {
+    val rec = p.recommended()
+    val suggestedTaste = p.recommendedTaste
+    val changed = buildList {
+        if (p.hearing != null && p.hearingStrength != rec.hearingStrength) add("hearing correction")
+        suggestedTaste?.let { t -> TasteBand.entries.filter { p.taste[it] != t[it] }.forEach { add(it.label.lowercase()) } }
+        if (p.balanceDb != rec.balanceDb) add("balance")
+    }
+    SectionCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                Text("Fine-tuning", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    when {
+                        changed.isNotEmpty() -> "Changed from PureEQ's suggestion: ${changed.joinToString(", ")}."
+                        suggestedTaste == null -> "Hearing correction and balance are as PureEQ suggested."
+                        else -> "Everything is as PureEQ suggested from your tests."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (changed.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            FilledTonalButton(onClick = onReset, enabled = changed.isNotEmpty()) {
+                Icon(Icons.Rounded.RestartAlt, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Reset")
+            }
+        }
+        if (suggestedTaste == null) {
+            // Saved by 1.0.0, which didn't store the taste test's result.
+            Text(
+                "This profile was made with PureEQ 1.0, which didn't save its suggestion for bass, warmth, vocals and treble, so Reset can't bring those back. " +
+                    "Redo the taste test (about 2 minutes) and PureEQ will remember its suggestion from then on.",
+                style = MaterialTheme.typography.bodySmall,
+                color = StatusColors.Warn,
+            )
+            if (!isDraft) FilledTonalButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text("Redo taste test") }
+        }
+        if (p.hearing != null) {
+            Control(
+                "Hearing correction",
+                percent(p.hearingStrength),
+                "50% is the audiologists' half-gain rule: clearer detail without harshness. 100% fully flattens the measured differences.",
+                suggested = percent(rec.hearingStrength).takeIf { p.hearingStrength != rec.hearingStrength },
+                onRestore = { edit { it.copy(hearingStrength = rec.hearingStrength) } },
+            ) {
                 Slider(
                     value = p.hearingStrength.toFloat(),
-                    onValueChange = { v -> vm.editProfile { it.copy(hearingStrength = (v * 20).roundToInt() / 20.0) } },
+                    onValueChange = { v -> edit { it.copy(hearingStrength = (v * 20).roundToInt() / 20.0) } },
                     valueRange = 0f..1f,
                     steps = 19,
                 )
-                Text(
-                    "50% is the audiologists' half-gain rule: clearer detail without harshness. 100% fully flattens the measured differences.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            }
+        }
+        TasteBand.entries.forEach { band ->
+            val v = p.taste[band]
+            val r = suggestedTaste?.get(band)
+            Control(
+                band.label,
+                "${Exporters.signed(v)} dB",
+                band.hint,
+                suggested = r?.takeIf { it != v }?.let { "${Exporters.signed(it)} dB" },
+                onRestore = { if (r != null) edit { it.copy(taste = it.taste.with(band, r)) } },
+            ) {
+                Slider(
+                    value = v.toFloat(),
+                    onValueChange = { x -> edit { it.copy(taste = it.taste.with(band, (x * 2).roundToInt() / 2.0)) } },
+                    valueRange = band.minDb.toFloat()..band.maxDb.toFloat(),
                 )
             }
         }
-        SectionCard {
-            Text("Taste", style = MaterialTheme.typography.titleSmall)
-            TasteBand.entries.forEach { band ->
-                val v = p.taste[band]
-                val r = p.recommendedTaste?.get(band)
-                Column {
-                    ValueHeader(band.label, "${Exporters.signed(v)} dB", band.hint, recommended = r?.takeIf { it != v }?.let { "${Exporters.signed(it)} dB" })
-                    Slider(
-                        value = v.toFloat(),
-                        onValueChange = { x -> vm.editProfile { it.copy(taste = it.taste.with(band, (x * 2).roundToInt() / 2.0)) } },
-                        valueRange = band.minDb.toFloat()..band.maxDb.toFloat(),
-                    )
-                }
-            }
-            if (p.recommendedTaste == null) {
-                Text(
-                    "This profile was saved by PureEQ 1.0, which didn't keep the taste test's result, so Reset leaves these four as they are. " +
-                        "Redo the taste test to give it one.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (!e.isDraft) {
-                OutlinedButton(onClick = { vm.redoTaste(p.id) }, modifier = Modifier.fillMaxWidth()) { Text("Redo taste test") }
-            }
-        }
-        SectionCard {
-            val b = p.balanceDb
-            ValueHeader(
-                "Balance",
-                balanceLabel(b),
-                "Only needed if one side still sounds louder",
-                recommended = balanceLabel(rec.balanceDb).takeIf { b != rec.balanceDb },
-            )
+        Control(
+            "Balance",
+            balanceLabel(p.balanceDb),
+            "Only needed if one side still sounds louder",
+            suggested = balanceLabel(rec.balanceDb).takeIf { p.balanceDb != rec.balanceDb },
+            onRestore = { edit { it.copy(balanceDb = rec.balanceDb) } },
+        ) {
             Slider(
-                value = b.toFloat(),
-                onValueChange = { x -> vm.editProfile { it.copy(balanceDb = (x * 2).roundToInt() / 2.0) } },
+                value = p.balanceDb.toFloat(),
+                onValueChange = { x -> edit { it.copy(balanceDb = (x * 2).roundToInt() / 2.0) } },
                 valueRange = -6f..6f,
             )
+        }
+        if (!isDraft && suggestedTaste != null) {
+            TextButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text("Redo the taste test") }
         }
     }
 }
 
-/** [recommended] is shown under the value once it has been moved away from the recommendation. */
+/** One adjustment. Once moved off PureEQ's suggestion it shows that value, and tapping it puts it back. */
 @Composable
-private fun ValueHeader(title: String, value: String, hint: String? = null, recommended: String? = null) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleSmall)
-            if (hint != null) Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Column(horizontalAlignment = Alignment.End) {
+private fun Control(
+    title: String,
+    value: String,
+    hint: String,
+    suggested: String?,
+    onRestore: () -> Unit,
+    slider: @Composable ColumnScope.() -> Unit,
+) {
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Text(value, style = MaterialTheme.typography.labelLarge.merge(NumberStyle), color = MaterialTheme.colorScheme.primary)
-            if (recommended != null) {
-                Text(
-                    "Recommended $recommended",
-                    style = MaterialTheme.typography.labelSmall.merge(NumberStyle),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        }
+        if (suggested != null) {
+            TextButton(
+                onClick = onRestore,
+                modifier = Modifier.align(Alignment.End),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+            ) {
+                Icon(Icons.Rounded.RestartAlt, null, Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("Suggested $suggested", style = MaterialTheme.typography.labelMedium.merge(NumberStyle))
             }
         }
+        slider()
     }
 }
 
