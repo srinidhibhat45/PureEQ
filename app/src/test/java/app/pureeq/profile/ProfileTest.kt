@@ -4,9 +4,12 @@ import app.pureeq.dsp.Curves
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FreqGrid
 import app.pureeq.dsp.ParametricFit
+import app.pureeq.hearing.HeadphoneType
+import app.pureeq.hearing.HearingSession
 import app.pureeq.hearing.HearingTestConfig
 import app.pureeq.hearing.HearingTestResult
-import app.pureeq.hearing.ReferenceThreshold
+import app.pureeq.hearing.ReferenceCurve
+import app.pureeq.hearing.TestLength
 import app.pureeq.hearing.ThresholdFlag
 import app.pureeq.hearing.ThresholdPoint
 import app.pureeq.taste.TasteSettings
@@ -16,57 +19,112 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
+import kotlin.math.exp
+import kotlin.random.Random
 
 class ProfileTest {
 
-    private fun result(lossDb: (Ear, Double) -> Double): HearingTestResult {
+    /** A result given as point estimates (as PureEQ 1.0-1.1 saved them): -60 dBFS + reference + loss. */
+    private fun result(freqs: List<Double> = HearingTestConfig.BANDS, sd: Double = 2.0, lossDb: (Ear, Double) -> Double): HearingTestResult {
         val points = mutableListOf<ThresholdPoint>()
         for (ear in listOf(Ear.LEFT, Ear.RIGHT)) {
-            for (f in HearingTestConfig.STANDARD) {
-                points += ThresholdPoint(f, ear, -60.0 + ReferenceThreshold.at(f) + lossDb(ear, f), 2.0, ThresholdFlag.OK)
+            for (f in freqs) {
+                points += ThresholdPoint(f, ear, -60.0 + ReferenceCurve.at(f, HeadphoneType.IN_EAR) + lossDb(ear, f), sd, ThresholdFlag.OK)
             }
         }
-        return HearingTestResult(points, 10, 0, 1.0, -2.0, 120, 300, true, -40.0)
+        return HearingTestResult(points, 10, 0, null, null, 120, 300, true, -40.0, headphones = HeadphoneType.IN_EAR)
     }
 
-    private fun profile(h: HearingTestResult?, taste: TasteSettings = TasteSettings(), strength: Double = 0.5) =
+    /** A result from a full simulated test, with its trial log. */
+    private fun testedResult(seed: Int, lossDb: (Ear, Double) -> Double): HearingTestResult {
+        val rnd = Random(seed)
+        val session = HearingSession(TestLength.STANDARD.config(-40.0, true, HeadphoneType.IN_EAR), Random(seed + 1))
+        while (true) {
+            val p = session.next() ?: break
+            val t = -55.0 + ReferenceCurve.at(p.freq, HeadphoneType.IN_EAR) + lossDb(p.ear, p.freq)
+            val prob = if (p.isCatch) 0.02 else 0.02 + 0.96 / (1 + exp(-(p.levelDb - t) / 2.0))
+            session.answer(rnd.nextDouble() < prob)
+        }
+        return session.result()
+    }
+
+    private fun profile(h: HearingTestResult?, taste: TasteSettings = TasteSettings(), strength: Double = HearingCompensation.DEFAULT_STRENGTH) =
         Profile("id", "Test", 0L, hearing = h, hearingStrength = strength, taste = taste)
 
+    private fun maxAbs(c: DoubleArray, from: Double = 20.0, to: Double = 20000.0) = Curves.max(DoubleArray(c.size) { abs(c[it]) }, from, to)
+
     @Test
-    fun normalHearingGivesAFlatProfile() {
+    fun normalHearingThroughTargetHeadphonesGivesAFlatProfile() {
         val eq = ProfileEq(profile(result { _, _ -> 0.0 }))
-        for (i in FreqGrid.hz.indices) {
-            assertEquals(0.0, eq.leftCurve[i], 0.3)
-            assertEquals(0.0, eq.rightCurve[i], 0.3)
+        assertTrue(maxAbs(eq.leftCurve) < 0.3)
+        assertTrue(maxAbs(eq.rightCurve) < 0.3)
+        assertTrue(eq.preampDb > -0.5)
+    }
+
+    @Test
+    fun aRealTestOfNormalHearingStaysNearlyFlatAndCentred() {
+        // Noise in the answers must not turn into peaks or a left/right difference.
+        var rms = 0.0
+        val runs = 12
+        repeat(runs) { seed ->
+            val eq = ProfileEq(profile(testedResult(seed) { _, _ -> 0.0 }))
+            val diff = DoubleArray(FreqGrid.SIZE) { eq.leftCurve[it] - eq.rightCurve[it] }
+            assertTrue("seed $seed: shape ${maxAbs(eq.leftCurve)}", maxAbs(eq.leftCurve, 100.0, 16000.0) < 4.0)
+            assertTrue("seed $seed: left-right ${maxAbs(diff)}", maxAbs(diff) < 2.5)
+            assertTrue("seed $seed: preamp ${eq.preampDb}", eq.preampDb > -3.5)
+            val band = FreqGrid.hz.indices.filter { FreqGrid.hz[it] in 500.0..8000.0 }
+            rms += kotlin.math.sqrt(band.sumOf { eq.leftCurve[it] * eq.leftCurve[it] } / band.size)
         }
-        assertEquals(0.0, eq.preampDb, 0.31)
+        println("normal listeners: mean EQ RMS %.2f dB".format(rms / runs))
+        assertTrue(rms / runs < 1.2)
     }
 
     @Test
-    fun highFrequencyLossIsBoostedByHalfAndFitsTheTarget() {
-        val h = result { _, f -> if (f >= 4000.0) 20.0 else 0.0 }
-        val eq = ProfileEq(profile(h))
+    fun highFrequencyLossIsBoostedWithinTheTrebleCap() {
+        val eq = ProfileEq(profile(result { _, f -> if (f >= 4000.0) 20.0 else 0.0 }))
         val at6k = Curves.sample(eq.leftCurve, 6000.0)
-        val at500 = Curves.sample(eq.leftCurve, 500.0)
-        assertEquals(10.0, at6k, 1.5)
-        assertEquals(0.0, at500, 0.7)
-        // Fitted filters reproduce the smoothed target closely.
+        assertTrue("6 kHz: $at6k", at6k in 4.0..HearingCompensation.maxBoost(6000.0) + 0.4)
+        assertTrue(Curves.sample(eq.leftCurve, 1000.0) in -2.5..1.0)
+        for (i in FreqGrid.hz.indices) assertTrue(eq.hearingTargetLeft[i] <= HearingCompensation.maxBoost(FreqGrid.hz[i]) + 1e-9)
+        // Fitted filters reproduce the target closely.
         assertTrue(ParametricFit.maxError(eq.hearingTargetLeft, eq.hearingFiltersLeft) < 1.0)
-        // Preamp keeps the highest boost at 0 dBFS.
-        assertEquals(-Curves.max(eq.leftCurve), eq.preampDb, 0.11)
+        // A treble boost costs much less level than its size.
+        assertTrue("preamp ${eq.preampDb}", eq.preampDb > -Curves.max(eq.leftCurve) + 1.5)
     }
 
     @Test
-    fun deepBassBoostIsCapped() {
-        val eq = ProfileEq(profile(result { _, f -> if (f <= 250.0) 30.0 else 0.0 }, strength = 1.0))
-        assertTrue(Curves.sample(eq.hearingTargetLeft, 100.0) <= HearingCompensation.MAX_BASS_BOOST_DB + 1e-6)
+    fun bassIsLeftToTasteNotToThresholds() {
+        val eq = ProfileEq(profile(result(listOf(125.0, 250.0) + HearingTestConfig.BANDS) { _, f -> if (f <= 250.0) 25.0 else 0.0 }))
+        assertEquals(0.0, Curves.sample(eq.hearingTargetLeft, 100.0), 0.01)
+        assertTrue(Curves.sample(eq.hearingTargetLeft, 250.0) <= 2.1)
+    }
+
+    @Test
+    fun aLoneOddBandIsSmoothedNotChased() {
+        val eq = ProfileEq(profile(result { ear, f -> if (ear == Ear.LEFT && f == 3000.0) 12.0 else 0.0 }))
+        val left = Curves.sample(eq.hearingTargetLeft, 3000.0)
+        val right = Curves.sample(eq.hearingTargetRight, 3000.0)
+        assertTrue("left $left", left in 0.5..4.5)
+        assertTrue("left-right ${left - right}", left - right < 3.0)
     }
 
     @Test
     fun worseLeftEarGetsMoreGain() {
         val eq = ProfileEq(profile(result { ear, _ -> if (ear == Ear.LEFT) 10.0 else 0.0 }))
-        assertTrue(eq.earDifferenceDb in 4.0..6.0)
-        assertTrue(Curves.sample(eq.leftCurve, 1000.0) > Curves.sample(eq.rightCurve, 1000.0) + 4)
+        assertTrue("difference ${eq.earDifferenceDb}", eq.earDifferenceDb in 4.0..9.0)
+        assertTrue(Curves.sample(eq.leftCurve, 1000.0) > Curves.sample(eq.rightCurve, 1000.0) + 3)
+        // What both ears share is one filter set; the difference is a small mirrored set on top.
+        assertEquals(eq.linkedFilters, eq.leftFilters.intersect(eq.rightFilters.toSet()).toList())
+    }
+
+    @Test
+    fun largeLossesGetLessThanFullGain() {
+        val mild = ProfileEq(profile(result { _, f -> if (f >= 3000.0) 8.0 else 0.0 }))
+        val severe = ProfileEq(profile(result { _, f -> if (f >= 3000.0) 40.0 else 0.0 }))
+        val m = Curves.sample(mild.hearingTargetLeft, 4000.0)
+        val s = Curves.sample(severe.hearingTargetLeft, 4000.0)
+        assertTrue(s > m)
+        assertTrue(s <= HearingCompensation.maxBoost(4000.0) + 1e-9)
     }
 
     @Test
@@ -78,10 +136,41 @@ class ProfileTest {
     }
 
     @Test
+    fun preampIsSizedForMusic() {
+        // Bass carries a master's peaks, so a bass boost needs nearly its full size...
+        val bass = ProfileEq(profile(null, TasteSettings(bass = 6.0)))
+        assertTrue("bass ${bass.preampDb}", bass.preampDb <= -5.4)
+        // ...while a treble lift barely raises them.
+        val treble = ProfileEq(profile(null, TasteSettings(treble = 6.0)))
+        assertTrue("treble ${treble.preampDb}", treble.preampDb in -3.5..-1.0)
+        // Bass and treble boosts together cost about the bass boost, not their sum.
+        val both = ProfileEq(profile(null, TasteSettings(bass = 4.5, treble = 4.0)))
+        assertTrue("both ${both.preampDb}", both.preampDb in -5.0..-3.5)
+        // A boost across the whole range needs its full size; cuts need nothing.
+        assertEquals(-3.2, ProfileEq.preampFor(DoubleArray(FreqGrid.SIZE) { 3.0 }), 1e-9)
+        assertEquals(0.0, ProfileEq.preampFor(DoubleArray(FreqGrid.SIZE) { -2.0 }), 0.0)
+    }
+
+    @Test
+    fun legacyResultsStillGiveASaneCurve() {
+        // 1.0-1.1 results: 250 Hz and 12 kHz bands, an unheard 8 kHz band stored at maxDb + 5.
+        val freqs = listOf(125.0, 250.0, 500.0, 1000.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0, 10000.0, 12000.0)
+        val pts = mutableListOf<ThresholdPoint>()
+        for (ear in listOf(Ear.LEFT, Ear.RIGHT)) for (f in freqs) {
+            pts += if (f == 8000.0) ThresholdPoint(f, ear, 2.0, 10.0, ThresholdFlag.NO_RESPONSE)
+            else ThresholdPoint(f, ear, -60.0 + ReferenceCurve.at(f, HeadphoneType.IN_EAR), 2.5, ThresholdFlag.OK)
+        }
+        val eq = ProfileEq(profile(HearingTestResult(pts, 12, 1, 1.0, -2.0, 150, 360, true, -40.0)))
+        assertTrue(eq.leftCurve.all { it.isFinite() })
+        for (i in FreqGrid.hz.indices) assertTrue(eq.hearingTargetLeft[i] <= HearingCompensation.maxBoost(FreqGrid.hz[i]) + 1e-9)
+    }
+
+    @Test
     fun jsonRoundTripKeepsEverything() {
-        val p = profile(result { _, f -> f / 1000.0 }, TasteSettings(1.5, -2.0, 0.5, 3.0), 0.7).copy(
-            deviceName = "Buds", deviceType = 8, balanceDb = 1.2, recommendedTaste = TasteSettings(4.5, -1.0, 2.0, -2.25),
+        val p = profile(testedResult(3) { _, f -> f / 1000.0 }, TasteSettings(1.5, -2.0, 0.5, 3.0), 0.6).copy(
+            deviceName = "Buds", deviceType = 8, balanceDb = 1.2, recommendedTaste = TasteSettings(4.5, 0.0, 0.0, -2.5),
         )
+        assertTrue(p.hearing!!.trialLog.isNotEmpty())
         val back = Profile.fromJson(p.toJson())
         assertEquals(p, back)
         val a = ProfileEq(p)
@@ -91,8 +180,8 @@ class ProfileTest {
 
     @Test
     fun resetReturnsToTheTestsRecommendation() {
-        val tested = TasteSettings(4.5, -1.0, 2.0, -2.25)
-        val p = profile(result { _, _ -> 0.0 }, TasteSettings(6.0, 0.0, 2.0, -2.0), 0.8).copy(
+        val tested = TasteSettings(4.5, 0.0, 0.0, -2.5)
+        val p = profile(result { _, _ -> 0.0 }, TasteSettings(6.0, 0.0, 2.0, -2.0), 0.4).copy(
             name = "Mine", balanceDb = -1.5, recommendedTaste = tested,
         )
         assertFalse(p.isRecommended)
@@ -106,13 +195,20 @@ class ProfileTest {
     }
 
     @Test
-    fun profilesFromVersion1KeepTheirTasteOnReset() {
-        // 1.0 didn't store the taste test's result; Reset can only restore correction and balance.
-        val old = profile(result { _, _ -> 0.0 }, TasteSettings(bass = 3.0), 0.7).toJson().apply { remove("recommendedTaste") }
+    fun olderProfilesMoveToTheNewDefaultUnlessTheyChoseTheirOwn() {
+        // 1.0 didn't store the taste test's result, and 1.0-1.1 defaulted to 50 % correction.
+        val old = profile(result { _, _ -> 0.0 }, TasteSettings(bass = 3.0), 0.5).toJson().apply {
+            remove("recommendedTaste")
+            remove("fit")
+        }
         val p = Profile.fromJson(old)
         assertNull(p.recommendedTaste)
         assertEquals(TasteSettings(bass = 3.0), p.recommended().taste)
-        assertEquals(0.5, p.recommended().hearingStrength, 0.0)
+        assertEquals(HearingCompensation.DEFAULT_STRENGTH, p.hearingStrength, 0.0)
+        val chosen = Profile.fromJson(profile(result { _, _ -> 0.0 }, strength = 0.7).toJson().apply { remove("fit") })
+        assertEquals(0.7, chosen.hearingStrength, 0.0)
+        // A 1.2 profile at 50 % stays at 50 %.
+        assertEquals(0.5, Profile.fromJson(profile(result { _, _ -> 0.0 }, strength = 0.5).toJson()).hearingStrength, 0.0)
     }
 
     @Test

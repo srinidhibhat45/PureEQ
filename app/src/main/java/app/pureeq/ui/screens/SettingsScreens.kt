@@ -188,30 +188,34 @@ fun AboutScreen(vm: AppViewModel) {
     StepScaffold(title = "How PureEQ works", onBack = { vm.back() }) {
         AboutSection(
             "The hearing check",
-            "Like Samsung's Adapt Sound and the hearing tests in AirPods and OPPO/realme earbuds: pulsed beeps (three per presentation, 25 ms soft edges) " +
-                "play in one ear at a time, ears in random order. Each ear and frequency gets its own clinical up-down staircase " +
-                "(modified Hughson-Westlake: 10 dB down after a yes, 5 dB up after a no). The threshold is then estimated from all your answers " +
-                "by maximum likelihood, which is finer than the 5 dB steps. Some trials are silent on purpose, to tell hearing from guessing.",
+            "Pulsed beeps (two per presentation, 25 ms soft edges) play in one ear at a time, 500 Hz to 8 kHz. PureEQ keeps one statistical model " +
+                "of your thresholds in every band and both ears, linked across frequency and between the ears, the approach behind Apple's " +
+                "AirPods hearing test. Each beep is played at the level expected to teach it the most, and a band is finished as soon as its " +
+                "threshold is known well enough. Silent beeps measure guessing, and the model allows for the odd slip. About 2 minutes instead of 6.",
         )
         AboutSection(
             "From hearing to EQ",
-            "Your threshold at each frequency is compared with normal hearing (ISO 226 / ISO 389-7). The difference covers your ears and your " +
-                "headphones together, which is what an EQ can fix. Half of the difference is applied by default, the audiologists' half-gain rule. " +
-                "The curve is smoothed, limited (+12 dB, +6 dB in the deep bass, -6 dB cuts) and fitted with the same parametric filters other EQ apps use.",
+            "Your thresholds are compared with what a young normal-hearing listener needs through well-tuned headphones of your type " +
+                "(ISO 389-7 thresholds, Harman target). The difference covers your ears and your headphones together, which is what an EQ can fix. " +
+                "PureEQ corrects the smooth trend, not every point, and only what the answers clearly show: small differences at 75 % " +
+                "(usually the headphones' own sound), large ones less, as hearing-aid fitting rules do. Bass below 400 Hz is left to your taste, " +
+                "treble boosts stop at +6 dB, and both ears share one filter set so voices stay centred.",
         )
         AboutSection(
             "The taste test",
-            "Bass (a 105 Hz shelf, as in Harman's headphone research), warmth, vocals and treble are tuned by blind A/B comparisons, " +
-                "each pair loudness-matched with the ITU BS.1770 weighting so louder never wins by default. Each round halves the difference.",
+            "Bass (a 105 Hz shelf, as in Harman's headphone research) and treble (an 8 kHz shelf) are tuned by blind A/B comparisons, " +
+                "each pair loudness-matched with the ITU BS.1770 weighting so louder never wins by default. PureEQ starts from what most " +
+                "listeners prefer, learns from every answer, \"Same\" included, and picks each next pair to learn the most: usually 5 to 7 rounds.",
         )
         AboutSection(
             "Applying it",
             "\"All audio\" uses Android's DynamicsProcessing effect on the output mix with a separate curve for each ear, in fine bands " +
-                "(each FFT bin below 530 Hz, 1/16 octave above). Exports use AutoEq's formats, so Wavelet, Poweramp Equalizer, JamesDSP and Equalizer APO read them directly.",
+                "(each FFT bin below 530 Hz, 1/16 octave above). The level is lowered only as much as music needs: treble boosts barely raise a mix's peaks, " +
+                "so they cost almost no loudness; a bass boost costs about its own size. Exports use AutoEq's formats, so Wavelet, Poweramp Equalizer, JamesDSP and Equalizer APO read them directly.",
         )
         AboutSection(
             "Privacy",
-            "Your profiles and test results stay on this phone. The optional room check listens for 4 seconds to measure noise level and stores nothing. " +
+            "Your profiles and test results stay on this phone. The optional room check listens for 3 seconds to measure noise level and stores nothing. " +
                 "PureEQ only goes online to check for its own updates: a small update notice, then the new version when there is one.",
         )
         AboutSection(

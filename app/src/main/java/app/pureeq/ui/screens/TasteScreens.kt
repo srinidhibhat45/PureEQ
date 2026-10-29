@@ -99,13 +99,13 @@ fun TasteIntroScreen(vm: AppViewModel) {
         if (retune) {
             Headline(
                 "Redo the taste test",
-                "You'll hear the same music as A and B and pick the one you enjoy more, about 12 rounds. Both are equally loud. " +
-                    "Your hearing result stays as it is; the outcome replaces the four taste settings and becomes what Reset goes back to.",
+                "You'll hear the same music as A and B and pick the one you enjoy more, usually 5 to 7 rounds. Both are equally loud. " +
+                    "Your hearing result stays as it is; the outcome replaces your bass and treble (warmth and vocals go back to 0) and becomes what Reset goes back to.",
             )
         } else {
             Headline(
                 "Now, what do you like?",
-                "You'll hear the same music as A and B. Switch between them as often as you like and pick the one you enjoy more. Both are equally loud, so go with what pleases you. About 12 rounds.",
+                "You'll hear the same music as A and B. Switch between them as often as you like and pick the one you enjoy more. Both are equally loud, so go with what pleases you. PureEQ learns from every answer, \"Same\" included, and stops once it knows your taste: usually 5 to 7 rounds.",
             )
         }
         SectionCard {
@@ -150,12 +150,12 @@ fun TasteScreen(vm: AppViewModel) {
         },
     ) {
         LinearProgressIndicator(
-            progress = { if (t.total == 0) 0f else t.answered.toFloat() / t.total },
+            progress = { maxOf(t.certainty, if (t.total == 0) 0f else t.answered.toFloat() / t.total) },
             modifier = Modifier.fillMaxWidth().height(6.dp),
             strokeCap = StrokeCap.Round,
         )
         Text(
-            "Round ${(t.answered + 1).coerceAtMost(t.total)} of up to ${t.total}",
+            "Round ${(t.answered + 1).coerceAtMost(t.total)} · usually 5 to 7",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

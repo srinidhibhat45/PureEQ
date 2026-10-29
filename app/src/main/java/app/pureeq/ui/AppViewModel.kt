@@ -14,6 +14,7 @@ import app.pureeq.audio.NoiseMeter
 import app.pureeq.audio.OutputDevice
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.Stimulus
+import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingSession
 import app.pureeq.hearing.HearingTestResult
 import app.pureeq.hearing.TestLength
@@ -23,7 +24,6 @@ import app.pureeq.profile.ProfileStore
 import app.pureeq.system.EqRuntime
 import app.pureeq.system.EqService
 import app.pureeq.taste.Choice
-import app.pureeq.taste.TasteBand
 import app.pureeq.taste.Comparison
 import app.pureeq.taste.TasteSession
 import app.pureeq.taste.TasteSettings
@@ -56,7 +56,6 @@ sealed interface Screen {
     data object Headphones : Screen
     data object Quiet : Screen
     data object Volume : Screen
-    data object Channels : Screen
     data object Hearing : Screen
     data object HearingDone : Screen
     data object TasteIntro : Screen
@@ -80,6 +79,9 @@ data class Draft(
     val length: TestLength = TestLength.STANDARD,
     val includeHearing: Boolean = true,
     val device: OutputDevice? = null,
+    /** Picks the target curve the hearing test is measured against. */
+    val headphones: HeadphoneType = HeadphoneType.guess(device?.name),
+    val headphonesChosen: Boolean = false,
     val noiseDb: Double? = null,
     val volumeIndex: Int? = null,
     val hearing: HearingTestResult? = null,
@@ -94,7 +96,8 @@ data class QuietUi(val measuring: Boolean = false, val level: Double? = null, va
 
 enum class ChannelVerdict { OK, SWAPPED, MONO, NOT_HEARD }
 
-data class ChannelUi(val side: Ear = Ear.LEFT, val playing: Boolean = false, val heardLeft: Ear? = null, val verdict: ChannelVerdict? = null)
+/** The left/right check that follows setting the volume: one beep on a random side. */
+data class ChannelUi(val checking: Boolean = false, val side: Ear = Ear.LEFT, val playing: Boolean = false, val verdict: ChannelVerdict? = null)
 
 data class HearingUi(
     val playing: Boolean = false,
@@ -110,7 +113,9 @@ data class TasteUi(
     val comparison: Comparison? = null,
     val listening: Choice = Choice.A,
     val answered: Int = 0,
-    val total: Int = 12,
+    val total: Int = 8,
+    /** 0..1: how settled PureEQ's estimate of your taste is. */
+    val certainty: Float = 0f,
 )
 
 data class EditorUi(
@@ -170,7 +175,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         enter(target)
     }
 
-    private val audioScreens = setOf(Screen.Volume, Screen.Channels, Screen.Hearing, Screen.HearingDone, Screen.TasteIntro, Screen.Taste)
+    private val audioScreens = setOf(Screen.Volume, Screen.Hearing, Screen.HearingDone, Screen.TasteIntro, Screen.Taste)
 
     /** Screens of the new-profile flow, up to saving it: an app restart (an update) would lose them. */
     private fun Screen.holdsUnsavedWork() = when (this) {
@@ -189,8 +194,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (audio) route.requestFocus()
         when (s) {
             Screen.Home -> route.abandonFocus()
-            Screen.Volume -> startVolumeTone()
-            Screen.Channels -> playChannel(Ear.LEFT, reset = true)
+            Screen.Volume -> {
+                _channel.value = ChannelUi()
+                startVolumeTone()
+            }
             Screen.Hearing -> startHearing()
             Screen.TasteIntro -> viewModelScope.launch { prepareTaste() }
             Screen.Taste -> startTaste()
@@ -201,13 +208,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun leave(s: Screen) {
         when (s) {
-            Screen.Volume, Screen.Channels -> engine.stopTone()
+            Screen.Volume -> {
+                channelJob?.cancel()
+                engine.stopTone()
+            }
             Screen.Hearing -> {
                 hearingJob?.cancel()
                 engine.stopTone()
             }
             Screen.Quiet -> noiseJob?.cancel()
-            Screen.Taste, Screen.TasteIntro -> setMusicPlaying(false)
+            Screen.Taste, Screen.TasteIntro -> {
+                choosing?.cancel()
+                setMusicPlaying(false)
+            }
             is Screen.Editor -> {
                 setPreview(false)
                 editorJob?.cancel()
@@ -234,22 +247,32 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setTestLength(l: TestLength) = _draft.update { it.copy(length = l) }
     fun setIncludeHearing(on: Boolean) = _draft.update { it.copy(includeHearing = on) }
+    fun setHeadphones(type: HeadphoneType) = _draft.update { it.copy(headphones = type, headphonesChosen = true) }
 
     /** After the intro: hearing-test route or straight to taste tuning. */
     fun beginChecks() {
-        _draft.update { it.copy(device = route.currentOutput()) }
+        updateDevice()
         go(Screen.Headphones)
     }
 
     fun afterHeadphones() {
-        _draft.update { it.copy(device = route.currentOutput()) }
+        updateDevice()
         if (_draft.value.includeHearing) go(Screen.Quiet) else go(Screen.TasteIntro)
+    }
+
+    /** Follows the connected headphones; the type follows their name until the listener picks one. */
+    fun updateDevice() {
+        val out = route.currentOutput()
+        _draft.update { if (it.headphonesChosen) it.copy(device = out) else it.copy(device = out, headphones = HeadphoneType.guess(out.name)) }
     }
 
     fun onAppStopped() {
         if (screen.value == Screen.Hearing) pauseHearing(PauseReason.BACKGROUND)
         setMusicPlaying(false)
-        if (screen.value == Screen.Volume || screen.value == Screen.Channels) engine.stopTone()
+        if (screen.value == Screen.Volume) {
+            channelJob?.cancel()
+            engine.stopTone()
+        }
         engine.setKeepAlive(false)
         // PureEQ plays nothing in the background, so hand the system EQ back to other apps' audio.
         if (_editor.value?.previewing == true) setPreview(false)
@@ -261,7 +284,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val audio = screen.value in audioScreens
         EqRuntime.hold("flow", audio)
         engine.setKeepAlive(audio)
-        if (screen.value == Screen.Volume) startVolumeTone()
+        if (screen.value == Screen.Volume) {
+            _channel.value = ChannelUi()
+            startVolumeTone()
+        }
         if (store.settings.value.systemEqEnabled) EqService.start(getApplication())
     }
 
@@ -277,7 +303,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _quiet.value = QuietUi(measuring = true)
         noiseJob = viewModelScope.launch {
             val db = runCatching {
-                NoiseMeter(getApplication()).measure(4.0) { level -> _quiet.update { it.copy(level = level) } }
+                NoiseMeter(getApplication()).measure(3.0) { level -> _quiet.update { it.copy(level = level) } }
             }.getOrNull()
             _quiet.value = QuietUi(measuring = false, level = db, result = db, failed = db == null)
             _draft.update { it.copy(noiseDb = db) }
@@ -297,43 +323,52 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         engine.playTone(Stimulus(1000.0, Ear.BOTH, CAL_DB, warble = store.settings.value.warbleTones, repeat = true))
     }
 
+    /** The volume is set; one beep on a random side checks left and right before the test. */
     fun confirmVolume() {
         engine.stopTone()
         _draft.update { it.copy(volumeIndex = route.volume) }
-        go(Screen.Channels)
+        playChannel(if (Random.nextBoolean()) Ear.LEFT else Ear.RIGHT)
     }
 
     // ---- Left / right check ------------------------------------------------------------------
 
     private val _channel = MutableStateFlow(ChannelUi())
     val channel: StateFlow<ChannelUi> = _channel.asStateFlow()
+    private var channelJob: Job? = null
 
-    fun playChannel(side: Ear, reset: Boolean = false) {
-        if (reset) _channel.value = ChannelUi()
-        _channel.update { it.copy(side = side, playing = true) }
+    fun playChannel(side: Ear) {
+        channelJob?.cancel()
+        _channel.value = ChannelUi(checking = true, side = side, playing = true)
+        debugLog { "channel side=$side" }
         engine.playTone(Stimulus(1000.0, side, CHANNEL_DB, warble = store.settings.value.warbleTones, pulses = 3))
     }
 
-    /** [heard] is where the listener heard the beep: LEFT, RIGHT, BOTH, or null for nowhere. */
+    fun retryChannel() = playChannel(if (Random.nextBoolean()) Ear.LEFT else Ear.RIGHT)
+
+    /** Back to adjusting the volume, e.g. when the check beep was too quiet to place. */
+    fun redoVolume() {
+        channelJob?.cancel()
+        _channel.value = ChannelUi()
+        startVolumeTone()
+    }
+
+    /** [heard] is where the listener heard the beep: LEFT, RIGHT, BOTH, or null for nowhere. Correct goes straight on to the test. */
     fun answerChannel(heard: Ear?) {
         engine.stopTone()
         val c = _channel.value
-        if (c.side == Ear.LEFT) {
-            _channel.value = c.copy(heardLeft = heard, playing = false)
-            viewModelScope.launch {
-                delay(350)
-                playChannel(Ear.RIGHT)
-            }
-            return
-        }
-        val l = c.heardLeft
-        val verdict = when {
-            l == null || heard == null -> ChannelVerdict.NOT_HEARD
-            l == Ear.LEFT && heard == Ear.RIGHT -> ChannelVerdict.OK
-            l == Ear.RIGHT && heard == Ear.LEFT -> ChannelVerdict.SWAPPED
-            else -> ChannelVerdict.MONO
+        val verdict = when (heard) {
+            null -> ChannelVerdict.NOT_HEARD
+            Ear.BOTH -> ChannelVerdict.MONO
+            c.side -> ChannelVerdict.OK
+            else -> ChannelVerdict.SWAPPED
         }
         _channel.value = c.copy(playing = false, verdict = verdict)
+        if (verdict == ChannelVerdict.OK) {
+            channelJob = viewModelScope.launch {
+                delay(900)
+                if (screen.value == Screen.Volume) go(Screen.Hearing)
+            }
+        }
     }
 
     // ---- Hearing test ------------------------------------------------------------------------
@@ -370,7 +405,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun startHearing() {
         hearingJob?.cancel()
         val d = _draft.value
-        val config = d.length.config(CAL_DB, store.settings.value.warbleTones)
+        val config = d.length.config(CAL_DB, store.settings.value.warbleTones, d.headphones)
         val s = HearingSession(config)
         session = s
         lockedVolume = d.volumeIndex ?: route.volume
@@ -393,17 +428,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 val p = s.next() ?: break
                 debugLog { "trial ear=${p.ear} f=${p.freq} level=${p.levelDb} catch=${p.isCatch} latencyMs=${engine.latencyMs}" }
                 _hearing.update { it.copy(freq = s.currentFrequency, progress = s.progress, playing = false, canSayYes = false, canSayNo = false) }
-                // Random gap so the beep's timing can't be anticipated.
-                delay(Random.nextLong(450, 1150))
+                // A short, slightly varied gap; silent catch trials keep guessing in check.
+                delay(Random.nextLong(350, 600))
                 if (_hearing.value.pause != null) continue
                 while (answers.tryReceive().isSuccess) Unit
-                val stim = Stimulus(p.freq, p.ear, p.levelDb, warble = config.warble, silent = p.isCatch)
+                val stim = Stimulus(p.freq, p.ear, p.levelDb, warble = config.warble, silent = p.isCatch, pulses = 2, offMs = 200.0)
                 engine.playTone(stim)
                 _hearing.update { it.copy(playing = true, canSayYes = true) }
                 // "No" unlocks only once the last beep has reached the ear: measured output latency,
                 // with a Bluetooth floor in case the device doesn't report its codec delay.
                 val delay = maxOf(engine.latencyMs, if (output.value.kind == OutputDevice.Kind.BLUETOOTH) 250 else 0)
-                var outcome = awaitOutcome(stim.durationMs.toLong() + delay + 200)
+                var outcome = awaitOutcome(stim.durationMs.toLong() + delay + 150)
                 if (outcome == Outcome.Timeout) {
                     _hearing.update { it.copy(playing = false, canSayNo = true) }
                     outcome = awaitOutcome(null)
@@ -514,13 +549,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _taste = MutableStateFlow(TasteUi())
     val taste: StateFlow<TasteUi> = _taste.asStateFlow()
     private var tasteSession: TasteSession? = null
+    private var choosing: Job? = null
     private var hearingBase: ProfileEq? = null
     private var tasteHeadroom: Double? = null
     private var tastePreparedFor: Pair<HearingTestResult?, MusicTrack?>? = null
 
     /**
      * Fits the hearing correction once for the whole taste test and fixes one headroom for it:
-     * the most extreme option the session can reach (every band at its reachable maximum) sets it.
+     * the most extreme option the session can reach (bass and treble at their maximum) sets it.
      */
     private suspend fun prepareTaste() {
         val d = _draft.value
@@ -529,7 +565,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val base = withContext(Dispatchers.Default) { ProfileEq(draftProfile().copy(taste = TasteSettings())) }
         hearingBase = base
         if (track != null) {
-            val extreme = TasteBand.entries.fold(d.taste) { t, b -> t.with(b, b.reachableMax(d.taste[b])) }.filters()
+            val extreme = TasteSession.extreme(d.taste).filters()
             tasteHeadroom = withContext(Dispatchers.Default) {
                 Matching.headroom(
                     listOf(ListeningOption(base.hearingFiltersLeft, base.hearingFiltersRight), ListeningOption(base.hearingFiltersLeft + extreme, base.hearingFiltersRight + extreme)),
@@ -542,11 +578,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun startTaste() {
         val d = _draft.value
-        val ts = TasteSession(start = d.taste)
+        val ts = TasteSession(start = d.taste, maxRounds = if (d.includeHearing) d.length.tasteRounds else TasteSession.MAX_ROUNDS)
         tasteSession = ts
         _taste.value = TasteUi(total = ts.total)
         viewModelScope.launch {
             prepareTaste()
+            withContext(Dispatchers.Default) { ts.current() }
             showComparison()
             setMusicPlaying(true)
         }
@@ -569,8 +606,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         engine.setSlot(0, specs[0])
         engine.setSlot(1, specs[1])
         engine.select(0)
-        debugLog { "compare band=${c.band} a=${c.valueA} b=${c.valueB}" }
-        _taste.update { it.copy(comparison = c, listening = Choice.A, answered = ts.answered) }
+        debugLog { "compare a=${c.a.bass}/${c.a.treble} b=${c.b.bass}/${c.b.treble}" }
+        _taste.update { it.copy(comparison = c, listening = Choice.A, answered = ts.answered, certainty = ts.certainty) }
     }
 
     fun listen(side: Choice) {
@@ -580,8 +617,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun choose(choice: Choice) {
-        tasteSession?.answer(choice)
-        showComparison()
+        // Ignore a second tap while the next pair is still being picked.
+        if (choosing?.isActive == true) return
+        val ts = tasteSession ?: return
+        ts.answer(choice)
+        // Picking the next pair takes a few milliseconds; keep it off the main thread.
+        choosing = viewModelScope.launch {
+            withContext(Dispatchers.Default) { ts.current() }
+            if (screen.value == Screen.Taste && tasteSession === ts) showComparison()
+        }
     }
 
     fun skipTaste() = finishTaste()

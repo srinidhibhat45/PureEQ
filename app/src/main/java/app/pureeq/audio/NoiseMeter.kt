@@ -20,9 +20,10 @@ import kotlin.math.pow
 
 /**
  * Rough A-weighted room noise level, so the listener knows whether the room is quiet enough.
- * Uses the unprocessed (or voice-recognition) microphone path, which Android's compatibility
- * rules calibrate to about 90 dB SPL = -22.35 dBFS RMS at 1 kHz. Expect ±5 dB.
- * Audio is analysed in memory and never stored.
+ * Uses the unprocessed microphone path where available, else voice recognition. Android's
+ * compatibility rules calibrate them differently at 1 kHz: unprocessed 94 dB SPL = -36 dBFS RMS,
+ * voice recognition 90 dB SPL = -22.35 dBFS RMS. Expect ±5 dB. Audio is analysed in memory and
+ * never stored.
  */
 class NoiseMeter(private val context: Context) {
 
@@ -32,6 +33,7 @@ class NoiseMeter(private val context: Context) {
         val am = context.getSystemService(AudioManager::class.java)
         val unprocessed = am.getProperty(AudioManager.PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED) == "true"
         val source = if (unprocessed) MediaRecorder.AudioSource.UNPROCESSED else MediaRecorder.AudioSource.VOICE_RECOGNITION
+        val calibration = if (unprocessed) UNPROCESSED_CAL_DB else VOICE_RECOGNITION_CAL_DB
         val n = 4096
         val minBuf = AudioRecord.getMinBufferSize(rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
         val rec = runCatching {
@@ -75,20 +77,21 @@ class NoiseMeter(private val context: Context) {
                 val meanSquare = s / (n * windowPower)
                 energy += meanSquare
                 blocks++
-                onLevel(toSpl(meanSquare))
+                onLevel(toSpl(meanSquare, calibration))
             }
         } finally {
             runCatching { rec.stop() }
             rec.release()
         }
-        if (blocks == 0) null else toSpl(energy / blocks)
+        if (blocks == 0) null else toSpl(energy / blocks, calibration)
     }
 
-    private fun toSpl(meanSquare: Double) = 10 * log10(max(meanSquare, 1e-14)) + CALIBRATION_DB
+    private fun toSpl(meanSquare: Double, calibrationDb: Double) = 10 * log10(max(meanSquare, 1e-14)) + calibrationDb
 
     companion object {
-        /** dB SPL of a full-scale RMS signal under Android's CDD microphone sensitivity. */
-        const val CALIBRATION_DB = 112.35
+        /** dB SPL of a full-scale RMS signal under Android's CDD microphone sensitivity, per source. */
+        const val UNPROCESSED_CAL_DB = 130.0
+        const val VOICE_RECOGNITION_CAL_DB = 112.35
         const val QUIET_DB = 35.0
         const val NOISY_DB = 45.0
     }

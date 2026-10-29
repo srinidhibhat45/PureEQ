@@ -196,7 +196,7 @@ private fun FineTuning(p: Profile, isDraft: Boolean, onReset: () -> Unit, onRedo
             Control(
                 "Hearing correction",
                 percent(p.hearingStrength),
-                "50% is the audiologists' half-gain rule: clearer detail without harshness. 100% fully flattens the measured differences.",
+                "How much of the measured difference to correct. 75% corrects most of it while leaving room for measurement noise; larger hearing losses always get less, as hearing-aid fitting rules do.",
                 suggested = percent(rec.hearingStrength).takeIf { p.hearingStrength != rec.hearingStrength },
                 onRestore = { edit { it.copy(hearingStrength = rec.hearingStrength) } },
             ) {

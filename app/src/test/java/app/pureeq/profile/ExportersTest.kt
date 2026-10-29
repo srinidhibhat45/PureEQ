@@ -5,9 +5,10 @@ import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FilterSpec
 import app.pureeq.dsp.FilterType
 import app.pureeq.dsp.FreqGrid
+import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingTestConfig
 import app.pureeq.hearing.HearingTestResult
-import app.pureeq.hearing.ReferenceThreshold
+import app.pureeq.hearing.ReferenceCurve
 import app.pureeq.hearing.ThresholdFlag
 import app.pureeq.hearing.ThresholdPoint
 import app.pureeq.system.DpBands
@@ -22,9 +23,9 @@ class ExportersTest {
 
     private val profile: Profile = run {
         val pts = mutableListOf<ThresholdPoint>()
-        for (ear in listOf(Ear.LEFT, Ear.RIGHT)) for (f in HearingTestConfig.STANDARD) {
+        for (ear in listOf(Ear.LEFT, Ear.RIGHT)) for (f in HearingTestConfig.BANDS) {
             val loss = if (f >= 4000) 15.0 else 0.0
-            pts += ThresholdPoint(f, ear, -60.0 + ReferenceThreshold.at(f) + loss + if (ear == Ear.LEFT) 3.0 else 0.0, 2.0, ThresholdFlag.OK)
+            pts += ThresholdPoint(f, ear, -60.0 + ReferenceCurve.at(f, HeadphoneType.IN_EAR) + loss + if (ear == Ear.LEFT) 3.0 else 0.0, 2.0, ThresholdFlag.OK)
         }
         Profile("x", "Buds Pro", 0L, hearing = HearingTestResult(pts, 8, 0, null, null, 100, 280, true, -40.0), taste = TasteSettings(bass = 4.0, treble = -1.5))
     }
@@ -39,14 +40,15 @@ class ExportersTest {
     }
 
     @Test
-    fun graphicEqUsesWaveletsGridAndPeaksAtMinusPointTwo() {
+    fun graphicEqUsesWaveletsGridAndTheSystemEqsLevel() {
         val eq = ProfileEq(profile)
-        val g = Exporters.graphicEq(Exporters.linkedCurveWithPreamp(eq))
+        val curve = Exporters.linkedCurveWithPreamp(eq)
+        val g = Exporters.graphicEq(curve)
         assertTrue(g.startsWith("GraphicEQ: 20 "))
         val pairs = g.removePrefix("GraphicEQ: ").split("; ").map { it.split(" ") }
         assertEquals(127, pairs.size)
         assertEquals(Exporters.WAVELET_FREQS.toList(), pairs.map { it[0].toInt() })
-        assertEquals(-0.2, pairs.maxOf { it[1].toDouble() }, 0.051)
+        pairs.forEach { (f, v) -> assertEquals(Curves.sample(curve, f.toDouble()), v.toDouble(), 0.051) }
         // Same as AutoEq's generator: int(20 * 1.0563^i).
         assertEquals(19871, Exporters.WAVELET_FREQS.last())
     }

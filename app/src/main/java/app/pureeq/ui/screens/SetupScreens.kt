@@ -2,6 +2,7 @@ package app.pureeq.ui.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -53,8 +54,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.audio.NoiseMeter
 import app.pureeq.dsp.Ear
+import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.TestLength
 import app.pureeq.ui.AppViewModel
+import app.pureeq.ui.ChannelUi
 import app.pureeq.ui.ChannelVerdict
 import app.pureeq.ui.Screen
 import app.pureeq.ui.components.Headline
@@ -82,8 +85,8 @@ fun IntroScreen(vm: AppViewModel) {
             "PureEQ measures how well each ear hears each part of the spectrum through these headphones, then learns what you like. Both become one EQ.",
         )
         SectionCard {
-            InfoRow(Icons.Rounded.Hearing, "1 · Hearing check", "Short beeps in your left and right ear. Tap Yes whenever you hear one, even faintly.")
-            InfoRow(Icons.Rounded.Tune, "2 · Taste", "Hear music as A and B, pick the one you like. Both are equally loud, so trust your ears.")
+            InfoRow(Icons.Rounded.Hearing, "1 · Hearing check", "Short beeps in your left and right ear. Tap Yes whenever you hear one, even faintly. PureEQ picks each beep to learn as much as possible, so it's over in about 2 minutes.")
+            InfoRow(Icons.Rounded.Tune, "2 · Taste", "Hear music as A and B, pick the one you like. Both are equally loud, so trust your ears. Usually 5 to 7 rounds.")
             InfoRow(Icons.Rounded.Equalizer, "3 · Your EQ", "Apply it to all audio on this phone, or export it to Wavelet, Poweramp Equalizer, JamesDSP and others.")
         }
         SectionCard {
@@ -137,6 +140,8 @@ fun HeadphonesScreen(vm: AppViewModel) {
             }
         },
     ) {
+        val draft by vm.draft.collectAsStateWithLifecycle()
+        LaunchedEffect(output) { vm.updateDevice() }
         Headline("Put on your headphones", "Your result belongs to these headphones and your ears together, so use the pair you'll listen with.")
         SectionCard(padding = 22.dp) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -160,6 +165,26 @@ fun HeadphonesScreen(vm: AppViewModel) {
                 )
             }
         }
+        // The type only matters for the hearing check's reference curve.
+        if (draft.includeHearing) {
+            SectionCard {
+                Text("Type", style = MaterialTheme.typography.titleSmall)
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    HeadphoneType.entries.forEachIndexed { i, t ->
+                        SegmentedButton(
+                            selected = draft.headphones == t,
+                            onClick = { vm.setHeadphones(t) },
+                            shape = SegmentedButtonDefaults.itemShape(i, HeadphoneType.entries.size),
+                        ) { Text(if (t == HeadphoneType.IN_EAR) "In-ear / earbuds" else "Over-ear / on-ear") }
+                    }
+                }
+                Text(
+                    "In-ear and over-ear headphones reach the eardrum differently, so each is measured against its own reference.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
         Text(
             "Bluetooth works, but disable any EQ, \"adaptive\" or \"spatial\" sound in the earbuds' companion app for the test.",
             style = MaterialTheme.typography.bodyMedium,
@@ -175,12 +200,13 @@ fun QuietScreen(vm: AppViewModel) {
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) vm.measureNoise()
     }
+    val allowed = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
     val check = {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            vm.measureNoise()
-        } else {
-            permission.launch(Manifest.permission.RECORD_AUDIO)
-        }
+        if (allowed) vm.measureNoise() else permission.launch(Manifest.permission.RECORD_AUDIO)
+    }
+    // Once the microphone is allowed, check straight away.
+    LaunchedEffect(Unit) {
+        if (allowed && quiet.result == null && !quiet.measuring) vm.measureNoise()
     }
     StepScaffold(
         title = "Room check",
@@ -192,7 +218,7 @@ fun QuietScreen(vm: AppViewModel) {
     ) {
         Headline(
             "Is it quiet enough?",
-            "Background noise covers up quiet beeps and makes your hearing look worse than it is, especially in the bass. PureEQ can listen for 4 seconds to check. Nothing is recorded or saved.",
+            "Background noise covers up quiet beeps and makes your hearing look worse than it is. PureEQ can listen for 3 seconds to check. Nothing is recorded or saved.",
         )
         SectionCard(padding = 22.dp) {
             val level = quiet.level
@@ -229,6 +255,12 @@ fun QuietScreen(vm: AppViewModel) {
 @Composable
 fun VolumeScreen(vm: AppViewModel) {
     KeepScreenOn()
+    val c by vm.channel.collectAsStateWithLifecycle()
+    if (c.checking) ChannelCheck(vm, c) else VolumeSetting(vm)
+}
+
+@Composable
+private fun VolumeSetting(vm: AppViewModel) {
     var volume by remember { mutableIntStateOf(vm.currentVolume()) }
     // Follow the hardware volume keys too.
     LaunchedEffect(Unit) {
@@ -282,33 +314,35 @@ fun VolumeScreen(vm: AppViewModel) {
     }
 }
 
+/** One beep on a random side right after the volume is set: catches swapped earbuds and mono audio. */
 @Composable
-fun ChannelsScreen(vm: AppViewModel) {
-    KeepScreenOn()
-    val c by vm.channel.collectAsStateWithLifecycle()
+private fun ChannelCheck(vm: AppViewModel, c: ChannelUi) {
     val sounding by vm.toneActive.collectAsStateWithLifecycle()
+    BackHandler { vm.redoVolume() }
     StepScaffold(
         title = "Left and right",
-        onBack = { vm.back() },
+        onBack = { vm.redoVolume() },
         step = 4,
         bottom = {
             when (c.verdict) {
-                ChannelVerdict.OK -> PrimaryButton("Start hearing check", { vm.go(Screen.Hearing) })
-                null -> Unit
+                null, ChannelVerdict.OK -> Unit
+                ChannelVerdict.NOT_HEARD -> {
+                    PrimaryButton("Set the volume again", vm::redoVolume, icon = Icons.Rounded.Refresh)
+                    TextButton(onClick = { vm.go(Screen.Hearing) }, modifier = Modifier.fillMaxWidth()) { Text("Continue anyway") }
+                }
                 else -> {
-                    PrimaryButton("Try again", { vm.playChannel(Ear.LEFT, reset = true) }, icon = Icons.Rounded.Refresh)
+                    PrimaryButton("Try again", vm::retryChannel, icon = Icons.Rounded.Refresh)
                     TextButton(onClick = { vm.go(Screen.Hearing) }, modifier = Modifier.fillMaxWidth()) { Text("Continue anyway") }
                 }
             }
         },
     ) {
-        Headline("Where is the beep?", "One beep plays on one side. Tell PureEQ where you heard it. This catches swapped earbuds and mono audio.")
+        Headline("Where was the beep?", "One beep played on one side. Tell PureEQ where you heard it; this catches swapped earbuds and mono audio.")
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            ListeningOrb(active = sounding && c.verdict == null, size = 170.dp, label = if (c.verdict == null) "${if (c.side == Ear.LEFT) 1 else 2} / 2" else null)
+            ListeningOrb(active = sounding && c.verdict == null, size = 170.dp)
         }
         when (val v = c.verdict) {
             null -> {
-                Text("Where did you hear it?", style = MaterialTheme.typography.titleMedium, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     listOf("Left" to Ear.LEFT, "Both" to Ear.BOTH, "Right" to Ear.RIGHT).forEach { (label, ear) ->
                         OutlinedButton(
@@ -325,10 +359,10 @@ fun ChannelsScreen(vm: AppViewModel) {
             }
             else -> SectionCard {
                 val (ok, text) = when (v) {
-                    ChannelVerdict.OK -> true to "Left is left and right is right. You're ready."
-                    ChannelVerdict.SWAPPED -> false to "Left and right are swapped. Check the earbuds are in the correct ears (L/R markings), then try again."
-                    ChannelVerdict.MONO -> false to "Both beeps sounded the same. Turn off Mono audio and centre the balance in Settings > Accessibility > Audio, then try again."
-                    ChannelVerdict.NOT_HEARD -> false to "A beep was missed. Check both earbuds are in and connected and the volume is up, then try again."
+                    ChannelVerdict.OK -> true to "Correct. Starting the hearing check…"
+                    ChannelVerdict.SWAPPED -> false to "That beep was on the other side, so left and right look swapped. Check the earbuds are in the correct ears (L/R markings), then try again."
+                    ChannelVerdict.MONO -> false to "It sounded on both sides, so mono audio may be on. Turn it off and centre the balance in Settings > Accessibility > Audio, then try again."
+                    ChannelVerdict.NOT_HEARD -> false to "The beep was missed. Check both earbuds are in and connected; the volume may be too low."
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(if (ok) Icons.Rounded.CheckCircle else Icons.Rounded.Warning, null, tint = if (ok) StatusColors.Good else StatusColors.Warn)

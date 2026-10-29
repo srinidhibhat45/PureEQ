@@ -41,8 +41,6 @@ object Exporters {
         9230, 9749, 10298, 10878, 11490, 12137, 12821, 13543, 14305, 15110, 15961, 16860, 17809, 18812, 19871,
     )
 
-    private const val GRAPHIC_HEADROOM_DB = 0.2
-
     private fun fmt(v: Double, decimals: Int): String {
         val r = String.format(Locale.US, "%.${decimals}f", v)
         return if (r.startsWith("-") && r.trim('-', '0', '.').isEmpty()) r.substring(1) else r
@@ -71,14 +69,12 @@ object Exporters {
     }
 
     /**
-     * GraphicEQ line (Wavelet, JamesDSP "arbitrary response", Equalizer APO). The curve is shifted so its
-     * highest point is -0.2 dB, as AutoEq does, so no app needs a separate preamp.
+     * GraphicEQ line (Wavelet, JamesDSP "arbitrary response", Equalizer APO). Pass the curve with its
+     * preamp already applied ([linkedCurveWithPreamp]), so the export plays at the same level as
+     * PureEQ's own system EQ and no app needs a separate preamp.
      */
-    fun graphicEq(curveDb: DoubleArray, freqs: IntArray = WAVELET_FREQS): String {
-        val values = freqs.map { Curves.sample(curveDb, it.toDouble()) }
-        val shift = -(values.max() + GRAPHIC_HEADROOM_DB)
-        return "GraphicEQ: " + freqs.indices.joinToString("; ") { "${freqs[it]} ${fmt(values[it] + shift, 1)}" }
-    }
+    fun graphicEq(curveDb: DoubleArray, freqs: IntArray = WAVELET_FREQS): String =
+        "GraphicEQ: " + freqs.joinToString("; ") { "$it ${fmt(Curves.sample(curveDb, it.toDouble()), 1)}" }
 
     /**
      * Gains for a fixed-band graphic EQ. The curve is smoothed to the band spacing so every slider

@@ -1,9 +1,11 @@
 package app.pureeq.profile
 
 import app.pureeq.dsp.Ear
+import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingTestResult
 import app.pureeq.hearing.ThresholdFlag
 import app.pureeq.hearing.ThresholdPoint
+import app.pureeq.hearing.TrialRecord
 import app.pureeq.taste.TasteSettings
 import org.json.JSONArray
 import org.json.JSONObject
@@ -20,7 +22,7 @@ data class Profile(
     val deviceName: String? = null,
     val deviceType: Int? = null,
     val hearing: HearingTestResult? = null,
-    /** 0..1 share of the measured difference to compensate; 0.5 is the half-gain rule. */
+    /** 0..1: how much of the measured difference to correct (see [HearingCompensation]). */
     val hearingStrength: Double = HearingCompensation.DEFAULT_STRENGTH,
     val taste: TasteSettings = TasteSettings(),
     /** Positive turns the left side down, negative the right (dB). */
@@ -42,6 +44,7 @@ data class Profile(
 
     fun toJson(): JSONObject = JSONObject().apply {
         put("version", 1)
+        put("fit", FIT_VERSION)
         put("id", id)
         put("name", name)
         put("createdAt", createdAt)
@@ -61,6 +64,19 @@ data class Profile(
                 put("durationSec", h.durationSec)
                 put("warble", h.warble)
                 put("calibrationDb", h.calibrationDb)
+                h.headphones?.let { put("headphones", it.name) }
+                put("inconsistent", h.inconsistent)
+                // Compact: [Hz, 0 = left / 1 = right, dBFS, 1 = heard].
+                put("trialLog", JSONArray().apply {
+                    h.trialLog.forEach { t ->
+                        put(JSONArray().apply {
+                            put(t.freq)
+                            put(if (t.ear == Ear.LEFT) 0 else 1)
+                            put(t.levelDb)
+                            put(if (t.heard) 1 else 0)
+                        })
+                    }
+                })
                 put("points", JSONArray().apply {
                     h.points.forEach { p ->
                         put(JSONObject().apply {
@@ -77,6 +93,9 @@ data class Profile(
     }
 
     companion object {
+        /** 2 = PureEQ 1.2's Bayesian test and smooth fitting. */
+        const val FIT_VERSION = 2
+
         fun fromJson(o: JSONObject): Profile {
             val hearing = o.optJSONObject("hearing")?.let { h ->
                 val pts = h.getJSONArray("points")
@@ -99,8 +118,20 @@ data class Profile(
                     durationSec = h.optInt("durationSec"),
                     warble = h.optBoolean("warble", true),
                     calibrationDb = h.optDouble("calibrationDb", -40.0),
+                    trialLog = h.optJSONArray("trialLog")?.let { log ->
+                        (0 until log.length()).map { i ->
+                            val t = log.getJSONArray(i)
+                            TrialRecord(t.getDouble(0), if (t.getInt(1) == 0) Ear.LEFT else Ear.RIGHT, t.getDouble(2), t.getInt(3) == 1)
+                        }
+                    } ?: emptyList(),
+                    headphones = h.optString("headphones").let { n -> HeadphoneType.entries.firstOrNull { it.name == n } },
+                    inconsistent = h.optInt("inconsistent"),
                 )
             }
+            // Before fit 2 (PureEQ 1.2) the default correction was 50 % of a noisier curve; the
+            // untouched default moves to today's. A value the listener chose is kept.
+            val strength = o.optDouble("hearingStrength", HearingCompensation.DEFAULT_STRENGTH)
+                .let { if (o.optInt("fit", 1) < 2 && it == 0.5) HearingCompensation.DEFAULT_STRENGTH else it }
             return Profile(
                 id = o.getString("id"),
                 name = o.optString("name", "My sound"),
@@ -108,7 +139,7 @@ data class Profile(
                 deviceName = if (o.has("deviceName")) o.getString("deviceName") else null,
                 deviceType = if (o.has("deviceType")) o.getInt("deviceType") else null,
                 hearing = hearing,
-                hearingStrength = o.optDouble("hearingStrength", HearingCompensation.DEFAULT_STRENGTH),
+                hearingStrength = strength,
                 taste = tasteFrom(o.optJSONObject("taste")),
                 balanceDb = o.optDouble("balanceDb", 0.0),
                 recommendedTaste = o.optJSONObject("recommendedTaste")?.let(::tasteFrom),

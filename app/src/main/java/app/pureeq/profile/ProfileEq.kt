@@ -8,108 +8,114 @@ import app.pureeq.dsp.FreqGrid
 import app.pureeq.dsp.ParametricFit
 import app.pureeq.dsp.Response
 import app.pureeq.dsp.StereoEqSpec
+import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingTestResult
-import app.pureeq.hearing.ReferenceThreshold
-import app.pureeq.hearing.ThresholdFlag
+import app.pureeq.hearing.ReferenceCurve
+import app.pureeq.hearing.ThresholdBelief
 import kotlin.math.abs
 import kotlin.math.ceil
-import kotlin.math.floor
+import kotlin.math.log10
 import kotlin.math.log2
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.round
-import kotlin.math.sqrt
+import kotlin.math.sign
 
 /**
- * Turns hearing thresholds into a compensation curve per ear.
+ * Turns a hearing test into a compensation curve per ear.
  *
- * 1. Relative level = measured threshold minus the normal-hearing curve (ISO 226), i.e. how much
- *    less well this band is heard through these headphones.
- * 2. The 25th percentile of both ears is the baseline ("your good bands"). Only the shape matters;
- *    the preamp absorbs the offset.
- * 3. Gain = strength × (relative level − baseline). 50 % is the classic half-gain rule: it
- *    compensates for audibility without over-correcting at normal listening levels.
- * 4. Monotone interpolation between tested bands, a fade-out beyond the tested range, limits
- *    (+12 dB, +6 dB in the deep bass where earbud fit and room noise skew thresholds, −6 dB cut)
- *    and 1/3-octave smoothing.
+ * 1. Deviation: the smooth part of each ear's thresholds relative to the reference (what a
+ *    normal-hearing listener needs through Harman-tuned headphones of this type), taken from the
+ *    test's Bayesian belief. Narrow resonances and measurement noise stay out; a left/right
+ *    difference counts only as far as the answers support it. The mid band (500 Hz-4 kHz) is 0.
+ *    Each frequency then gives up [UNCERTAINTY_SHRINK] of its own uncertainty, so what the answers
+ *    can't tell from noise isn't corrected (in simulation this halves the coloration a normal
+ *    listener gets, at little cost to real corrections).
+ * 2. Gain: up to [KNEE_DB] the deviation is corrected by the strength (75 % by default). Small,
+ *    smooth deviations are mostly the headphones' own response, which can be corrected nearly
+ *    fully. Beyond the knee only [ABOVE_KNEE] of that applies: larger differences are hearing loss,
+ *    where full gain sounds harsh (cochlear loss recruits; fitting rules give about 0.3 dB per dB).
+ * 3. Range: full between 400 Hz and 8 kHz, fading out by 200 Hz and 16 kHz, where thresholds say
+ *    little about music. Boosts are capped ([maxBoost]): +2 dB in the bass, +8 dB in the mids,
+ *    +6 dB in the treble. Cuts stop at −6 dB.
  */
 object HearingCompensation {
-    const val DEFAULT_STRENGTH = 0.5
-    const val MAX_BOOST_DB = 12.0
-    const val MAX_BASS_BOOST_DB = 6.0
+    const val DEFAULT_STRENGTH = 0.75
+    const val KNEE_DB = 10.0
+    const val ABOVE_KNEE = 0.4
+    const val UNCERTAINTY_SHRINK = 0.25
     const val MAX_CUT_DB = -6.0
 
     class EarCurves(val left: DoubleArray, val right: DoubleArray)
 
-    /** Relative hearing level (dB) per tested frequency for [ear]; higher means heard less well. */
-    fun relativeLevels(result: HearingTestResult, ear: Ear): List<Pair<Double, Double>> =
-        result.pointsFor(ear).map { it.freq to (it.db - ReferenceThreshold.at(it.freq)) }
-
-    /** Baseline subtracted from relative levels: the 25th percentile over both ears. */
-    fun baseline(result: HearingTestResult): Double {
-        val all = result.points.filter { it.flag == ThresholdFlag.OK }
-            .map { it.db - ReferenceThreshold.at(it.freq) }
-            .ifEmpty { result.points.map { it.db - ReferenceThreshold.at(it.freq) } }
-            .sorted()
-        if (all.isEmpty()) return 0.0
-        val pos = 0.25 * (all.size - 1)
-        val i = floor(pos).toInt()
-        val t = pos - i
-        return if (i + 1 < all.size) all[i] * (1 - t) + all[i + 1] * t else all[i]
-    }
-
-    fun curves(result: HearingTestResult, strength: Double): EarCurves {
-        val base = baseline(result)
-        return EarCurves(curve(result, Ear.LEFT, base, strength), curve(result, Ear.RIGHT, base, strength))
-    }
-
-    private fun curve(result: HearingTestResult, ear: Ear, base: Double, strength: Double): DoubleArray {
-        val rel = relativeLevels(result, ear)
-        if (rel.isEmpty()) return DoubleArray(FreqGrid.SIZE)
-        val xs = DoubleArray(rel.size) { log2(rel[it].first) }
-        val ys = DoubleArray(rel.size) { (rel[it].second - base) * strength }
-        val lo = xs.first()
-        val hi = xs.last()
-        val top = log2(FreqGrid.MAX_HZ)
-        val raw = DoubleArray(FreqGrid.SIZE) { i ->
-            val f = FreqGrid.hz[i]
-            val x = log2(f)
-            var v = Curves.pchip(xs, ys, x)
-            // Beyond the tested range: hold half an octave, then fade to 0.
-            if (x < lo - 0.5) v *= (1 - (lo - 0.5 - x) / 1.5).coerceIn(0.0, 1.0)
-            val fadeStart = hi + 0.5
-            if (x > fadeStart) v *= if (fadeStart >= top) 1.0 else ((top - x) / (top - fadeStart)).coerceIn(0.0, 1.0)
-            v.coerceIn(MAX_CUT_DB, boostLimit(f))
+    /** Smooth deviation per ear on [FreqGrid] (dB, positive = heard less well), with the mid band at 0. */
+    fun deviations(result: HearingTestResult, type: HeadphoneType): EarCurves {
+        val belief = ThresholdBelief.of(result, type)
+        val left = Array(FreqGrid.SIZE) { belief.prior.shape(Ear.LEFT, FreqGrid.hz[it], belief) }
+        val right = Array(FreqGrid.SIZE) { belief.prior.shape(Ear.RIGHT, FreqGrid.hz[it], belief) }
+        var sum = 0.0
+        var n = 0
+        for (i in FreqGrid.hz.indices) {
+            if (FreqGrid.hz[i] in MID_LOW_HZ..MID_HIGH_HZ) {
+                sum += (left[i].first + right[i].first) / 2
+                n++
+            }
         }
-        return Curves.smooth(raw, 1.0 / 3.0)
+        val anchor = sum / n
+        fun shrink(p: Pair<Double, Double>): Double {
+            val d = p.first - anchor
+            return sign(d) * max(abs(d) - UNCERTAINTY_SHRINK * p.second, 0.0)
+        }
+        return EarCurves(DoubleArray(FreqGrid.SIZE) { shrink(left[it]) }, DoubleArray(FreqGrid.SIZE) { shrink(right[it]) })
     }
 
-    /** +6 dB below 150 Hz, rising to +12 dB at 300 Hz and above. */
-    fun boostLimit(f: Double): Double = when {
-        f <= 150.0 -> MAX_BASS_BOOST_DB
-        f >= 300.0 -> MAX_BOOST_DB
-        else -> MAX_BASS_BOOST_DB + (MAX_BOOST_DB - MAX_BASS_BOOST_DB) * log2(f / 150.0)
+    fun curves(result: HearingTestResult, type: HeadphoneType, strength: Double): EarCurves {
+        val d = deviations(result, type)
+        return EarCurves(gain(d.left, strength), gain(d.right, strength))
+    }
+
+    private fun gain(dev: DoubleArray, strength: Double) = DoubleArray(FreqGrid.SIZE) { i ->
+        val f = FreqGrid.hz[i]
+        val d = dev[i]
+        val g = strength * (d.coerceIn(-KNEE_DB, KNEE_DB) + ABOVE_KNEE * sign(d) * max(abs(d) - KNEE_DB, 0.0))
+        (taper(f) * g).coerceIn(MAX_CUT_DB, maxBoost(f))
+    }
+
+    /** 1 from 400 Hz to 8 kHz, fading over an octave to 0 at 200 Hz and at 16 kHz. */
+    fun taper(f: Double): Double = log2(f / 200.0).coerceIn(0.0, 1.0) * log2(16000.0 / f).coerceIn(0.0, 1.0)
+
+    /**
+     * Largest boost the hearing correction may add: +2 dB up to 250 Hz (bass is taste's job), +8 dB
+     * from 500 Hz to 4 kHz, +6 dB from 8 kHz (sizzle and hiss), changing smoothly in between.
+     */
+    fun maxBoost(f: Double): Double = when {
+        f <= 250.0 -> 2.0
+        f < 500.0 -> 2.0 + 6.0 * log2(f / 250.0)
+        f <= 4000.0 -> 8.0
+        f < 8000.0 -> 8.0 - 2.0 * log2(f / 4000.0)
+        else -> 6.0
     }
 
     /**
-     * Fixed-shape filters to fit a compensation curve: a peak at every tested frequency (Q from
-     * the spacing to its neighbours) plus shelves just outside the tested range.
+     * Each tested band relative to the reference and to the mid band (dB, positive = heard less
+     * well), for the result chart. These are the per-band estimates, before smoothing.
      */
-    fun slots(freqs: List<Double>): List<ParametricFit.Slot> {
-        val f = freqs.distinct().sorted()
-        if (f.isEmpty()) return emptyList()
-        val slots = mutableListOf<ParametricFit.Slot>()
-        slots += ParametricFit.Slot(FilterType.LOW_SHELF, f.first() / 2, 0.7, -6.0, 6.0)
-        for (i in f.indices) {
-            val left = if (i > 0) log2(f[i] / f[i - 1]) else if (f.size > 1) log2(f[1] / f[0]) else 1.0
-            val right = if (i < f.size - 1) log2(f[i + 1] / f[i]) else left
-            // Each peak spans about 1.6x the spacing to its neighbours so neighbouring peaks sum without ripple.
-            val bw = 1.6 * (left + right) / 2
-            val q = (sqrt(2.0.pow(bw)) / (2.0.pow(bw) - 1)).coerceIn(0.6, 2.0)
-            slots += ParametricFit.Slot(FilterType.PEAK, f[i], q, -9.0, 14.0)
-        }
-        slots += ParametricFit.Slot(FilterType.HIGH_SHELF, minOf(f.last() * 1.5, 16000.0), 0.7, -6.0, 6.0)
-        return slots
+    fun chartPoints(result: HearingTestResult, type: HeadphoneType, ear: Ear): List<Pair<Double, Double>> {
+        val rel = result.points.map { it.db - ReferenceCurve.at(it.freq, type) }
+        val mid = result.points.indices.filter { result.points[it].freq in MID_LOW_HZ..MID_HIGH_HZ }.map { rel[it] }.ifEmpty { rel }.average()
+        return result.points.indices.filter { result.points[it].ear == ear }
+            .sortedBy { result.points[it].freq }
+            .map { result.points[it].freq to rel[it] - mid }
     }
+
+    /** Broad peaks an octave apart for the part both ears share. */
+    private val commonSlots = listOf(500.0, 1000.0, 2000.0, 4000.0, 8000.0, 12000.0)
+        .map { ParametricFit.Slot(FilterType.PEAK, it, 1.0, -9.0, 10.0, minQ = 0.5, maxQ = 1.6) }
+
+    /** Three gentle peaks for the left/right difference, applied with opposite signs to each ear. */
+    private val residualSlots = listOf(700.0, 2000.0, 5500.0)
+        .map { ParametricFit.Slot(FilterType.PEAK, it, 0.7, -6.0, 6.0, minQ = 0.4, maxQ = 1.0) }
 
     /**
      * Fits [target] with [slots]: gains first, then frequency, Q and gain together. Filters that do
@@ -131,32 +137,51 @@ object HearingCompensation {
 
     fun roundFilter(f: FilterSpec) = FilterSpec(f.type, round(f.freq), round(f.gainDb * 10) / 10, round(f.q * 100) / 100)
 
-    /** Compensation targets and fitted filters for one test result at one strength. */
-    class Fitted(result: HearingTestResult, strength: Double) {
-        private val slots = slots(result.points.map { it.freq })
-        private val targets = curves(result, strength)
+    /**
+     * Compensation targets and filters for one result. Both ears share one filter set for what
+     * they have in common, so a centred voice stays centred (separate per-ear filters would also
+     * shift the timing between the ears). Only a real left/right difference adds a small
+     * mirrored set on top.
+     */
+    class Fitted(result: HearingTestResult, type: HeadphoneType, strength: Double) {
+        private val targets = curves(result, type, strength)
         val targetLeft: DoubleArray = targets.left
         val targetRight: DoubleArray = targets.right
-        val filtersLeft: List<FilterSpec> = fit(targetLeft, slots)
-        val filtersRight: List<FilterSpec> = fit(targetRight, slots)
-        val filtersLinked: List<FilterSpec> by lazy { fit(Curves.average(targetLeft, targetRight), slots) }
+        val filtersCommon: List<FilterSpec> = fit(Curves.average(targetLeft, targetRight), commonSlots)
+        private val residual: List<FilterSpec> = run {
+            val half = DoubleArray(FreqGrid.SIZE) { (targetLeft[it] - targetRight[it]) / 2 }
+            if (Curves.max(DoubleArray(half.size) { abs(half[it]) }, 300.0, 12000.0) < MIN_DIFFERENCE_DB) emptyList() else fit(half, residualSlots)
+        }
+        val filtersLeft: List<FilterSpec> = filtersCommon + residual
+        val filtersRight: List<FilterSpec> = filtersCommon + residual.map { it.copy(gainDb = -it.gainDb) }
     }
 
-    private val cache = object : LinkedHashMap<Pair<HearingTestResult, Double>, Fitted>(8, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Pair<HearingTestResult, Double>, Fitted>?) = size > 8
+    private data class Key(val result: HearingTestResult, val type: HeadphoneType, val strength: Double)
+
+    private val cache = object : LinkedHashMap<Key, Fitted>(8, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Key, Fitted>?) = size > 8
     }
 
     /** Fitting takes tens of milliseconds, so slider moves that don't touch hearing reuse the last fit. */
     @Synchronized
-    fun fitted(result: HearingTestResult, strength: Double): Fitted =
-        cache.getOrPut(result to strength) { Fitted(result, strength) }
+    fun fitted(result: HearingTestResult, type: HeadphoneType, strength: Double): Fitted =
+        cache.getOrPut(Key(result, type, strength)) { Fitted(result, type, strength) }
+
+    private const val MID_LOW_HZ = 500.0
+    private const val MID_HIGH_HZ = 4000.0
+
+    /** A left/right difference smaller than this everywhere is left out: it's below what anyone hears. */
+    private const val MIN_DIFFERENCE_DB = 0.5
 }
 
 /**
- * Everything derived from a [Profile]: per-ear filters and curves, a preamp that keeps peaks below
- * 0 dBFS, and a stereo-linked version for apps that can't EQ each ear separately.
+ * Everything derived from a [Profile]: per-ear filters and curves, a preamp that keeps music
+ * below 0 dBFS, and a stereo-linked version for apps that can't EQ each ear separately.
  */
 class ProfileEq(val profile: Profile) {
+
+    /** The headphone type the hearing result is measured against (older results: a guess from the device name). */
+    val headphones: HeadphoneType = profile.hearing?.headphones ?: HeadphoneType.guess(profile.deviceName)
 
     /** Hearing-compensation target per ear (dB on [FreqGrid]); zero when there is no hearing test. */
     val hearingTargetLeft: DoubleArray
@@ -166,7 +191,7 @@ class ProfileEq(val profile: Profile) {
     val tasteFilters: List<FilterSpec> = profile.taste.filters()
 
     private val fitted: HearingCompensation.Fitted? =
-        profile.hearing?.takeIf { profile.hearingStrength > 0.0 }?.let { HearingCompensation.fitted(it, profile.hearingStrength) }
+        profile.hearing?.takeIf { profile.hearingStrength > 0.0 }?.let { HearingCompensation.fitted(it, headphones, profile.hearingStrength) }
 
     init {
         if (fitted != null) {
@@ -193,13 +218,12 @@ class ProfileEq(val profile: Profile) {
     val leftCurve: DoubleArray = Response.of(leftFilters, FreqGrid.hz, leftTrimDb)
     val rightCurve: DoubleArray = Response.of(rightFilters, FreqGrid.hz, rightTrimDb)
 
-    /** Negative of the highest boost, rounded down to 0.1 dB: no band can exceed 0 dBFS. */
-    val preampDb: Double = preampFor(maxOf(Curves.max(leftCurve), Curves.max(rightCurve)))
+    val preampDb: Double = preampFor(leftCurve, rightCurve)
 
-    /** Stereo-linked filters: compensation fitted to the average of both ears, plus taste. */
-    val linkedFilters: List<FilterSpec> by lazy { (fitted?.filtersLinked ?: emptyList()) + tasteFilters }
+    /** Stereo-linked filters: the compensation both ears share, plus taste. */
+    val linkedFilters: List<FilterSpec> by lazy { (fitted?.filtersCommon ?: emptyList()) + tasteFilters }
     val linkedCurve: DoubleArray by lazy { Response.of(linkedFilters, FreqGrid.hz) }
-    val linkedPreampDb: Double by lazy { preampFor(Curves.max(linkedCurve)) }
+    val linkedPreampDb: Double by lazy { preampFor(linkedCurve) }
 
     /**
      * Average left-minus-right difference of the compensation (500 Hz-4 kHz), for apps that only
@@ -228,6 +252,42 @@ class ProfileEq(val profile: Profile) {
         StereoEqSpec(leftFilters, rightFilters, preampDb + leftTrimDb, preampDb + rightTrimDb)
 
     companion object {
-        fun preampFor(maxBoost: Double): Double = if (maxBoost <= 0.0) 0.0 else -(ceil(maxBoost * 10) / 10)
+        /** Bands (Hz) and each band's typical share of a mastered mix's peak when it dominates that peak. */
+        private val BAND_EDGES = doubleArrayOf(20.0, 200.0, 700.0, 2000.0, 5000.0, 10000.0, 20000.0)
+        private val BAND_PEAK = doubleArrayOf(0.9, 0.6, 0.45, 0.35, 0.25, 0.15)
+
+        /** Extra margin, as AutoEq uses. */
+        const val HEADROOM_DB = 0.2
+
+        /**
+         * Preamp for music through [curves], rounded down to 0.1 dB. A mix's peaks are dominated by
+         * one band at a time, mostly the bass: at such a peak that band supplies its typical share
+         * ([BAND_PEAK]) and the other bands the rest. Peak growth is the worst of these peaks with
+         * each band at its largest gain, and never more than the largest boost. So a +6 dB treble
+         * lift costs about 2 dB of level instead of 6, and bass plus treble boosts cost about the
+         * bass boost alone, which keeps the EQ much closer to bypass loudness without clipping.
+         */
+        fun preampFor(vararg curves: DoubleArray): Double {
+            var need = 0.0
+            for (c in curves) {
+                val maxBoost = Curves.max(c)
+                if (maxBoost <= 0.0) continue
+                val gain = DoubleArray(BAND_PEAK.size) { 10.0.pow(Curves.max(c, BAND_EDGES[it], BAND_EDGES[it + 1]) / 20) }
+                var growth = 0.0
+                for (b in gain.indices) {
+                    var rest = 0.0
+                    var weight = 0.0
+                    for (o in gain.indices) {
+                        if (o == b) continue
+                        rest += BAND_PEAK[o] * gain[o]
+                        weight += BAND_PEAK[o]
+                    }
+                    growth = max(growth, BAND_PEAK[b] * gain[b] + (1 - BAND_PEAK[b]) * rest / weight)
+                }
+                need = max(need, min(maxBoost, 20 * log10(growth)))
+            }
+            // The epsilon keeps floating-point error from adding a tenth (3.2 must not round to 3.3).
+            return if (need <= 0.0) 0.0 else -(ceil((need + HEADROOM_DB) * 10 - 1e-9) / 10)
+        }
     }
 }

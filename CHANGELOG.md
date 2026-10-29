@@ -2,6 +2,16 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.2.0
+- A new hearing check, built like Apple's AirPods hearing test: it picks every beep to learn as much as possible about both ears at once and stops as soon as it knows enough. About 2 minutes instead of 6, and at least as accurate.
+- Cleaner sound: PureEQ now corrects the smooth trend of your result, not every wobble, and only what your answers clearly show. Both ears share one filter set, so voices stay centred.
+- Measured against the right target: your result is compared with well-tuned headphones of your type (in-ear or over-ear), not an old free-field curve that pushed headphones thin and bright. Bass is left to your taste; treble boosts stop at +6 dB.
+- Louder: the EQ no longer turns everything down by the size of its biggest boost. Treble boosts now cost almost no level, and bass plus treble cost about the bass boost alone.
+- A smarter taste test: bass and treble only, starting from what most listeners prefer. Usually 5 to 7 rounds instead of 12.
+- Room check fixed: on many phones it read about 18 dB too quiet, so noisy rooms passed as quiet.
+- The left/right check is now one beep right after setting the volume. A whole new profile takes about 5 to 6 minutes instead of 13 to 15.
+- Existing profiles get the new fitting automatically; redo the hearing check for the full benefit.
+
 ## 1.1.1
 - Fine-tuning is now one card with a clear Reset button that puts every slider back to what PureEQ suggested from your tests, with Undo.
 - A slider you move shows PureEQ's suggested value under it ("Suggested +4.5 dB"); tap it to put back just that slider.

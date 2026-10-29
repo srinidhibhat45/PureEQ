@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.dsp.Ear
+import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.Reliability
 import app.pureeq.hearing.ThresholdFlag
 import app.pureeq.profile.Exporters
@@ -145,10 +146,10 @@ fun HearingScreen(vm: AppViewModel) {
 fun HearingDoneScreen(vm: AppViewModel) {
     val draft by vm.draft.collectAsStateWithLifecycle()
     val result = draft.hearing ?: return
-    val base = HearingCompensation.baseline(result)
+    val type = result.headphones ?: HeadphoneType.guess(draft.device?.name)
     val series = listOf(Ear.LEFT, Ear.RIGHT).map { ear ->
         HearingSeries(
-            HearingCompensation.relativeLevels(result, ear).map { it.first to it.second - base },
+            HearingCompensation.chartPoints(result, type, ear),
             if (ear == Ear.LEFT) EarColors.Left else EarColors.Right,
             cross = ear == Ear.LEFT,
         )
@@ -165,7 +166,7 @@ fun HearingDoneScreen(vm: AppViewModel) {
     ) {
         Text("Done. Here's how you hear", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Each point is how much quieter a sound can be before you stop hearing it, compared with your best bands. Lower on the chart means that band needs more help. It includes your headphones' own sound, which is exactly what the EQ corrects.",
+            "Each point is how well you hear that band through these headphones, compared with a young normal-hearing listener on well-tuned ${type.label.lowercase()} headphones, with your mid range as the zero line. Lower on the chart means that band needs more help. It includes your headphones' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -193,6 +194,7 @@ fun HearingDoneScreen(vm: AppViewModel) {
                     listOfNotNull(result.retestDiffLeft, result.retestDiffRight).takeIf { it.isNotEmpty() }?.let {
                         append("1 kHz re-check differed by up to ${"%.0f".format(it.maxOf { d -> kotlin.math.abs(d) })} dB. ")
                     }
+                    if (result.trialLog.isNotEmpty()) append("Answers that didn't fit the rest: ${result.inconsistent} of ${result.trialLog.size}. ")
                     append("${result.trials} answers in ${result.durationSec / 60} min ${result.durationSec % 60} s.")
                 },
                 style = MaterialTheme.typography.bodyMedium,

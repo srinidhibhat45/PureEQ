@@ -118,8 +118,8 @@ fun HearingChart(series: List<HearingSeries>, modifier: Modifier = Modifier, hei
     Canvas(modifier.fillMaxWidth().height(height)) {
         if (freqs.isEmpty()) return@Canvas
         val all = series.flatMap { s -> s.points.map { it.second } }
-        val lo = min(-5.0, floor(all.min() / 5) * 5 - 5)
-        val hi = max(25.0, ceil(all.max() / 5) * 5 + 5)
+        val lo = min(-10.0, floor(all.min() / 5) * 5 - 5)
+        val hi = max(15.0, ceil(all.max() / 5) * 5 + 5)
         val left = 30.dp.toPx()
         val bottom = 16.dp.toPx()
         val pad = 14.dp.toPx()

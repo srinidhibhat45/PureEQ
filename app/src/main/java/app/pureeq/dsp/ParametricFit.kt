@@ -17,6 +17,9 @@ object ParametricFit {
         val q: Double,
         val minGain: Double = -12.0,
         val maxGain: Double = 12.0,
+        /** Q range [refine] may use. */
+        val minQ: Double = 0.4,
+        val maxQ: Double = 4.0,
     )
 
     /** Grid used during fitting: every 4th point of [FreqGrid] (1/12 octave) is plenty for smooth targets. */
@@ -88,7 +91,7 @@ object ParametricFit {
     }
 
     /**
-     * Refines gain, centre frequency (within half an octave of the slot) and Q (0.4..4) of every
+     * Refines gain, centre frequency (within half an octave of the slot) and Q (within the slot's range) of every
      * filter together, starting from [start] (one filter per slot). This is what lets ten filters
      * follow a steep, real-world hearing curve without ripple.
      */
@@ -106,8 +109,8 @@ object ParametricFit {
             upper[3 * j] = slots[j].maxGain
             lower[3 * j + 1] = maxOf(c - 0.5, log2(FreqGrid.MIN_HZ))
             upper[3 * j + 1] = minOf(c + 0.5, log2(16000.0))
-            lower[3 * j + 2] = kotlin.math.ln(0.4)
-            upper[3 * j + 2] = kotlin.math.ln(4.0)
+            lower[3 * j + 2] = kotlin.math.ln(slots[j].minQ)
+            upper[3 * j + 2] = kotlin.math.ln(slots[j].maxQ)
             p[3 * j] = start[j].gainDb
             p[3 * j + 1] = log2(start[j].freq).coerceIn(lower[3 * j + 1], upper[3 * j + 1])
             p[3 * j + 2] = kotlin.math.ln(start[j].q).coerceIn(lower[3 * j + 2], upper[3 * j + 2])
