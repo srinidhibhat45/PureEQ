@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Headphone band over five EQ bars whose tops trace a personal curve. Safe zone: 66dp circle. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M33,58 L33,52 A21,21 0 0 1 75,52 L75,58"
+        android:strokeWidth="4.5"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#FF7FA7FF"
+        android:pathData="M30.5,56.5 a3,3 0 0 1 6,0 v14 a3,3 0 0 1 -6,0 z" />
+    <path
+        android:fillColor="#FFB7A4FF"
+        android:pathData="M41.5,62.5 a3,3 0 0 1 6,0 v8 a3,3 0 0 1 -6,0 z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M51,52.5 a3,3 0 0 1 6,0 v18 a3,3 0 0 1 -6,0 z" />
+    <path
+        android:fillColor="#FFB7A4FF"
+        android:pathData="M60.5,59.5 a3,3 0 0 1 6,0 v11 a3,3 0 0 1 -6,0 z" />
+    <path
+        android:fillColor="#FFFF8A8F"
+        android:pathData="M71.5,55.5 a3,3 0 0 1 6,0 v15 a3,3 0 0 1 -6,0 z" />
+</vector>
