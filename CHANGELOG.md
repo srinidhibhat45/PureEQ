@@ -2,6 +2,10 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.4.0
+- A Quick Settings tile: switch PureEQ's system-wide EQ on and off from the swipe-down panel. The tile shows the profile in use.
+- Add it from Settings › Quick Settings tile (Android 13+ adds it for you), or swipe down twice, tap the pencil and drag PureEQ in.
+
 ## 1.3.1
 - You can now delete any profile, the active one too (the ⋮ on its card). PureEQ warns first, then switches to your newest other profile, or turns the system-wide EQ off if it was your only one.
 - Coming from 1.1? Since then: a 2-minute hearing check, a cleaner fit against well-tuned headphones, a shorter taste test, a louder EQ, and your headphone model's measured correction from AutoEq. Redo the hearing check for the full benefit.

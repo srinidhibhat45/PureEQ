@@ -50,6 +50,30 @@
                 android:value="Keeps the user's personal equalizer applied to system audio output" />
         </service>
 
+        <!-- Invisible: starts the EQ for the tile, where Android 12+ won't let it start from the background. -->
+        <activity
+            android:name=".system.TileTrampolineActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- Quick Settings tile: the system-wide EQ on/off in the swipe-down panel. -->
+        <service
+            android:name=".system.EqTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_stat_eq"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
+
         <receiver
             android:name=".system.BootReceiver"
             android:exported="false">

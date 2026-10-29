@@ -47,6 +47,7 @@ Uses Android's `DynamicsProcessing` effect with a separate curve for the left an
 
 - **All audio** (default) attaches to the global output mix. It works on most phones, but it depends on the manufacturer.
 - **Music apps** (Settings) attaches to players that announce their audio session: Spotify, YouTube Music, Samsung Music, and Poweramp with its MusicFX option on. Use it if "All audio" has no effect.
+- **Quick Settings tile.** Switches the system-wide EQ on and off from the swipe-down panel and shows the profile in use; with no profile yet it opens PureEQ. Settings › Quick Settings tile adds it (Android 13+ asks for you; on older versions, edit the panel and drag PureEQ in). Android 12+ won't let an app start its foreground service from the background, so turning it on opens an invisible activity that starts the EQ and closes at once, which folds the panel away. Turning it off leaves the panel open.
 - PureEQ pauses its own EQ while it plays test beeps or previews. It rebuilds the effect on every headphone change, and can switch to the profile you made for the headphones that just connected.
 - Don't run two EQs at once (Wavelet, Dolby, Samsung effects), or they stack. Apps that use Android's low-latency path (some games) bypass system effects.
 

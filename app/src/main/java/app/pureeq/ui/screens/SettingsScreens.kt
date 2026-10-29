@@ -25,6 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.BuildConfig
 import app.pureeq.profile.AppSettings
 import app.pureeq.profile.SystemEqMode
+import app.pureeq.system.EqTileService
 import app.pureeq.system.SystemEqStatus
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
@@ -67,6 +71,7 @@ fun SettingsScreen(vm: AppViewModel) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        QuickTileSection()
         SectionCard {
             ToggleRow("Switch profile with headphones", "When headphones you made a profile with connect, use that profile.", s.autoSwitch) { v ->
                 update { it.copy(autoSwitch = v) }
@@ -92,6 +97,41 @@ fun SettingsScreen(vm: AppViewModel) {
                 Spacer(Modifier.width(8.dp))
                 Text("How PureEQ works")
             }
+        }
+    }
+}
+
+/** Offers the Quick Settings tile: Android 13+ adds it on request, older versions by editing the panel. */
+@Composable
+private fun QuickTileSection() {
+    val context = LocalContext.current
+    var added by remember { mutableStateOf<Boolean?>(null) }
+    SectionCard {
+        Text("Quick Settings tile", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Turn the system-wide equalizer on and off from the swipe-down panel. The tile shows the profile in use.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (EqTileService.canRequestAdd) {
+            OutlinedButton(onClick = { EqTileService.requestAdd(context) { added = it } }, modifier = Modifier.fillMaxWidth()) {
+                Text("Add to the panel")
+            }
+            when (added) {
+                true -> Text("Added. Swipe down to find PureEQ.", style = MaterialTheme.typography.bodySmall, color = StatusColors.Good)
+                false -> Text(
+                    "Not added. You can also swipe down twice, tap the pencil and drag PureEQ into your tiles.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                null -> Unit
+            }
+        } else {
+            Text(
+                "To add it, swipe down twice, tap the pencil (Edit) and drag PureEQ into your tiles.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
