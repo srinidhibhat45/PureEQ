@@ -10,7 +10,7 @@ Everything runs on the phone. Profiles and test results never leave it; the app 
 
 ## Install
 
-The first install is by hand: open `https://github.com/<update repo>/releases/latest` on the phone (or copy the newest APK in `dist/`), download the APK and open it. Allow "install unknown apps" for the browser or file manager when asked. After that, PureEQ updates itself (see [Updates](#updates)). The APK is signed with this computer's debug key, which is fine for personal sideloading, but every update must be built on this computer (Android only installs an update signed with the same key).
+The first install is by hand: open `https://github.com/srinidhibhat45/pureeq-updates/releases/latest` on the phone (or copy the newest APK in `dist/`), download the APK and open it. Allow "install unknown apps" for the browser or file manager when asked. After that, PureEQ updates itself (see [Updates](#updates)). The APK is signed with this computer's debug key, which is fine for personal sideloading, but every update must be built on this computer (Android only installs an update signed with the same key).
 
 ## Using it
 
