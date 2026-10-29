@@ -147,9 +147,10 @@ fun HearingDoneScreen(vm: AppViewModel) {
     val draft by vm.draft.collectAsStateWithLifecycle()
     val result = draft.hearing ?: return
     val type = result.headphones ?: HeadphoneType.guess(draft.device?.name)
+    val correction = draft.headphoneModel?.filters.orEmpty()
     val series = listOf(Ear.LEFT, Ear.RIGHT).map { ear ->
         HearingSeries(
-            HearingCompensation.chartPoints(result, type, ear),
+            HearingCompensation.chartPoints(result, type, ear, correction),
             if (ear == Ear.LEFT) EarColors.Left else EarColors.Right,
             cross = ear == Ear.LEFT,
         )
@@ -166,7 +167,11 @@ fun HearingDoneScreen(vm: AppViewModel) {
     ) {
         Text("Done. Here's how you hear", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Each point is how well you hear that band through these headphones, compared with a young normal-hearing listener on well-tuned ${type.label.lowercase()} headphones, with your mid range as the zero line. Lower on the chart means that band needs more help. It includes your headphones' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point.",
+            if (correction.isEmpty()) {
+                "Each point is how well you hear that band through these headphones, compared with a young normal-hearing listener on well-tuned ${type.label.lowercase()} headphones, with your mid range as the zero line. Lower on the chart means that band needs more help. It includes your headphones' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point."
+            } else {
+                "Each point is how well you hear that band, compared with a young normal-hearing listener, after your headphones' measured response is taken out, with your mid range as the zero line. Lower on the chart means that band needs more help. What's left is your ears and how the headphones sit on them. The EQ follows the smooth trend, not every point."
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

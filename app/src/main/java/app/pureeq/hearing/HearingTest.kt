@@ -28,6 +28,8 @@ data class HearingTestConfig(
     /** A band in one ear is finished once its threshold is known to about this many dB (posterior SD). */
     val stopSdDb: Double = 3.5,
     val maxPerNode: Int = 7,
+    /** A known headphone correction at the test frequencies (dB), when the model was picked first. */
+    val referenceShiftDb: Map<Double, Double> = emptyMap(),
 ) {
     companion object {
         /**
@@ -48,12 +50,13 @@ enum class TestLength(val label: String, val detail: String, val stopSdDb: Doubl
     THOROUGH("Thorough", "7 bands, extra precise · about 3 min", 2.75, 8, 8),
     ;
 
-    fun config(calibrationDb: Double, warble: Boolean, headphones: HeadphoneType) = HearingTestConfig(
+    fun config(calibrationDb: Double, warble: Boolean, headphones: HeadphoneType, referenceShiftDb: Map<Double, Double> = emptyMap()) = HearingTestConfig(
         calibrationDb = calibrationDb,
         headphones = headphones,
         warble = warble,
         stopSdDb = stopSdDb,
         maxPerNode = maxPerNode,
+        referenceShiftDb = referenceShiftDb,
     )
 }
 
@@ -117,7 +120,7 @@ class HearingSession(val config: HearingTestConfig, private val rnd: Random = Ra
         HearingTestConfig.ORDER.filter { it in f } + f.filter { it !in HearingTestConfig.ORDER }.sorted()
     }
     private val nodes: List<Node> = freqs.flatMap { listOf(Node(Ear.LEFT, it), Node(Ear.RIGHT, it)) }
-    private val prior = ThresholdPrior(nodes, config.calibrationDb, config.headphones)
+    private val prior = ThresholdPrior(nodes, config.calibrationDb, config.headphones) { config.referenceShiftDb[it] ?: 0.0 }
     private var belief = ThresholdBelief(prior)
     private val log = mutableListOf<Pair<Int, TrialRecord>>()
     private val count = IntArray(nodes.size)

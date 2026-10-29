@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.ui.screens.AboutScreen
 import app.pureeq.ui.screens.EditorScreen
 import app.pureeq.ui.screens.ExportScreen
+import app.pureeq.ui.screens.HeadphonePickerScreen
 import app.pureeq.ui.screens.HeadphonesScreen
 import app.pureeq.ui.screens.HearingDoneScreen
 import app.pureeq.ui.screens.HearingScreen
@@ -64,6 +65,7 @@ private fun Screens(vm: AppViewModel, screen: Screen) {
             Screen.Home -> HomeScreen(vm)
             Screen.Intro -> IntroScreen(vm)
             Screen.Headphones -> HeadphonesScreen(vm)
+            is Screen.HeadphonePicker -> HeadphonePickerScreen(vm, s.forEditor)
             Screen.Quiet -> QuietScreen(vm)
             Screen.Volume -> VolumeScreen(vm)
             Screen.Hearing -> HearingScreen(vm)

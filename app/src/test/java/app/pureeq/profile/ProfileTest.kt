@@ -2,8 +2,12 @@ package app.pureeq.profile
 
 import app.pureeq.dsp.Curves
 import app.pureeq.dsp.Ear
+import app.pureeq.dsp.FilterSpec
+import app.pureeq.dsp.FilterType
 import app.pureeq.dsp.FreqGrid
 import app.pureeq.dsp.ParametricFit
+import app.pureeq.dsp.Response
+import app.pureeq.headphones.HeadphoneModel
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingSession
 import app.pureeq.hearing.HearingTestConfig
@@ -209,6 +213,58 @@ class ProfileTest {
         assertEquals(0.7, chosen.hearingStrength, 0.0)
         // A 1.2 profile at 50 % stays at 50 %.
         assertEquals(0.5, Profile.fromJson(profile(result { _, _ -> 0.0 }, strength = 0.5).toJson()).hearingStrength, 0.0)
+    }
+
+    /** A measured in-ear model: Harman bass shelf, a 3 kHz dip to fill and a treble peak to tame. */
+    private val model = HeadphoneModel(
+        "Test Buds", "oratory1990", null, HeadphoneType.IN_EAR,
+        listOf(
+            FilterSpec(FilterType.LOW_SHELF, 105.0, 5.0, 0.7),
+            FilterSpec(FilterType.PEAK, 3000.0, 5.0, 1.0),
+            FilterSpec(FilterType.PEAK, 6500.0, -4.0, 2.0),
+        ),
+    )
+
+    @Test
+    fun aKnownHeadphoneIsNotCorrectedTwice() {
+        // A normal listener on these buds: every threshold is off by exactly what the model's correction fixes.
+        val shift = HearingCompensation.correctionShift(model.filters)
+        val h = result { _, f -> shift(f) - shift(1000.0) }
+        val withModel = ProfileEq(profile(h).copy(headphoneModel = model))
+        // The hearing part is left with (almost) nothing to do...
+        assertTrue("hearing part ${maxAbs(withModel.hearingTargetLeft)}", maxAbs(withModel.hearingTargetLeft, 300.0, 12000.0) < 1.0)
+        // ...and the total is the model's correction.
+        val correction = Response.of(model.filters, FreqGrid.hz)
+        for (f in listOf(1000.0, 3000.0, 6500.0)) {
+            assertEquals("$f Hz", Curves.sample(correction, f), Curves.sample(withModel.leftCurve, f), 1.0)
+        }
+        // Without the model the smooth hearing fit sees only part of such a narrow dip (one band wide);
+        // the measured correction is what fills it.
+        val without = ProfileEq(profile(h))
+        val at3k = Curves.sample(without.hearingTargetLeft, 3000.0)
+        assertTrue("without $at3k", at3k in 0.2..2.0)
+        // Switched off, the correction leaves the curve and the hearing part takes over again.
+        val off = ProfileEq(profile(h).copy(headphoneModel = model, headphoneCorrection = false))
+        assertTrue("off filters", off.correctionFilters.isEmpty())
+        assertEquals(Curves.sample(without.leftCurve, 3000.0), Curves.sample(off.leftCurve, 3000.0), 1e-9)
+    }
+
+    @Test
+    fun theModelsCorrectionReachesTheTasteBaseAndTheExports() {
+        val eq = ProfileEq(profile(null, TasteSettings(bass = 2.0)).copy(headphoneModel = model))
+        assertEquals(model.filters, eq.baseFiltersLeft.take(3))
+        assertEquals(model.filters, eq.linkedFilters.take(3))
+        assertEquals(eq.leftFilters, eq.baseFiltersLeft + eq.tasteFilters)
+        assertEquals(HeadphoneType.IN_EAR, eq.headphones)
+    }
+
+    @Test
+    fun modelAndSwitchSurviveJsonAndReset() {
+        val p = profile(result { _, _ -> 0.0 }).copy(headphoneModel = model, headphoneCorrection = false, recommendedTaste = TasteSettings())
+        val back = Profile.fromJson(p.toJson())
+        assertEquals(p, back)
+        assertFalse(back.isRecommended)
+        assertTrue(back.recommended().headphoneCorrection)
     }
 
     @Test

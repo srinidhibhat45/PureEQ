@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Headphones
 import androidx.compose.material.icons.rounded.IosShare
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -27,6 +28,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -145,7 +147,14 @@ fun EditorScreen(vm: AppViewModel) {
             )
             MusicPicker(vm)
         }
-        FineTuning(p, isDraft = e.isDraft, onReset = reset, onRedoTaste = { vm.redoTaste(p.id) }, edit = vm::editProfile)
+        FineTuning(
+            p,
+            isDraft = e.isDraft,
+            onReset = reset,
+            onRedoTaste = { vm.redoTaste(p.id) },
+            onPickModel = { vm.openHeadphonePicker(forEditor = true) },
+            edit = vm::editProfile,
+        )
     }
 }
 
@@ -154,10 +163,18 @@ fun EditorScreen(vm: AppViewModel) {
  * from the tests. A moved control shows its suggested value, and tapping that restores just it.
  */
 @Composable
-private fun FineTuning(p: Profile, isDraft: Boolean, onReset: () -> Unit, onRedoTaste: () -> Unit, edit: ((Profile) -> Profile) -> Unit) {
+private fun FineTuning(
+    p: Profile,
+    isDraft: Boolean,
+    onReset: () -> Unit,
+    onRedoTaste: () -> Unit,
+    onPickModel: () -> Unit,
+    edit: ((Profile) -> Profile) -> Unit,
+) {
     val rec = p.recommended()
     val suggestedTaste = p.recommendedTaste
     val changed = buildList {
+        if (p.headphoneModel != null && !p.headphoneCorrection) add("headphone correction")
         if (p.hearing != null && p.hearingStrength != rec.hearingStrength) add("hearing correction")
         suggestedTaste?.let { t -> TasteBand.entries.filter { p.taste[it] != t[it] }.forEach { add(it.label.lowercase()) } }
         if (p.balanceDb != rec.balanceDb) add("balance")
@@ -191,6 +208,29 @@ private fun FineTuning(p: Profile, isDraft: Boolean, onReset: () -> Unit, onRedo
                 color = StatusColors.Warn,
             )
             if (!isDraft) FilledTonalButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text("Redo taste test") }
+        }
+        val model = p.headphoneModel
+        if (model != null) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                        Text("Headphone correction", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "${model.name}, measured by ${model.source} (AutoEq). Brings them to the Harman target.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(checked = p.headphoneCorrection, onCheckedChange = { on -> edit { it.copy(headphoneCorrection = on) } })
+                }
+                TextButton(onClick = onPickModel, contentPadding = PaddingValues(horizontal = 0.dp)) { Text("Change model") }
+            }
+        } else {
+            OutlinedButton(onClick = onPickModel, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Rounded.Headphones, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Add your headphones' measured correction")
+            }
         }
         if (p.hearing != null) {
             Control(

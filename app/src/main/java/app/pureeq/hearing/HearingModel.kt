@@ -80,9 +80,19 @@ data class Node(val ear: Ear, val freq: Double)
  * informs neighbouring frequencies and the other ear: that is what lets the test stop early.
  * The local part soaks up narrow ear-canal and earphone resonances that a smooth EQ shouldn't chase.
  * The offset is wide because "soft but clear" sits 5-25 dB above threshold, depending on the listener.
+ * A known headphone correction shifts the reference, so the shape is what remains after it.
  */
-class ThresholdPrior(val nodes: List<Node>, val calibrationDb: Double, val type: HeadphoneType) {
-    val mean = DoubleArray(nodes.size) { calibrationDb + START_OFFSET_DB + ReferenceCurve.at(nodes[it].freq, type) - ReferenceCurve.at(1000.0, type) }
+class ThresholdPrior(
+    val nodes: List<Node>,
+    val calibrationDb: Double,
+    val type: HeadphoneType,
+    /** Known headphone deviation from the target (dB to add, by frequency), e.g. from an AutoEq measurement. */
+    shift: (Double) -> Double = { 0.0 },
+) {
+    val mean = DoubleArray(nodes.size) {
+        val f = nodes[it].freq
+        calibrationDb + START_OFFSET_DB + ReferenceCurve.at(f, type) + shift(f) - ReferenceCurve.at(1000.0, type) - shift(1000.0)
+    }
     val cov: Array<DoubleArray> = Array(nodes.size) { i ->
         DoubleArray(nodes.size) { j ->
             OFFSET_SD * OFFSET_SD + shapeCov(nodes[i].ear, nodes[i].freq, nodes[j].ear, nodes[j].freq) + if (i == j) localSd(nodes[i].freq).let { it * it } else 0.0
@@ -245,11 +255,11 @@ class ThresholdBelief(val prior: ThresholdPrior) {
          * The belief behind a finished test. Results with a trial log replay every answer with the
          * final guessing rate; older results (point estimates only) enter as Gaussian measurements.
          */
-        fun of(result: HearingTestResult, type: HeadphoneType): ThresholdBelief {
+        fun of(result: HearingTestResult, type: HeadphoneType, shift: (Double) -> Double = { 0.0 }): ThresholdBelief {
             val nodes = result.points.map { Node(it.ear, it.freq) }.distinct()
                 .ifEmpty { result.trialLog.map { Node(it.ear, it.freq) }.distinct() }
                 .sortedWith(compareBy({ it.freq }, { it.ear }))
-            val belief = ThresholdBelief(ThresholdPrior(nodes, result.calibrationDb, type))
+            val belief = ThresholdBelief(ThresholdPrior(nodes, result.calibrationDb, type, shift))
             val index = nodes.withIndex().associate { it.value to it.index }
             if (result.trialLog.isNotEmpty()) {
                 val guess = Psychometric.guessRate(result.catchTrials, result.falseAlarms)

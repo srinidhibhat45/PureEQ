@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.Hearing
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.FilledIconButton
@@ -183,6 +184,32 @@ fun HeadphonesScreen(vm: AppViewModel) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        }
+        SectionCard {
+            Text("Model (optional)", style = MaterialTheme.typography.titleSmall)
+            val model = draft.headphoneModel
+            if (model == null) {
+                Text(
+                    "Add your model's measured correction from AutoEq's database of over 6,000 headphones. It brings them to the Harman target, and the hearing check fine-tunes the rest.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedButton(onClick = { vm.openHeadphonePicker(forEditor = false) }, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Rounded.Search, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Find my headphones")
+                }
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.CheckCircle, null, tint = StatusColors.Good)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(model.name, style = MaterialTheme.typography.bodyLarge)
+                        Text("Measured by ${model.source}, via AutoEq", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    TextButton(onClick = { vm.openHeadphonePicker(forEditor = false) }) { Text("Change") }
+                }
             }
         }
         Text(

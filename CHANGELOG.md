@@ -2,6 +2,12 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.3.0
+- Your headphones' measured response: pick your model from AutoEq's database of over 6,000 headphones (measured by oratory1990, crinacle, Rtings and others) and PureEQ brings it to the Harman target, including the narrow peaks and dips a hearing check can't see.
+- The hearing check then only corrects what's left, your ears and how the headphones sit, so nothing is corrected twice.
+- Works without a hearing check too, and for saved profiles: Fine-tune › Add your headphones' measured correction. A switch turns it off; Reset turns it back on.
+- The database (about 850 KB) downloads once, only when you search. Corrections are saved with the profile and work offline.
+
 ## 1.2.0
 - A new hearing check, built like Apple's AirPods hearing test: it picks every beep to learn as much as possible about both ears at once and stops as soon as it knows enough. About 2 minutes instead of 6, and at least as accurate.
 - Cleaner sound: PureEQ now corrects the smooth trend of your result, not every wobble, and only what your answers clearly show. Both ears share one filter set, so voices stay centred.

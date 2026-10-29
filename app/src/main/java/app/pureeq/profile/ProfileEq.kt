@@ -49,9 +49,22 @@ object HearingCompensation {
 
     class EarCurves(val left: DoubleArray, val right: DoubleArray)
 
-    /** Smooth deviation per ear on [FreqGrid] (dB, positive = heard less well), with the mid band at 0. */
-    fun deviations(result: HearingTestResult, type: HeadphoneType): EarCurves {
-        val belief = ThresholdBelief.of(result, type)
+    /**
+     * A headphone correction's response averaged over a test beep's warble band (±5 %), by frequency:
+     * how much of a measured deviation the correction already explains.
+     */
+    fun correctionShift(correction: List<FilterSpec>): (Double) -> Double {
+        if (correction.isEmpty()) return { 0.0 }
+        return { f -> Response.of(correction, DoubleArray(9) { 1.05.pow((it - 4) / 4.0) * f }).average() }
+    }
+
+    /**
+     * Smooth deviation per ear on [FreqGrid] (dB, positive = heard less well), with the mid band at 0.
+     * With a headphone [correction], it is what remains after the correction: the headphones'
+     * measured response isn't counted twice.
+     */
+    fun deviations(result: HearingTestResult, type: HeadphoneType, correction: List<FilterSpec> = emptyList()): EarCurves {
+        val belief = ThresholdBelief.of(result, type, correctionShift(correction))
         val left = Array(FreqGrid.SIZE) { belief.prior.shape(Ear.LEFT, FreqGrid.hz[it], belief) }
         val right = Array(FreqGrid.SIZE) { belief.prior.shape(Ear.RIGHT, FreqGrid.hz[it], belief) }
         var sum = 0.0
@@ -70,8 +83,8 @@ object HearingCompensation {
         return EarCurves(DoubleArray(FreqGrid.SIZE) { shrink(left[it]) }, DoubleArray(FreqGrid.SIZE) { shrink(right[it]) })
     }
 
-    fun curves(result: HearingTestResult, type: HeadphoneType, strength: Double): EarCurves {
-        val d = deviations(result, type)
+    fun curves(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec> = emptyList()): EarCurves {
+        val d = deviations(result, type, correction)
         return EarCurves(gain(d.left, strength), gain(d.right, strength))
     }
 
@@ -101,8 +114,9 @@ object HearingCompensation {
      * Each tested band relative to the reference and to the mid band (dB, positive = heard less
      * well), for the result chart. These are the per-band estimates, before smoothing.
      */
-    fun chartPoints(result: HearingTestResult, type: HeadphoneType, ear: Ear): List<Pair<Double, Double>> {
-        val rel = result.points.map { it.db - ReferenceCurve.at(it.freq, type) }
+    fun chartPoints(result: HearingTestResult, type: HeadphoneType, ear: Ear, correction: List<FilterSpec> = emptyList()): List<Pair<Double, Double>> {
+        val shift = correctionShift(correction)
+        val rel = result.points.map { it.db - ReferenceCurve.at(it.freq, type) - shift(it.freq) }
         val mid = result.points.indices.filter { result.points[it].freq in MID_LOW_HZ..MID_HIGH_HZ }.map { rel[it] }.ifEmpty { rel }.average()
         return result.points.indices.filter { result.points[it].ear == ear }
             .sortedBy { result.points[it].freq }
@@ -143,8 +157,8 @@ object HearingCompensation {
      * shift the timing between the ears). Only a real left/right difference adds a small
      * mirrored set on top.
      */
-    class Fitted(result: HearingTestResult, type: HeadphoneType, strength: Double) {
-        private val targets = curves(result, type, strength)
+    class Fitted(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec>) {
+        private val targets = curves(result, type, strength, correction)
         val targetLeft: DoubleArray = targets.left
         val targetRight: DoubleArray = targets.right
         val filtersCommon: List<FilterSpec> = fit(Curves.average(targetLeft, targetRight), commonSlots)
@@ -156,7 +170,7 @@ object HearingCompensation {
         val filtersRight: List<FilterSpec> = filtersCommon + residual.map { it.copy(gainDb = -it.gainDb) }
     }
 
-    private data class Key(val result: HearingTestResult, val type: HeadphoneType, val strength: Double)
+    private data class Key(val result: HearingTestResult, val type: HeadphoneType, val strength: Double, val correction: List<FilterSpec>)
 
     private val cache = object : LinkedHashMap<Key, Fitted>(8, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Key, Fitted>?) = size > 8
@@ -164,8 +178,8 @@ object HearingCompensation {
 
     /** Fitting takes tens of milliseconds, so slider moves that don't touch hearing reuse the last fit. */
     @Synchronized
-    fun fitted(result: HearingTestResult, type: HeadphoneType, strength: Double): Fitted =
-        cache.getOrPut(Key(result, type, strength)) { Fitted(result, type, strength) }
+    fun fitted(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec> = emptyList()): Fitted =
+        cache.getOrPut(Key(result, type, strength, correction)) { Fitted(result, type, strength, correction) }
 
     private const val MID_LOW_HZ = 500.0
     private const val MID_HIGH_HZ = 4000.0
@@ -180,8 +194,11 @@ object HearingCompensation {
  */
 class ProfileEq(val profile: Profile) {
 
-    /** The headphone type the hearing result is measured against (older results: a guess from the device name). */
-    val headphones: HeadphoneType = profile.hearing?.headphones ?: HeadphoneType.guess(profile.deviceName)
+    /** The headphone type: the picked model's, else the hearing test's, else a guess from the device name. */
+    val headphones: HeadphoneType = profile.headphoneModel?.type ?: profile.hearing?.headphones ?: HeadphoneType.guess(profile.deviceName)
+
+    /** The headphones' measured correction (AutoEq), when a model is picked and switched on. */
+    val correctionFilters: List<FilterSpec> = profile.headphoneModel?.takeIf { profile.headphoneCorrection }?.filters ?: emptyList()
 
     /** Hearing-compensation target per ear (dB on [FreqGrid]); zero when there is no hearing test. */
     val hearingTargetLeft: DoubleArray
@@ -191,7 +208,7 @@ class ProfileEq(val profile: Profile) {
     val tasteFilters: List<FilterSpec> = profile.taste.filters()
 
     private val fitted: HearingCompensation.Fitted? =
-        profile.hearing?.takeIf { profile.hearingStrength > 0.0 }?.let { HearingCompensation.fitted(it, headphones, profile.hearingStrength) }
+        profile.hearing?.takeIf { profile.hearingStrength > 0.0 }?.let { HearingCompensation.fitted(it, headphones, profile.hearingStrength, correctionFilters) }
 
     init {
         if (fitted != null) {
@@ -207,8 +224,12 @@ class ProfileEq(val profile: Profile) {
         }
     }
 
-    val leftFilters: List<FilterSpec> = hearingFiltersLeft + tasteFilters
-    val rightFilters: List<FilterSpec> = hearingFiltersRight + tasteFilters
+    /** Everything but taste: headphone correction plus hearing compensation, what the taste test compares on. */
+    val baseFiltersLeft: List<FilterSpec> = correctionFilters + hearingFiltersLeft
+    val baseFiltersRight: List<FilterSpec> = correctionFilters + hearingFiltersRight
+
+    val leftFilters: List<FilterSpec> = baseFiltersLeft + tasteFilters
+    val rightFilters: List<FilterSpec> = baseFiltersRight + tasteFilters
 
     /** Manual balance only ever turns one side down, so it can't add clipping. */
     val leftTrimDb: Double = if (profile.balanceDb > 0) -profile.balanceDb else 0.0
@@ -220,8 +241,8 @@ class ProfileEq(val profile: Profile) {
 
     val preampDb: Double = preampFor(leftCurve, rightCurve)
 
-    /** Stereo-linked filters: the compensation both ears share, plus taste. */
-    val linkedFilters: List<FilterSpec> by lazy { (fitted?.filtersCommon ?: emptyList()) + tasteFilters }
+    /** Stereo-linked filters: headphone correction, the compensation both ears share, plus taste. */
+    val linkedFilters: List<FilterSpec> by lazy { correctionFilters + (fitted?.filtersCommon ?: emptyList()) + tasteFilters }
     val linkedCurve: DoubleArray by lazy { Response.of(linkedFilters, FreqGrid.hz) }
     val linkedPreampDb: Double by lazy { preampFor(linkedCurve) }
 

@@ -1,6 +1,9 @@
 package app.pureeq.profile
 
 import app.pureeq.dsp.Ear
+import app.pureeq.dsp.FilterSpec
+import app.pureeq.dsp.FilterType
+import app.pureeq.headphones.HeadphoneModel
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingTestResult
 import app.pureeq.hearing.ThresholdFlag
@@ -32,12 +35,17 @@ data class Profile(
      * profiles saved by PureEQ 1.0, which didn't keep it.
      */
     val recommendedTaste: TasteSettings? = null,
+    /** The headphones' measured correction from AutoEq, if the listener picked their model. */
+    val headphoneModel: HeadphoneModel? = null,
+    /** Whether [headphoneModel]'s correction is applied (it is by default). */
+    val headphoneCorrection: Boolean = true,
 ) {
-    /** This profile with correction, taste and balance as the tests recommended; name and results unchanged. */
+    /** This profile with corrections, taste and balance as the tests recommended; name and results unchanged. */
     fun recommended(): Profile = copy(
         hearingStrength = if (hearing != null) HearingCompensation.DEFAULT_STRENGTH else hearingStrength,
         taste = recommendedTaste ?: taste,
         balanceDb = 0.0,
+        headphoneCorrection = true,
     )
 
     val isRecommended: Boolean get() = recommended() == this
@@ -54,6 +62,19 @@ data class Profile(
         put("balanceDb", balanceDb)
         put("taste", taste.toJson())
         recommendedTaste?.let { put("recommendedTaste", it.toJson()) }
+        headphoneModel?.let { m ->
+            put("headphoneModel", JSONObject().apply {
+                put("name", m.name)
+                put("source", m.source)
+                m.rig?.let { put("rig", it) }
+                put("type", m.type.name)
+                // Compact: [Equalizer APO type, Hz, dB, Q].
+                put("filters", JSONArray().apply {
+                    m.filters.forEach { f -> put(JSONArray().apply { put(f.type.apoCode); put(f.freq); put(f.gainDb); put(f.q) }) }
+                })
+            })
+        }
+        put("headphoneCorrection", headphoneCorrection)
         hearing?.let { h ->
             put("hearing", JSONObject().apply {
                 put("catchTrials", h.catchTrials)
@@ -143,6 +164,20 @@ data class Profile(
                 taste = tasteFrom(o.optJSONObject("taste")),
                 balanceDb = o.optDouble("balanceDb", 0.0),
                 recommendedTaste = o.optJSONObject("recommendedTaste")?.let(::tasteFrom),
+                headphoneModel = o.optJSONObject("headphoneModel")?.let { m ->
+                    val fs = m.getJSONArray("filters")
+                    HeadphoneModel(
+                        name = m.getString("name"),
+                        source = m.getString("source"),
+                        rig = if (m.has("rig")) m.getString("rig") else null,
+                        type = HeadphoneType.entries.firstOrNull { it.name == m.optString("type") } ?: HeadphoneType.IN_EAR,
+                        filters = (0 until fs.length()).map { i ->
+                            val f = fs.getJSONArray(i)
+                            FilterSpec(FilterType.entries.first { it.apoCode == f.getString(0) }, f.getDouble(1), f.getDouble(2), f.getDouble(3))
+                        },
+                    )
+                },
+                headphoneCorrection = o.optBoolean("headphoneCorrection", true),
             )
         }
 

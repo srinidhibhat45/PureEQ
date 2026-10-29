@@ -202,6 +202,12 @@ fun AboutScreen(vm: AppViewModel) {
                 "treble boosts stop at +6 dB, and both ears share one filter set so voices stay centred.",
         )
         AboutSection(
+            "Your headphones' measured response",
+            "Optionally, pick your model from AutoEq's database (over 6,000 headphones measured by oratory1990, crinacle, Rtings and others; " +
+                "AutoEq by Jaakko Pasanen, MIT licence). Its correction brings the headphones to the Harman target, and the hearing check's reference " +
+                "allows for it, so the measured response isn't corrected twice: the hearing check then only fixes your ears and how the headphones sit.",
+        )
+        AboutSection(
             "The taste test",
             "Bass (a 105 Hz shelf, as in Harman's headphone research) and treble (an 8 kHz shelf) are tuned by blind A/B comparisons, " +
                 "each pair loudness-matched with the ITU BS.1770 weighting so louder never wins by default. PureEQ starts from what most " +
@@ -216,7 +222,8 @@ fun AboutScreen(vm: AppViewModel) {
         AboutSection(
             "Privacy",
             "Your profiles and test results stay on this phone. The optional room check listens for 3 seconds to measure noise level and stores nothing. " +
-                "PureEQ only goes online to check for its own updates: a small update notice, then the new version when there is one.",
+                "PureEQ only goes online to check for its own updates (a small update notice, then the new version when there is one) and, if you look up " +
+                "your headphones, to download AutoEq's public list and that model's correction from the jsDelivr or GitHub servers. Nothing about you or your hearing is sent.",
         )
         AboutSection(
             "Not a medical device",

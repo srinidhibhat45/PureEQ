@@ -14,10 +14,17 @@ import app.pureeq.audio.NoiseMeter
 import app.pureeq.audio.OutputDevice
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.Stimulus
+import app.pureeq.headphones.AutoEqClient
+import app.pureeq.headphones.AutoEqEntry
+import app.pureeq.headphones.HeadphoneIndex
+import app.pureeq.headphones.HeadphoneMatcher
+import app.pureeq.headphones.HeadphoneModel
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingSession
+import app.pureeq.hearing.HearingTestConfig
 import app.pureeq.hearing.HearingTestResult
 import app.pureeq.hearing.TestLength
+import app.pureeq.profile.HearingCompensation
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
 import app.pureeq.profile.ProfileStore
@@ -54,6 +61,8 @@ sealed interface Screen {
     data object Home : Screen
     data object Intro : Screen
     data object Headphones : Screen
+    /** Search AutoEq for the headphone model; for the profile in the editor, or for the new-profile flow. */
+    data class HeadphonePicker(val forEditor: Boolean) : Screen
     data object Quiet : Screen
     data object Volume : Screen
     data object Hearing : Screen
@@ -82,6 +91,8 @@ data class Draft(
     /** Picks the target curve the hearing test is measured against. */
     val headphones: HeadphoneType = HeadphoneType.guess(device?.name),
     val headphonesChosen: Boolean = false,
+    /** Measured correction from AutoEq, if the listener picked their model. */
+    val headphoneModel: HeadphoneModel? = null,
     val noiseDb: Double? = null,
     val volumeIndex: Int? = null,
     val hearing: HearingTestResult? = null,
@@ -118,6 +129,17 @@ data class TasteUi(
     val certainty: Float = 0f,
 )
 
+data class PickerUi(
+    val loading: Boolean = false,
+    val error: String? = null,
+    val query: String = "",
+    val results: List<AutoEqEntry> = emptyList(),
+    /** The query [results] belong to; "no match" is only shown once the current query has been searched. */
+    val searched: String? = null,
+    /** The entry whose correction is downloading. */
+    val fetching: AutoEqEntry? = null,
+)
+
 data class EditorUi(
     val profile: Profile,
     val eq: ProfileEq? = null,
@@ -133,6 +155,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val route = pure.route
     private val library = pure.library
     private val updater = pure.updater
+    private val autoEq = AutoEqClient(application)
 
     // ---- Navigation ---------------------------------------------------------------------------
 
@@ -217,6 +240,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 engine.stopTone()
             }
             Screen.Quiet -> noiseJob?.cancel()
+            is Screen.HeadphonePicker -> pickerJob?.cancel()
             Screen.Taste, Screen.TasteIntro -> {
                 choosing?.cancel()
                 setMusicPlaying(false)
@@ -289,6 +313,84 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             startVolumeTone()
         }
         if (store.settings.value.systemEqEnabled) EqService.start(getApplication())
+    }
+
+    // ---- Headphone model (AutoEq) ------------------------------------------------------------
+
+    private val _picker = MutableStateFlow(PickerUi())
+    val picker: StateFlow<PickerUi> = _picker.asStateFlow()
+    private var pickerJob: Job? = null
+    private var searchJob: Job? = null
+    private var autoEqIndex: HeadphoneIndex? = null
+
+    /** Opens the model search, starting from the current model or the connected headphones' name. */
+    fun openHeadphonePicker(forEditor: Boolean) {
+        val start = if (forEditor) {
+            _editor.value?.profile?.let { it.headphoneModel?.name ?: it.deviceName }
+        } else {
+            _draft.value.let { it.headphoneModel?.name ?: it.device?.takeIf { d -> d.isHeadphones }?.name }
+        }
+        _picker.value = PickerUi(query = start.orEmpty())
+        go(Screen.HeadphonePicker(forEditor))
+        loadAutoEq()
+    }
+
+    fun loadAutoEq() {
+        pickerJob?.cancel()
+        _picker.update { it.copy(loading = true, error = null) }
+        pickerJob = viewModelScope.launch {
+            runCatching { autoEq.index() }
+                .onSuccess {
+                    autoEqIndex = it
+                    _picker.update { p -> p.copy(loading = false) }
+                    searchHeadphones(_picker.value.query)
+                }
+                .onFailure { _picker.update { p -> p.copy(loading = false, error = "Couldn't reach AutoEq's database. Check the connection and try again, or skip this: the hearing check corrects your headphones either way.") } }
+        }
+    }
+
+    fun searchHeadphones(query: String) {
+        _picker.update { it.copy(query = query) }
+        val index = autoEqIndex ?: return
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            // Let a burst of typing settle first.
+            delay(150)
+            val found = withContext(Dispatchers.Default) { HeadphoneMatcher.search(index, query).map { it.entry } }
+            _picker.update { it.copy(results = found, searched = query) }
+        }
+    }
+
+    /** Downloads [entry]'s correction and puts it on the draft or the profile being edited. */
+    fun pickHeadphone(entry: AutoEqEntry) {
+        val target = screen.value as? Screen.HeadphonePicker ?: return
+        if (_picker.value.fetching != null) return
+        _picker.update { it.copy(fetching = entry, error = null) }
+        pickerJob = viewModelScope.launch {
+            runCatching { autoEq.model(entry) }
+                .onSuccess { m ->
+                    setHeadphoneModel(m, target.forEditor)
+                    _picker.update { it.copy(fetching = null) }
+                    back()
+                }
+                .onFailure { _picker.update { it.copy(fetching = null, error = "Couldn't download that correction. Check the connection and try again.") } }
+        }
+    }
+
+    /**
+     * Sets or clears the measured headphone correction. A saved profile is written straight to the
+     * store, so the editor reopening after the picker loads it with the new model.
+     */
+    fun setHeadphoneModel(m: HeadphoneModel?, forEditor: Boolean) {
+        if (!forEditor) {
+            _draft.update { d -> if (m == null) d.copy(headphoneModel = null) else d.copy(headphoneModel = m, headphones = m.type, headphonesChosen = true) }
+            return
+        }
+        val ui = _editor.value ?: return
+        val p = ui.profile.copy(headphoneModel = m, headphoneCorrection = true)
+        _editor.update { it?.copy(profile = p) }
+        if (ui.isDraft) _draft.update { it.copy(headphoneModel = m) } else store.upsert(p)
+        recompute(save = false)
     }
 
     // ---- Room noise --------------------------------------------------------------------------
@@ -405,7 +507,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun startHearing() {
         hearingJob?.cancel()
         val d = _draft.value
-        val config = d.length.config(CAL_DB, store.settings.value.warbleTones, d.headphones)
+        // With a measured model picked first, the test's reference already allows for it.
+        val shift = d.headphoneModel?.let { m -> HearingCompensation.correctionShift(m.filters).let { HearingTestConfig.BANDS.associateWith(it) } }.orEmpty()
+        val config = d.length.config(CAL_DB, store.settings.value.warbleTones, d.headphones, shift)
         val s = HearingSession(config)
         session = s
         lockedVolume = d.volumeIndex ?: route.volume
@@ -552,7 +656,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private var choosing: Job? = null
     private var hearingBase: ProfileEq? = null
     private var tasteHeadroom: Double? = null
-    private var tastePreparedFor: Pair<HearingTestResult?, MusicTrack?>? = null
+    private var tastePreparedFor: Triple<HearingTestResult?, HeadphoneModel?, MusicTrack?>? = null
 
     /**
      * Fits the hearing correction once for the whole taste test and fixes one headroom for it:
@@ -561,19 +665,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun prepareTaste() {
         val d = _draft.value
         val track = _music.value
-        if (tastePreparedFor == (d.hearing to track) && hearingBase != null) return
+        if (tastePreparedFor == Triple(d.hearing, d.headphoneModel, track) && hearingBase != null) return
         val base = withContext(Dispatchers.Default) { ProfileEq(draftProfile().copy(taste = TasteSettings())) }
         hearingBase = base
         if (track != null) {
             val extreme = TasteSession.extreme(d.taste).filters()
             tasteHeadroom = withContext(Dispatchers.Default) {
                 Matching.headroom(
-                    listOf(ListeningOption(base.hearingFiltersLeft, base.hearingFiltersRight), ListeningOption(base.hearingFiltersLeft + extreme, base.hearingFiltersRight + extreme)),
+                    listOf(ListeningOption(base.baseFiltersLeft, base.baseFiltersRight), ListeningOption(base.baseFiltersLeft + extreme, base.baseFiltersRight + extreme)),
                     track.spectrumDb,
                 )
             }
         }
-        tastePreparedFor = d.hearing to track
+        tastePreparedFor = Triple(d.hearing, d.headphoneModel, track)
     }
 
     private fun startTaste() {
@@ -600,7 +704,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
         val opts = listOf(Choice.A, Choice.B).map { side ->
             val t = ts.candidate(c, side).filters()
-            ListeningOption(base.hearingFiltersLeft + t, base.hearingFiltersRight + t)
+            ListeningOption(base.baseFiltersLeft + t, base.baseFiltersRight + t)
         }
         val specs = Matching.matched(opts, track.spectrumDb, tasteHeadroom)
         engine.setSlot(0, specs[0])
@@ -636,7 +740,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun redoTaste(profileId: String) {
         val p = store.profile(profileId) ?: return
-        _draft.value = Draft(includeHearing = p.hearing != null, hearing = p.hearing, retuneOf = p.id)
+        _draft.value = Draft(
+            includeHearing = p.hearing != null,
+            hearing = p.hearing,
+            retuneOf = p.id,
+            headphoneModel = p.headphoneModel?.takeIf { p.headphoneCorrection },
+        )
         go(Screen.TasteIntro)
     }
 
@@ -683,6 +792,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             hearing = d.hearing,
             taste = d.taste,
             recommendedTaste = d.recommendedTaste ?: d.taste,
+            headphoneModel = d.headphoneModel,
         )
     }
 
@@ -698,7 +808,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             val base = draftProfile()
             val keep = prev?.takeIf { it.isDraft && it.profile.id == base.id }?.profile
-            if (keep != null) base.copy(name = keep.name, hearingStrength = keep.hearingStrength, balanceDb = keep.balanceDb) else base
+            if (keep != null) {
+                base.copy(name = keep.name, hearingStrength = keep.hearingStrength, balanceDb = keep.balanceDb, headphoneCorrection = keep.headphoneCorrection)
+            } else {
+                base
+            }
         }
         _editor.value = EditorUi(profile = p, isDraft = id == null)
         recompute(save = false)
@@ -723,7 +837,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Undo for [resetEditor]: brings the adjustments back and keeps the current name. */
     fun restoreAdjustments(p: Profile) =
-        editProfile { it.copy(hearingStrength = p.hearingStrength, taste = p.taste, balanceDb = p.balanceDb) }
+        editProfile { it.copy(hearingStrength = p.hearingStrength, taste = p.taste, balanceDb = p.balanceDb, headphoneCorrection = p.headphoneCorrection) }
 
     private fun recompute(save: Boolean) {
         editorJob?.cancel()
