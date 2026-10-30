@@ -1030,6 +1030,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         getApplication<Application>().contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray()) }
     }.isSuccess
 
+    /** Writes a binary export, building it only once the listener has picked where it goes. */
+    fun writeBytes(uri: Uri, build: () -> ByteArray): Boolean = runCatching {
+        getApplication<Application>().contentResolver.openOutputStream(uri, "wt")!!.use { it.write(build()) }
+    }.isSuccess
+
     override fun onCleared() {
         engine.stopTone()
         engine.playMusic(false)

@@ -2,6 +2,9 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.5.1
+- Export for convolution: your exact curve for each ear as an impulse response (a stereo WAV at 48 or 44.1 kHz) for the convolver in JamesDSP, ViPER4Android or Equalizer APO. Left and right, balance and level come out exactly as PureEQ applies them.
+
 ## 1.5.0
 - A more natural fit: your listening check is now measured from your low mids, and larger differences get gentler correction, close to what people choose when they tune their own sound. A result that slopes toward the treble gets about a third less treble tilt, and the low mids are no longer turned down. Saved profiles refit automatically.
 - Fairer between your ears: a real difference between your ears now comes through (a flat one is read 3 dB short instead of 6), while everyone else's voices stay dead centre.

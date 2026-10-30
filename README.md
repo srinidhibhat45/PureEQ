@@ -10,7 +10,7 @@ Everything runs on the phone. Profiles and results stay on it (and in your Googl
 
 ## Install
 
-The first install is by hand: open `https://github.com/srinidhibhat45/pureeq-updates/releases/latest` on the phone (or copy the newest APK in `dist/`), download the APK and open it. Allow "install unknown apps" for the browser or file manager when asked. After that, PureEQ updates itself (see [Updates](#updates)). Android only installs an update signed with the same key as the installed copy, or with a newer key whose rotation lineage includes it. The GitHub build is signed with this computer's debug key until a release key is set up ([key rotation](docs/key-rotation.md)), so keep that key and any release key backed up.
+The first install is by hand: on the phone, open **[Download PureEQ (APK)](https://github.com/srinidhibhat45/pureeq-updates/releases/latest/download/PureEQ.apk)** (always the newest version; the public [pureeq-updates](https://github.com/srinidhibhat45/pureeq-updates) page has the same link and install steps), or copy the newest APK in `dist/`, then open the downloaded file. Allow "install unknown apps" for the browser or file manager when asked. After that, PureEQ updates itself (see [Updates](#updates)). Android only installs an update signed with the same key as the installed copy, or with a newer key whose rotation lineage includes it. The GitHub build is signed with this computer's debug key until a release key is set up ([key rotation](docs/key-rotation.md)), so keep that key and any release key backed up.
 
 ## Using it
 
@@ -35,6 +35,7 @@ The first install is by hand: open `https://github.com/srinidhibhat45/pureeq-upd
 | Poweramp Equalizer | `ParametricEQ.txt` (AutoEq/Equalizer APO format) | Preset › long-press › Import, or open the file with Poweramp Equalizer |
 | JamesDSP / RootlessJamesDSP | GraphicEQ string | Arbitrary response equalizer › Edit as string › paste |
 | Equalizer APO / Peace (PC) | Per-ear config (`Channel: L` / `Channel: R`) | Include from `config.txt` or paste into Peace |
+| Convolution (JamesDSP, ViPER4Android, Equalizer APO) | Per-ear minimum-phase impulse response: stereo 32-bit float WAV, 48 or 44.1 kHz, 8,192 taps, the exact curve of each ear at the system EQ's level | Load it in the app's convolver; pick the file that matches your music's sample rate |
 | Phone/app graphic EQs | Slider values (10-band, Samsung 9-band, 5-band, JamesDSP 15-band, 31-band) | Type them in |
 | Neutron, UAPP, Poweramp parametric | Filter list (type, frequency, gain, Q) + preamp | Type them in |
 | Another phone | `*.pureeq.json` | Settings › Import a PureEQ profile |
@@ -63,6 +64,7 @@ python3 ota/publish.py
 
 - The first run asks which repository to use (default `<your GitHub login>/pureeq-updates`) and creates it. It has to be **public**, because phones download without logging in. The choice is saved in `ota.properties`.
 - Each run tests and builds the release APK with the update address baked in, attaches it and `update.json` to a GitHub release, then waits until the public address shows the new version.
+- Each release also carries the APK as `PureEQ.apk`, so `https://github.com/<repo>/releases/latest/download/PureEQ.apk` always downloads the newest version; the release page starts with that link, and the repository's README (written from `ota/download-readme.md` on every publish) gives it with install steps. `--links` does just this for the version already live, without building.
 - The versionCode in `version.properties` is raised automatically if that version is already published. The release notes shown on the phone come from that version's section of `CHANGELOG.md`, or from `--notes "…"`.
 - `--dry-run` builds and writes `ota/out/` without publishing. It needs the GitHub CLI logged in (`brew install gh`, `gh auth login`); use the account meant to host the updates.
 

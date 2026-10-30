@@ -9,6 +9,7 @@ package, version and signing key, and installs it.
     python3 ota/publish.py                         build, test, publish (the first run sets up the repo)
     python3 ota/publish.py --notes "What changed"  release notes shown on the phone
     python3 ota/publish.py --dry-run               build and write ota/out/update.json; publish nothing
+    python3 ota/publish.py --links                 refresh the download links (README, PureEQ.apk) for the live version
 
 Needs the GitHub CLI, logged in to the account that hosts the updates (brew install gh; gh auth login).
 Android only installs an update signed with the same key as the copy on the phone, or with a newer
@@ -16,9 +17,13 @@ key whose lineage includes it. Gradle signs with the release key from keystore.p
 PUREEQ_* variables, and without one with this computer's debug key; with a lineage configured, the
 APK is re-signed with it. Nothing is published unless the APK is signed so that phones with the
 first and the latest APK in dist/ accept it. See docs/key-rotation.md.
+
+Every release also carries the APK as PureEQ.apk, so https://github.com/<repo>/releases/latest/download/PureEQ.apk
+always downloads the newest version, and the repository's README (from ota/download-readme.md) links to it.
 """
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -49,6 +54,9 @@ SIGNING_NAMES = {
     "lineage": "PUREEQ_LINEAGE",
 }
 APP_ID = "app.pureeq"
+# The newest release's APK under a name that never changes, for a download link that never goes stale.
+STABLE_APK = "PureEQ.apk"
+DOWNLOAD_README = ROOT / "ota" / "download-readme.md"
 REPO_RE = re.compile(r"^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$")
 
 
@@ -250,6 +258,58 @@ def setup_repo(requested, assume_yes):
     return repo
 
 
+def download_link(repo):
+    return f"https://github.com/{repo}/releases/latest/download/{STABLE_APK}"
+
+
+def release_body(repo, name, notes):
+    """The release page: a download link first, then the notes the phone shows."""
+    return f"**[Download PureEQ {name} (APK)]({download_link(repo)})**, or the versioned file below.\n\n{notes}"
+
+
+def stable_copy(apk):
+    """A copy of the APK under the stable name, for the release's assets."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    stable = OUT / STABLE_APK
+    shutil.copy2(apk, stable)
+    return stable
+
+
+def update_readme(repo, name):
+    """Writes the repository's README from ota/download-readme.md, so visitors find the download."""
+    text = DOWNLOAD_README.read_text().replace("{repo}", repo).replace("{version}", name)
+    path = f"repos/{repo}/contents/README.md"
+    found = subprocess.run(["gh", "api", path, "--jq", ".sha"], cwd=ROOT, capture_output=True, text=True)
+    current = output(["gh", "api", path, "--jq", ".content"]) if found.returncode == 0 else ""
+    if found.returncode == 0 and base64.b64decode(current).decode("utf-8", "replace") == text:
+        print("README already up to date.")
+        return
+    cmd = ["gh", "api", "-X", "PUT", path, "-f", f"message=README: download PureEQ {name}",
+           "-f", "content=" + base64.b64encode(text.encode()).decode()]
+    if found.returncode == 0:
+        cmd += ["-f", "sha=" + found.stdout.strip()]
+    subprocess.run(cmd, cwd=ROOT, check=True, capture_output=True)
+    print(f"README updated: https://github.com/{repo}")
+
+
+def refresh_links(repo):
+    """--links: gives the live release its PureEQ.apk, a download line on its page, and the README."""
+    req = urllib.request.Request(manifest_url(repo), headers={"Cache-Control": "no-cache", "User-Agent": "pureeq-publish"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            live = json.load(r)
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        die(f"Couldn't read the current update notice at {manifest_url(repo)} ({e}).")
+    name, tag = str(live["versionName"]), f"v{live['versionName']}"
+    apk = DIST / f"PureEQ-{name}.apk"
+    if not apk.exists() or sha256(apk) != live["sha256"]:
+        die(f"dist/{apk.name} isn't the published {name} (missing, or its SHA-256 differs from update.json), so it can't become {STABLE_APK}.")
+    run(["gh", "release", "upload", tag, str(stable_copy(apk)), "--repo", repo, "--clobber"])
+    run(["gh", "release", "edit", tag, "--repo", repo, "--notes", release_body(repo, name, changelog_notes(name) or str(live.get("notes", "")))])
+    update_readme(repo, name)
+    print(f"\nDownload link: {download_link(repo)}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Build PureEQ and publish it as an over-the-air update.")
     ap.add_argument("--notes", help="release notes shown on the phone (default: this version's section of CHANGELOG.md)")
@@ -257,7 +317,13 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="build and write ota/out/update.json without publishing")
     ap.add_argument("--skip-tests", action="store_true", help="skip the unit tests")
     ap.add_argument("--yes", action="store_true", help="don't ask before creating the repository")
+    ap.add_argument("--links", action="store_true", help="only refresh the download links (README, PureEQ.apk) for the live version")
     args = ap.parse_args()
+
+    if args.links:
+        ensure_gh()
+        refresh_links(args.repo or read_props(OTA_FILE).get("repo") or die("No update repository yet: publish once first."))
+        return
 
     if args.dry_run:
         repo = args.repo or read_props(OTA_FILE).get("repo") or "OWNER/pureeq-updates"
@@ -321,7 +387,9 @@ def main():
         print("Dry run: nothing published.")
         return
 
-    run(["gh", "release", "create", tag, str(apk), str(notice), "--repo", repo, "--title", f"PureEQ {name}", "--notes", notes, "--latest"])
+    run(["gh", "release", "create", tag, str(apk), str(stable_copy(apk)), str(notice), "--repo", repo,
+         "--title", f"PureEQ {name}", "--notes", release_body(repo, name, notes), "--latest"])
+    update_readme(repo, name)
     for _ in range(12):
         try:
             seen = published(repo)
@@ -333,7 +401,7 @@ def main():
         time.sleep(5)
     else:
         print("\nPublished, but the update address still shows the previous version. GitHub can take a minute to catch up.")
-    print(f"Manual install link (first install, or a phone without updates): https://github.com/{repo}/releases/latest")
+    print(f"Download link (first install, or a phone without updates): {download_link(repo)}")
 
 
 if __name__ == "__main__":

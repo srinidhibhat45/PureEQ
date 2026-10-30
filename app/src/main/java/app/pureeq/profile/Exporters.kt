@@ -4,6 +4,7 @@ import app.pureeq.dsp.Curves
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FilterSpec
 import app.pureeq.dsp.FreqGrid
+import app.pureeq.dsp.ImpulseResponse
 import app.pureeq.dsp.Loudness
 import java.util.Locale
 import kotlin.math.abs
@@ -134,6 +135,17 @@ object Exporters {
             "In apps without per-ear EQ, move Android's balance slider (Settings > Accessibility > Audio adjustment) " +
             "slightly toward the ${if (louder == Ear.LEFT) "left" else "right"}."
     }
+
+    /**
+     * Per-ear impulse response for convolution engines (JamesDSP and ViPER4Android convolver,
+     * Equalizer APO): the exact curve of each ear, left/right differences, balance and preamp
+     * included, at the same level as PureEQ's own system EQ. A stereo 32-bit float WAV.
+     */
+    fun convolution(eq: ProfileEq, sampleRate: Int): ByteArray = ImpulseResponse.wav(
+        ImpulseResponse.of(eq.leftFilters, eq.leftTrimDb + eq.preampDb, sampleRate),
+        ImpulseResponse.of(eq.rightFilters, eq.rightTrimDb + eq.preampDb, sampleRate),
+        sampleRate,
+    )
 
     fun fileSafe(name: String): String = name.replace(Regex("[^A-Za-z0-9 ._-]"), "").trim().ifEmpty { "PureEQ" }
 

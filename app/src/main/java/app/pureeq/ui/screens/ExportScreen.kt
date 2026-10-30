@@ -71,6 +71,11 @@ fun ExportScreen(vm: AppViewModel, profileId: String) {
     val saveJson = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) onSaved(vm.writeText(uri, pending))
     }
+    var pendingRate by remember { mutableStateOf(48000) }
+    val saveWav = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("audio/wav")) { uri ->
+        val e = eq
+        if (uri != null && e != null) onSaved(vm.writeBytes(uri) { Exporters.convolution(e, pendingRate) })
+    }
 
     StepScaffold(title = "Export", onBack = { vm.back() }) {
         val e = eq
@@ -118,6 +123,13 @@ fun ExportScreen(vm: AppViewModel, profileId: String) {
         ) {
             ActionButton("Save file", Icons.Rounded.Download) { pending = perEar; saveTxt.launch("$name per-ear.txt") }
             ActionButton("Copy", Icons.Rounded.ContentCopy) { copy(context, "Equalizer APO", perEar) }
+        }
+        ExportCard(
+            "Convolution (JamesDSP, ViPER4Android, Equalizer APO)",
+            "Your exact curve for each ear as an impulse response: a stereo WAV with the left and right ear, balance and level as PureEQ applies them. Load it in the convolver, matching your music's sample rate.",
+        ) {
+            ActionButton("48 kHz", Icons.Rounded.Download) { pendingRate = 48000; saveWav.launch("$name 48000 Hz.wav") }
+            ActionButton("44.1 kHz", Icons.Rounded.Download) { pendingRate = 44100; saveWav.launch("$name 44100 Hz.wav") }
         }
         GraphicBandsCard(e)
         SectionCard {
