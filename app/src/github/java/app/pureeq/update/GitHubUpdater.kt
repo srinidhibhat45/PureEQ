@@ -232,14 +232,15 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
         }
     }
 
-    /** The download must be this app, the announced version, and signed with this copy's key. */
+    /** The download must be this app, the announced version, and signed with this copy's key (or its rotated successor). */
     private fun verifyPackage(apk: File, m: UpdateManifest) {
         val info = archiveInfo(apk) ?: throw UpdateError("The download isn't an Android app.")
         if (info.packageName != context.packageName) throw UpdateError("The download is a different app (${info.packageName}).")
         if (info.longVersionCode != m.versionCode) throw UpdateError("The download's version doesn't match the update notice.")
         val mine = installedInfo().signingInfo
         val theirs = info.signingInfo
-        if (mine != null && theirs != null && !sameSigner(mine, theirs)) {
+        // When Android doesn't report the certificates, PackageInstaller's own check still applies at install.
+        if (mine != null && theirs != null && !signers(mine).accepts(signers(theirs))) {
             throw UpdateError(
                 "This update is signed with a different key from the PureEQ on this phone, so Android can't install it over it. " +
                     "It was probably built on another computer.",
@@ -382,15 +383,11 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
         context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
     }
 
-    /** The same key, or (after a key rotation) an update whose signing history includes this copy's key. */
-    private fun sameSigner(installed: SigningInfo, update: SigningInfo): Boolean {
-        val mine = installed.apkContentsSigners.toSet()
-        return if (update.hasMultipleSigners()) {
-            update.apkContentsSigners.toSet() == mine
-        } else {
-            update.signingCertificateHistory.any { it in mine }
-        }
-    }
+    /** The certificates as [Signers] digests; the rotation history only exists for a single signer. */
+    private fun signers(info: SigningInfo) = Signers(
+        current = info.apkContentsSigners.mapTo(HashSet()) { hex(digest(it.toByteArray())) },
+        history = if (info.hasMultipleSigners()) emptyList() else info.signingCertificateHistory.orEmpty().map { hex(digest(it.toByteArray())) },
+    )
 
     private fun describe(e: Exception): String = when (e) {
         is UpdateError -> e.message.orEmpty()
@@ -435,6 +432,8 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
             }
             return d.digest()
         }
+
+        private fun digest(b: ByteArray): ByteArray = MessageDigest.getInstance("SHA-256").digest(b)
 
         private fun hex(b: ByteArray) = b.joinToString("") { "%02x".format(it) }
 
