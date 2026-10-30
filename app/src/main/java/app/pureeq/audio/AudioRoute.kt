@@ -39,6 +39,14 @@ data class OutputDevice(val name: String, val type: Int) {
     }
 }
 
+/**
+ * The media volume something was done at: the volume step, the top step, Android's attenuation
+ * for that step on that output in dB (0 at the top step; null when the phone doesn't say) and
+ * the output's type. With Bluetooth absolute volume the headset attenuates by itself, so there
+ * [db] says little.
+ */
+data class ListeningLevel(val index: Int, val maxIndex: Int, val db: Double?, val deviceType: Int)
+
 /** Media volume, output routing and audio focus. */
 class AudioRoute(context: Context) {
     private val am = context.getSystemService(AudioManager::class.java)
@@ -53,6 +61,14 @@ class AudioRoute(context: Context) {
         set(value) {
             runCatching { am.setStreamVolume(AudioManager.STREAM_MUSIC, value.coerceIn(minVolume, maxVolume), 0) }
         }
+
+    /** The media volume right now and what it means in dB on the current output. */
+    fun level(): ListeningLevel {
+        val index = volume
+        val type = currentOutput().type
+        val db = runCatching { am.getStreamVolumeDb(AudioManager.STREAM_MUSIC, index, type).toDouble() }.getOrNull()?.takeIf { it.isFinite() }
+        return ListeningLevel(index, maxVolume, db, type)
+    }
 
     /** The device media is routed to right now. */
     fun currentOutput(): OutputDevice {

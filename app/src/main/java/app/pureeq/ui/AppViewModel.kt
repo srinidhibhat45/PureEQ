@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import app.pureeq.PureEqApp
+import app.pureeq.audio.ListeningLevel
 import app.pureeq.audio.ListeningOption
 import app.pureeq.audio.Matching
 import app.pureeq.audio.MusicTrack
@@ -103,6 +104,9 @@ data class Draft(
     val taste: TasteSettings = TasteSettings(),
     /** The taste test's result (or the starting point when it was skipped), before any tweaks. */
     val recommendedTaste: TasteSettings? = null,
+    /** Media volume during the listening check, and when the taste test ended. */
+    val checkLevel: ListeningLevel? = null,
+    val tasteLevel: ListeningLevel? = null,
     /** Set when redoing the taste test of this saved profile: the result goes back into it. */
     val retuneOf: String? = null,
 )
@@ -546,6 +550,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val s = HearingSession(config)
         session = s
         lockedVolume = d.volumeIndex ?: route.volume
+        _draft.update { it.copy(checkLevel = route.level()) }
+        debugLog { "check level=${_draft.value.checkLevel}" }
         _hearing.value = HearingUi()
         var warned = false
         hearingJob = viewModelScope.launch {
@@ -794,8 +800,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun finishTaste() {
-        tasteSession?.let { ts -> ts.result().let { r -> _draft.update { it.copy(taste = r, recommendedTaste = r) } } }
-        debugLog { "taste done ${_draft.value.taste}" }
+        val level = route.level()
+        tasteSession?.let { ts -> ts.result().let { r -> _draft.update { it.copy(taste = r, recommendedTaste = r, tasteLevel = level) } } }
+        debugLog { "taste done ${_draft.value.taste} level=${_draft.value.tasteLevel}" }
         setMusicPlaying(false)
         val retune = _draft.value.retuneOf
         if (retune == null) {
@@ -804,7 +811,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
         // A redo for a saved profile: the result replaces its taste and becomes what Reset returns to.
         val r = _draft.value.taste
-        store.profile(retune)?.let { store.upsert(it.copy(taste = r, recommendedTaste = r)) }
+        store.profile(retune)?.let { store.upsert(it.copy(taste = r, recommendedTaste = r, tasteLevel = level)) }
         backTo(Screen.Editor(retune))
     }
 
@@ -826,6 +833,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             taste = d.taste,
             recommendedTaste = d.recommendedTaste ?: d.taste,
             headphoneModel = d.headphoneModel,
+            checkLevel = d.checkLevel,
+            tasteLevel = d.tasteLevel,
         )
     }
 

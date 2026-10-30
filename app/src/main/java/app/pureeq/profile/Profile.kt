@@ -1,5 +1,6 @@
 package app.pureeq.profile
 
+import app.pureeq.audio.ListeningLevel
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FilterSpec
 import app.pureeq.dsp.FilterType
@@ -40,6 +41,13 @@ data class Profile(
     val headphoneModel: HeadphoneModel? = null,
     /** Whether [headphoneModel]'s correction is applied (it is by default). */
     val headphoneCorrection: Boolean = true,
+    /** Media volume during the listening check. */
+    val checkLevel: ListeningLevel? = null,
+    /**
+     * Media volume when the taste test ended: the level this profile's balance was chosen at, and
+     * the reference for anything that follows the volume. Null when the test was skipped.
+     */
+    val tasteLevel: ListeningLevel? = null,
 ) {
     /** This profile with corrections, taste and balance as the tests recommended; name and results unchanged. */
     fun recommended(): Profile = copy(
@@ -65,6 +73,12 @@ data class Profile(
         recommendedTaste?.let { put("recommendedTaste", it.toJson()) }
         headphoneModel?.let { put("headphoneModel", modelJson(it)) }
         put("headphoneCorrection", headphoneCorrection)
+        if (checkLevel != null || tasteLevel != null) {
+            put("levels", JSONObject().apply {
+                checkLevel?.let { put("check", levelJson(it)) }
+                tasteLevel?.let { put("taste", levelJson(it)) }
+            })
+        }
         hearing?.let { h ->
             put("hearing", JSONObject().apply {
                 put("catchTrials", h.catchTrials)
@@ -156,10 +170,26 @@ data class Profile(
                 recommendedTaste = o.optJSONObject("recommendedTaste")?.let(::tasteFrom),
                 headphoneModel = o.optJSONObject("headphoneModel")?.let(::modelFrom),
                 headphoneCorrection = o.optBoolean("headphoneCorrection", true),
+                checkLevel = o.optJSONObject("levels")?.optJSONObject("check")?.let(::levelFrom),
+                tasteLevel = o.optJSONObject("levels")?.optJSONObject("taste")?.let(::levelFrom),
             )
         }
 
         /** A headphone model as stored in a profile (and in the per-device memory). */
+        fun levelJson(l: ListeningLevel) = JSONObject().apply {
+            put("index", l.index)
+            put("max", l.maxIndex)
+            l.db?.let { put("db", it) }
+            put("type", l.deviceType)
+        }
+
+        fun levelFrom(o: JSONObject) = ListeningLevel(
+            index = o.getInt("index"),
+            maxIndex = o.getInt("max"),
+            db = if (o.has("db")) o.getDouble("db") else null,
+            deviceType = o.optInt("type"),
+        )
+
         fun modelJson(m: HeadphoneModel) = JSONObject().apply {
             put("name", m.name)
             put("source", m.source)

@@ -1,5 +1,6 @@
 package app.pureeq.profile
 
+import app.pureeq.audio.ListeningLevel
 import app.pureeq.dsp.Curves
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FilterSpec
@@ -294,6 +295,20 @@ class ProfileTest {
         for (f in listOf(40.0, 105.0, 1000.0, 3000.0, 9000.0)) assertEquals("$f Hz", Curves.sample(correction, f), Curves.sample(eq.leftCurve, f), 0.6)
         // Room for the correction's +6 dB of bass, no more: AutoEq's own preamp for it is −6.1 dB.
         assertTrue("preamp ${eq.preampDb}", eq.preampDb in -7.0..-5.5)
+    }
+
+    @Test
+    fun listeningLevelsAreKeptAndOlderProfilesLoadWithout() {
+        val p = profile(result { _, _ -> 0.0 }).copy(
+            checkLevel = ListeningLevel(9, 15, -17.5, 8),
+            tasteLevel = ListeningLevel(11, 15, null, 8),
+        )
+        assertEquals(p, Profile.fromJson(JSONObject(p.toJson().toString())))
+        val old = Profile.fromJson(p.toJson().apply { remove("levels") })
+        assertNull(old.checkLevel)
+        assertNull(old.tasteLevel)
+        // The levels are what happened, not a setting: Reset leaves them alone.
+        assertEquals(p.tasteLevel, p.recommended().tasteLevel)
     }
 
     @Test
