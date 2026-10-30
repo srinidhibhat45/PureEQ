@@ -604,6 +604,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     if (outcome == Outcome.Replay) {
                         // The same beep once more; "No" waits for it again, and the answer counts both listens.
                         looks = 2
+                        debugLog { "replay ear=${p.ear} f=${p.freq} level=${p.levelDb}" }
                         engine.stopTone()
                         engine.playTone(stim)
                         _hearing.update { it.copy(playing = true, canSayNo = false, canReplay = false) }
@@ -616,6 +617,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 engine.stopTone()
                 if (outcome is Outcome.Answer) s.answer(outcome.heard, looks)
+                if (outcome is Outcome.Answer) debugLog { "answer heard=${outcome.heard} looks=$looks" }
                 _hearing.update { it.copy(playing = false, canSayYes = false, canSayNo = false, canReplay = false, progress = s.progress) }
                 if (!warned && s.catchTrials >= 3 && s.falseAlarms >= 2 && s.falseAlarms.toDouble() / s.catchTrials > 0.34) {
                     warned = true
