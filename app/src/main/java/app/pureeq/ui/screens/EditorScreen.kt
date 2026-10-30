@@ -259,7 +259,7 @@ private fun FineTuning(
             Control(
                 band.label,
                 "${Exporters.signed(v)} dB",
-                band.hint,
+                if (band == TasteBand.TREBLE && p.taste.legacyTreble) "Cymbals and sparkle: PureEQ's earlier 8 kHz treble. Redo the taste test for today's broader one." else band.hint,
                 suggested = r?.takeIf { it != v }?.let { "${Exporters.signed(it)} dB" },
                 onRestore = { if (r != null) edit { it.copy(taste = it.taste.with(band, r)) } },
             ) {

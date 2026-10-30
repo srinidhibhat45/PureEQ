@@ -10,10 +10,11 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 /**
- * Tone controls on top of the hearing correction. The taste test tunes bass and treble, where
- * listeners' preferences really differ (Harman's headphone studies); warmth and vocals stay at
- * 0 for manual fine-tuning. Bass is the 105 Hz shelf of the Harman target research; the treble
- * shelf sits at 8 kHz so it moves air and cymbals rather than sibilance.
+ * Tone controls on top of the ear tuning. The taste test tunes bass and treble, where listeners'
+ * preferences really differ (Harman's headphone studies); warmth, vocals and air stay at 0 for
+ * manual fine-tuning. Bass is the 105 Hz shelf of the Harman target research. Treble is the broad
+ * shelf from about 2.5 kHz that Harman's listeners adjusted (Olive 2022); PureEQ 1.0-1.4 used an
+ * 8 kHz shelf, which no population data backs. Air (10 kHz) is the sparkle above that.
  */
 enum class TasteBand(
     val label: String,
@@ -27,7 +28,8 @@ enum class TasteBand(
     BASS("Bass", "Kick drum and bass guitar weight", FilterType.LOW_SHELF, 105.0, 0.7, -6.0, 12.0),
     WARMTH("Warmth", "Body of voices and instruments", FilterType.PEAK, 250.0, 0.8, -6.0, 6.0),
     VOCALS("Vocals", "Clarity and presence of voices", FilterType.PEAK, 2000.0, 0.8, -6.0, 6.0),
-    TREBLE("Treble", "Cymbals, air and sparkle", FilterType.HIGH_SHELF, 8000.0, 0.7, -8.0, 8.0),
+    TREBLE("Treble", "Brightness: the edge of voices, cymbals and detail", FilterType.HIGH_SHELF, 2500.0, 0.45, -6.0, 6.0),
+    AIR("Air", "Sparkle and space at the very top", FilterType.HIGH_SHELF, 10000.0, 0.7, -6.0, 6.0),
     ;
 
     fun filter(gainDb: Double) = FilterSpec(type, freq, gainDb, q)
@@ -38,12 +40,19 @@ data class TasteSettings(
     val warmth: Double = 0.0,
     val vocals: Double = 0.0,
     val treble: Double = 0.0,
+    val air: Double = 0.0,
+    /**
+     * Treble is PureEQ 1.0-1.4's 8 kHz shelf: profiles tuned before 1.5 keep the sound they were
+     * chosen with until the taste test is redone.
+     */
+    val legacyTreble: Boolean = false,
 ) {
     operator fun get(band: TasteBand): Double = when (band) {
         TasteBand.BASS -> bass
         TasteBand.WARMTH -> warmth
         TasteBand.VOCALS -> vocals
         TasteBand.TREBLE -> treble
+        TasteBand.AIR -> air
     }
 
     fun with(band: TasteBand, value: Double): TasteSettings {
@@ -53,11 +62,18 @@ data class TasteSettings(
             TasteBand.WARMTH -> copy(warmth = v)
             TasteBand.VOCALS -> copy(vocals = v)
             TasteBand.TREBLE -> copy(treble = v)
+            TasteBand.AIR -> copy(air = v)
         }
     }
 
     /** Filters in a fixed order; bands at 0 dB are left out. */
-    fun filters(): List<FilterSpec> = TasteBand.entries.filter { this[it] != 0.0 }.map { it.filter(this[it]) }
+    fun filters(): List<FilterSpec> = TasteBand.entries.filter { this[it] != 0.0 }
+        .map { if (it == TasteBand.TREBLE && legacyTreble) LEGACY_TREBLE.copy(gainDb = treble) else it.filter(this[it]) }
+
+    companion object {
+        /** The treble shelf of PureEQ 1.0-1.4. */
+        val LEGACY_TREBLE = FilterSpec(FilterType.HIGH_SHELF, 8000.0, 0.0, 0.7)
+    }
 }
 
 /** One A/B question: two settings, in random order. */
@@ -69,9 +85,10 @@ enum class Choice { A, B, SAME }
  * Finds the listener's preferred bass and treble with a few blind, loudness-matched A/B rounds.
  *
  * The listener is modelled as having an ideal setting; the closer an option is to it, the more
- * they like it (a quadratic utility: missing by 3 dB of bass or 3.5 dB of treble costs one unit).
- * The belief over that ideal starts from the population: Harman found 64 % of listeners like the
- * target's bass, 15 % want 4-6 dB more and 21 % about 2 dB less. Each answer, "Same" included,
+ * they like it (a quadratic utility: missing by 3 dB of bass or treble costs one unit). The
+ * belief over that ideal starts from the population: Harman found 64 % of listeners like the
+ * target, 15 % want 4-6 dB more bass and 21 % about 2.5 dB less with a little more treble (Olive,
+ * Welti & Khonsaripour 2019). Each answer, "Same" included,
  * updates it (an ordered-choice model with occasional slips). Every round plays the pair whose
  * answer is expected to shrink the remaining error most. The session stops once the estimate is
  * settled (usually 5-7 rounds); "Finish now" returns the best estimate so far.
@@ -80,11 +97,14 @@ enum class Choice { A, B, SAME }
  * against 1.2-1.4 dB for the 12-round halving test it replaces.
  */
 class TasteSession(
-    private val start: TasteSettings = TasteSettings(),
+    start: TasteSettings = TasteSettings(),
     val maxRounds: Int = MAX_ROUNDS,
     private val rnd: Random = Random.Default,
+    /** A measured correction brings the headphones to the target, so the population prior applies as is. */
+    corrected: Boolean = false,
 ) {
-    private val w = DoubleArray(GRID_BASS.size) { prior(GRID_BASS[it], GRID_TREBLE[it]) }.also { normalise(it) }
+    private val start = start.copy(legacyTreble = false)
+    private val w = DoubleArray(GRID_BASS.size) { prior(GRID_BASS[it], GRID_TREBLE[it], if (corrected) 1.0 else WIDEN) }.also { normalise(it) }
     private val startLoss = stats(w).loss
     private var pending: Comparison? = null
 
@@ -235,7 +255,7 @@ class TasteSession(
 
         /** dB of bass or treble away from the ideal that cost one unit of preference. */
         private const val BASS_UNIT = 3.0
-        private const val TREBLE_UNIT = 3.5
+        private const val TREBLE_UNIT = 3.0
 
         /** Utility differences within ±0.25 tend to be heard as "the same"; answer noise 0.6 units. */
         private const val SAME_ZONE = 0.25
@@ -257,15 +277,22 @@ class TasteSession(
         }
 
         /** The most extreme setting a session can play from [start], for fixing one loudness headroom up front. */
-        fun extreme(start: TasteSettings) = start.copy(bass = BASS_MAX, treble = TREBLE_MAX)
+        fun extreme(start: TasteSettings) = start.copy(bass = BASS_MAX, treble = TREBLE_MAX, legacyTreble = false)
+
+        /** Without a measured correction the headphones' own sound isn't at the target: the groups widen by half. */
+        private const val WIDEN = 1.5
 
         /**
-         * Population prior, relative to the hearing-corrected headphones. Harman's three bass groups,
-         * widened by half because the headphones' own bass isn't corrected to the target.
+         * Population prior over the ideal (bass, treble), relative to the corrected headphones:
+         * Harman's three groups, each 1.5 dB wide in bass and 2 dB in treble (inferred: the
+         * published spread is mostly in bass), times [widen].
          */
-        private fun prior(bass: Double, treble: Double): Double {
-            val b = 0.64 * normal(bass, 0.0, 1.8) + 0.15 * normal(bass, 5.0, 2.25) + 0.21 * normal(bass, -2.5, 1.8)
-            return b * normal(treble, 0.0, 2.5)
+        private fun prior(bass: Double, treble: Double, widen: Double): Double {
+            val sb = 1.5 * widen
+            val st = 2.0 * widen
+            return 0.64 * normal(bass, 0.0, sb) * normal(treble, 0.0, st) +
+                0.15 * normal(bass, 4.5, sb) * normal(treble, 0.5, st) +
+                0.21 * normal(bass, -2.5, sb) * normal(treble, 1.5, st)
         }
 
         private fun normal(x: Double, m: Double, s: Double) = exp(-0.5 * (x - m) * (x - m) / (s * s)) / s

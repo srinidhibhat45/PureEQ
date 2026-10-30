@@ -12,7 +12,8 @@ import kotlin.random.Random
 enum class ThresholdFlag { OK, NO_RESPONSE, BELOW_RANGE }
 
 /** One answer to a real beep: where and how loud it was, and whether it was heard. */
-data class TrialRecord(val freq: Double, val ear: Ear, val levelDb: Double, val heard: Boolean)
+/** One answered beep; [looks] is 2 when the listener played it again before answering. */
+data class TrialRecord(val freq: Double, val ear: Ear, val levelDb: Double, val heard: Boolean, val looks: Int = 1)
 
 /** Settings for one hearing test. Levels are peak dBFS. */
 data class HearingTestConfig(
@@ -182,7 +183,8 @@ class HearingSession(val config: HearingTestConfig, private val rnd: Random = Ra
         return null
     }
 
-    fun answer(heard: Boolean) {
+    /** Records the answer to the current beep; [looks] = 2 when it was played again first. */
+    fun answer(heard: Boolean, looks: Int = 1) {
         val p = current ?: return
         current = null
         trials++
@@ -191,7 +193,7 @@ class HearingSession(val config: HearingTestConfig, private val rnd: Random = Ra
             if (heard) falseAlarms++
         } else {
             val j = currentNode
-            log += j to TrialRecord(p.freq, p.ear, p.levelDb, heard)
+            log += j to TrialRecord(p.freq, p.ear, p.levelDb, heard, looks)
             count[j]++
             maxPresented = max(maxPresented, p.levelDb)
             sameNodeRun = if (j == lastNode) sameNodeRun + 1 else 0
@@ -200,7 +202,7 @@ class HearingSession(val config: HearingTestConfig, private val rnd: Random = Ra
         // Replaying every answer with the current guessing rate keeps the belief exact as catch trials come in.
         belief = ThresholdBelief(prior).also { b ->
             val g = guess()
-            for ((j, t) in log) b.update(j, t.levelDb, t.heard, g)
+            for ((j, t) in log) b.update(j, t.levelDb, t.heard, g, t.looks)
         }
     }
 
@@ -258,7 +260,7 @@ class HearingSession(val config: HearingTestConfig, private val rnd: Random = Ra
             ThresholdPoint(nodes[j].freq, nodes[j].ear, belief.mean[j], belief.sd(j), flag)
         }
         val inconsistent = log.count { (j, t) ->
-            val p = Psychometric.pYes(belief.mean[j], t.levelDb, g)
+            val p = Psychometric.pYes(belief.mean[j], t.levelDb, g, t.looks)
             if (t.heard) p < 0.1 else p > 0.9
         }
         return HearingTestResult(

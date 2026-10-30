@@ -4,6 +4,7 @@ import app.pureeq.dsp.Ear
 import kotlin.math.exp
 import kotlin.math.log2
 import kotlin.math.max
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 /** The kind of headphones a test is taken with. It picks the target curve the result is measured against. */
@@ -173,6 +174,15 @@ object Psychometric {
     fun pYes(threshold: Double, levelDb: Double, guess: Double): Double =
         guess + (1 - guess - LAPSE) / (1 + exp(-(levelDb - threshold) / SPREAD_DB))
 
+    /**
+     * With the beep played again before answering, "yes" means heard in either listen: about as
+     * likely as one listen 2 dB louder at threshold. Counting it so keeps a replay from reading low.
+     */
+    fun pYes(threshold: Double, levelDb: Double, guess: Double, looks: Int): Double {
+        val one = pYes(threshold, levelDb, guess)
+        return if (looks <= 1) one else 1 - (1 - one).pow(looks)
+    }
+
     /** Guessing rate from silent catch trials: Beta(1, 19) prior (5 %), kept between 1 % and 30 %. */
     fun guessRate(catchTrials: Int, falseAlarms: Int): Double = ((1.0 + falseAlarms) / (20.0 + catchTrials)).coerceIn(0.01, 0.3)
 }
@@ -188,10 +198,10 @@ class ThresholdBelief(val prior: ThresholdPrior) {
 
     fun sd(node: Int): Double = sqrt(cov[node][node])
 
-    fun update(node: Int, levelDb: Double, heard: Boolean, guess: Double) {
+    fun update(node: Int, levelDb: Double, heard: Boolean, guess: Double, looks: Int = 1) {
         val m = mean[node]
         val v = cov[node][node]
-        val (mm, vv) = moments(m, v, levelDb, heard, guess)
+        val (mm, vv) = moments(m, v, levelDb, heard, guess, looks)
         observe(node, mm, vv)
     }
 
@@ -249,14 +259,14 @@ class ThresholdBelief(val prior: ThresholdPrior) {
         private val PHI_SUM = PHI.sum()
 
         /** Mean and variance of N(m, v) × P(answer | threshold), by quadrature over ±6 SD. */
-        fun moments(m: Double, v: Double, levelDb: Double, heard: Boolean, guess: Double): Pair<Double, Double> {
+        fun moments(m: Double, v: Double, levelDb: Double, heard: Boolean, guess: Double, looks: Int = 1): Pair<Double, Double> {
             val s = sqrt(v)
             var w0 = 0.0
             var w1 = 0.0
             var w2 = 0.0
             for (q in Z.indices) {
                 val th = m + s * Z[q]
-                val p = Psychometric.pYes(th, levelDb, guess)
+                val p = Psychometric.pYes(th, levelDb, guess, looks)
                 val w = PHI[q] * if (heard) p else 1 - p
                 w0 += w
                 w1 += w * th
@@ -278,7 +288,7 @@ class ThresholdBelief(val prior: ThresholdPrior) {
             val index = nodes.withIndex().associate { it.value to it.index }
             if (result.trialLog.isNotEmpty()) {
                 val guess = Psychometric.guessRate(result.catchTrials, result.falseAlarms)
-                for (t in result.trialLog) belief.update(index.getValue(Node(t.ear, t.freq)), t.levelDb, t.heard, guess)
+                for (t in result.trialLog) belief.update(index.getValue(Node(t.ear, t.freq)), t.levelDb, t.heard, guess, t.looks)
             } else {
                 for (p in result.points) {
                     val sd = if (p.flag == ThresholdFlag.OK) max(p.sd, 2.0) else 8.0

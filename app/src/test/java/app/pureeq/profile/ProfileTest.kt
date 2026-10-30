@@ -14,10 +14,13 @@ import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingSession
 import app.pureeq.hearing.HearingTestConfig
 import app.pureeq.hearing.HearingTestResult
+import app.pureeq.hearing.Psychometric
 import app.pureeq.hearing.ReferenceCurve
 import app.pureeq.hearing.TestLength
 import app.pureeq.hearing.ThresholdFlag
 import app.pureeq.hearing.ThresholdPoint
+import app.pureeq.hearing.TrialRecord
+import app.pureeq.taste.TasteSession
 import app.pureeq.taste.TasteSettings
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -295,6 +298,33 @@ class ProfileTest {
         for (f in listOf(40.0, 105.0, 1000.0, 3000.0, 9000.0)) assertEquals("$f Hz", Curves.sample(correction, f), Curves.sample(eq.leftCurve, f), 0.6)
         // Room for the correction's +6 dB of bass, no more: AutoEq's own preamp for it is −6.1 dB.
         assertTrue("preamp ${eq.preampDb}", eq.preampDb in -7.0..-5.5)
+    }
+
+    @Test
+    fun tasteFromBefore15KeepsItsTrebleShelf() {
+        val chosen = TasteSettings(bass = 2.0, treble = 3.0)
+        val p = profile(null, taste = chosen).copy(recommendedTaste = chosen)
+        val json = p.toJson().toString()
+        fun trebleHz(t: TasteSettings) = t.filters().first { it.type == FilterType.HIGH_SHELF }.freq
+        // Saved by 1.5: the broad shelf from 2.5 kHz.
+        assertEquals(2500.0, trebleHz(Profile.fromJson(JSONObject(json)).taste), 0.0)
+        // Saved before 1.5 (no "shelf"): the 8 kHz shelf it was chosen with, for Reset too.
+        val old = Profile.fromJson(JSONObject(json).apply { getJSONObject("taste").remove("shelf"); getJSONObject("recommendedTaste").remove("shelf") })
+        assertTrue(old.taste.legacyTreble)
+        assertEquals(8000.0, trebleHz(old.taste), 0.0)
+        assertTrue(old.isRecommended)
+        // A new taste test starts from today's shelf.
+        assertFalse(TasteSession(start = old.taste).result().legacyTreble)
+    }
+
+    @Test
+    fun aBeepPlayedTwiceCountsAsTwoListens() {
+        val r = result { _, _ -> 0.0 }.copy(trialLog = listOf(TrialRecord(1000.0, Ear.LEFT, -50.0, true, looks = 2)))
+        val back = Profile.fromJson(JSONObject(profile(r).toJson().toString())).hearing!!
+        assertEquals(2, back.trialLog.single().looks)
+        // Heard on either listen is likelier than on one: at threshold 0.5 → about 0.75.
+        val one = Psychometric.pYes(-50.0, -50.0, 0.0)
+        assertEquals(1 - (1 - one) * (1 - one), Psychometric.pYes(-50.0, -50.0, 0.0, 2), 1e-12)
     }
 
     @Test

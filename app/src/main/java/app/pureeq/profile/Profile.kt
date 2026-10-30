@@ -99,6 +99,7 @@ data class Profile(
                             put(if (t.ear == Ear.LEFT) 0 else 1)
                             put(t.levelDb)
                             put(if (t.heard) 1 else 0)
+                            if (t.looks > 1) put(t.looks)
                         })
                     }
                 })
@@ -149,7 +150,7 @@ data class Profile(
                     trialLog = h.optJSONArray("trialLog")?.let { log ->
                         (0 until log.length()).map { i ->
                             val t = log.getJSONArray(i)
-                            TrialRecord(t.getDouble(0), if (t.getInt(1) == 0) Ear.LEFT else Ear.RIGHT, t.getDouble(2), t.getInt(3) == 1)
+                            TrialRecord(t.getDouble(0), if (t.getInt(1) == 0) Ear.LEFT else Ear.RIGHT, t.getDouble(2), t.getInt(3) == 1, if (t.length() > 4) t.getInt(4) else 1)
                         }
                     } ?: emptyList(),
                     headphones = h.optString("headphones").let { n -> HeadphoneType.entries.firstOrNull { it.name == n } },
@@ -232,6 +233,9 @@ data class Profile(
             put("warmth", warmth)
             put("vocals", vocals)
             put("treble", treble)
+            if (air != 0.0) put("air", air)
+            // 2 = the broad 2.5 kHz treble shelf of PureEQ 1.5; older profiles keep their 8 kHz one.
+            put("shelf", if (legacyTreble) 1 else 2)
         }
 
         private fun tasteFrom(t: JSONObject?) = TasteSettings(
@@ -239,6 +243,8 @@ data class Profile(
             warmth = t?.optDouble("warmth", 0.0) ?: 0.0,
             vocals = t?.optDouble("vocals", 0.0) ?: 0.0,
             treble = t?.optDouble("treble", 0.0) ?: 0.0,
+            air = t?.optDouble("air", 0.0) ?: 0.0,
+            legacyTreble = t != null && t.optInt("shelf", 1) < 2,
         )
     }
 }

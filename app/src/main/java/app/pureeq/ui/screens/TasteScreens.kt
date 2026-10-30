@@ -2,6 +2,17 @@ package app.pureeq.ui.screens
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -14,6 +25,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,6 +51,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -137,14 +155,27 @@ fun TasteIntroScreen(vm: AppViewModel) {
 fun TasteScreen(vm: AppViewModel) {
     val t by vm.taste.collectAsStateWithLifecycle()
     val playing by vm.musicPlaying.collectAsStateWithLifecycle()
+    val round = (t.answered + 1).coerceAtMost(t.total)
+    val canAnswer = !t.locked && t.heardB
     StepScaffold(
         title = "Taste",
         onBack = { vm.back() },
         bottom = {
+            Text(
+                when {
+                    t.locked -> "New pair…"
+                    !t.heardB -> "Listen to B as well, then choose."
+                    else -> "Which do you enjoy more?"
+                },
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChoiceButton("A is better", Modifier.weight(1f)) { vm.choose(Choice.A) }
-                ChoiceButton("Same", Modifier.weight(0.8f), outlined = true) { vm.choose(Choice.SAME) }
-                ChoiceButton("B is better", Modifier.weight(1f)) { vm.choose(Choice.B) }
+                ChoiceButton("A is better", Modifier.weight(1f), enabled = canAnswer) { vm.choose(Choice.A) }
+                ChoiceButton("Same", Modifier.weight(0.8f), outlined = true, enabled = canAnswer) { vm.choose(Choice.SAME) }
+                ChoiceButton("B is better", Modifier.weight(1f), enabled = canAnswer) { vm.choose(Choice.B) }
             }
             TextButton(onClick = vm::skipTaste, modifier = Modifier.fillMaxWidth()) { Text("Finish now") }
         },
@@ -154,20 +185,46 @@ fun TasteScreen(vm: AppViewModel) {
             modifier = Modifier.fillMaxWidth().height(6.dp),
             strokeCap = StrokeCap.Round,
         )
-        Text(
-            "Round ${(t.answered + 1).coerceAtMost(t.total)} · usually 5 to 7",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text("Which sounds better?", style = MaterialTheme.typography.headlineSmall)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AnimatedContent(
+                targetState = round,
+                transitionSpec = { (slideInVertically { it } + fadeIn()) togetherWith (slideOutVertically { -it } + fadeOut()) },
+                label = "round",
+            ) { r ->
+                Text(
+                    "Round $r",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            Text("usually 5 to 7", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        AnimatedVisibility(visible = t.locked && t.answered > 0, enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkVertically()) {
+            Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    "New pair: a different A and B. Listen to both again.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                )
+            }
+        }
         Text(
             "Tap A and B to switch instantly, as often as you like. Listen to the whole sound: bass, voices, cymbals, clarity.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            AbTile("A", t.listening == Choice.A && playing, Modifier.weight(1f)) { vm.listen(Choice.A) }
-            AbTile("B", t.listening == Choice.B && playing, Modifier.weight(1f)) { vm.listen(Choice.B) }
+        // Each new pair slides in, so the change of round is hard to miss.
+        AnimatedContent(
+            targetState = t.comparison?.round ?: 0,
+            transitionSpec = { (slideInHorizontally { it / 2 } + fadeIn()) togetherWith (slideOutHorizontally { -it / 2 } + fadeOut()) },
+            label = "pair",
+        ) { _ ->
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                AbTile("A", t.listening == Choice.A && playing, heard = true, Modifier.weight(1f)) { vm.listen(Choice.A) }
+                AbTile("B", t.listening == Choice.B && playing, heard = t.heardB, Modifier.weight(1f)) { vm.listen(Choice.B) }
+            }
         }
         FilledTonalButton(onClick = { vm.setMusicPlaying(!playing) }, modifier = Modifier.fillMaxWidth()) {
             Icon(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, null)
@@ -179,7 +236,7 @@ fun TasteScreen(vm: AppViewModel) {
 }
 
 @Composable
-private fun AbTile(label: String, active: Boolean, modifier: Modifier, onClick: () -> Unit) {
+private fun AbTile(label: String, active: Boolean, heard: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val bg by animateColorAsState(
         if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer,
         label = "ab",
@@ -194,7 +251,11 @@ private fun AbTile(label: String, active: Boolean, modifier: Modifier, onClick: 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(label, style = MaterialTheme.typography.displayMedium, color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                 Text(
-                    if (active) "Playing" else "Tap to hear",
+                    when {
+                        active -> "Playing"
+                        heard -> "Heard · tap to switch"
+                        else -> "Tap to hear"
+                    },
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -205,13 +266,18 @@ private fun AbTile(label: String, active: Boolean, modifier: Modifier, onClick: 
 }
 
 @Composable
-private fun ChoiceButton(text: String, modifier: Modifier, outlined: Boolean = false, onClick: () -> Unit) {
+private fun ChoiceButton(text: String, modifier: Modifier, outlined: Boolean = false, enabled: Boolean = true, onClick: () -> Unit) {
+    val haptics = LocalHapticFeedback.current
+    val tap = {
+        haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+        onClick()
+    }
     if (outlined) {
-        OutlinedButton(onClick = onClick, modifier = modifier.height(54.dp), shape = RoundedCornerShape(16.dp)) {
+        OutlinedButton(onClick = tap, enabled = enabled, modifier = modifier.height(54.dp), shape = RoundedCornerShape(16.dp)) {
             Text(text, textAlign = TextAlign.Center)
         }
     } else {
-        Button(onClick = onClick, modifier = modifier.height(54.dp), shape = RoundedCornerShape(16.dp)) {
+        Button(onClick = tap, enabled = enabled, modifier = modifier.height(54.dp), shape = RoundedCornerShape(16.dp)) {
             Text(text, textAlign = TextAlign.Center)
         }
     }

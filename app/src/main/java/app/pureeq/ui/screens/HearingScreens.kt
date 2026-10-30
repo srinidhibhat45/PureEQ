@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,6 +71,11 @@ fun HearingScreen(vm: AppViewModel) {
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape = RoundedCornerShape(16.dp),
             ) { Text("No") }
+            TextButton(onClick = vm::replayBeep, enabled = h.canReplay, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Rounded.Replay, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Play that beep again")
+            }
         },
     ) {
         LinearProgressIndicator(
@@ -100,7 +106,7 @@ fun HearingScreen(vm: AppViewModel) {
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            "Beeps come in either ear and get very quiet. Tap Yes as soon as you hear one, even faintly.",
+            "Beeps come in either ear and get very quiet. Tap Yes as soon as you hear one, even faintly. Missed one? You can play it again once before answering.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

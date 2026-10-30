@@ -17,7 +17,7 @@ class TasteSessionTest {
     private fun run(ideal: TasteSettings, seed: Int, noise: Double = 0.0, start: TasteSettings = TasteSettings(), maxRounds: Int = TasteSession.MAX_ROUNDS): Pair<TasteSettings, Int> {
         val rnd = Random(seed)
         val s = TasteSession(start = start, maxRounds = maxRounds, rnd = Random(seed + 100))
-        fun u(t: TasteSettings) = -((t.bass - ideal.bass) / 3.0).let { it * it } - ((t.treble - ideal.treble) / 3.5).let { it * it }
+        fun u(t: TasteSettings) = -((t.bass - ideal.bass) / 3.0).let { it * it } - ((t.treble - ideal.treble) / 3.0).let { it * it }
         var rounds = 0
         while (true) {
             val c = s.current() ?: break

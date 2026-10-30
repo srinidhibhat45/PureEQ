@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -134,6 +135,8 @@ data class HearingUi(
     val playing: Boolean = false,
     val canSayYes: Boolean = false,
     val canSayNo: Boolean = false,
+    /** The beep has played and hasn't been played again yet. */
+    val canReplay: Boolean = false,
     val progress: Float = 0f,
     val freq: Double? = null,
     val pause: PauseReason? = null,
@@ -147,6 +150,10 @@ data class TasteUi(
     val total: Int = 8,
     /** 0..1: how settled PureEQ's estimate of your taste is. */
     val certainty: Float = 0f,
+    /** B has been played this round, so both sides were heard and an answer can count. */
+    val heardB: Boolean = false,
+    /** Answers wait a moment after each new pair, so a tap meant for the last pair can't land on this one. */
+    val locked: Boolean = true,
 )
 
 data class PickerUi(
@@ -516,6 +523,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val hearing: StateFlow<HearingUi> = _hearing.asStateFlow()
     private var hearingJob: Job? = null
     private val answers = Channel<Boolean>(Channel.CONFLATED)
+    private val replays = Channel<Unit>(Channel.CONFLATED)
     private var session: HearingSession? = null
     private var lockedVolume = -1
 
@@ -523,10 +531,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         data class Answer(val heard: Boolean) : Outcome
         data object Paused : Outcome
         data object Timeout : Outcome
+        data object Replay : Outcome
     }
 
     fun answer(heard: Boolean) {
         answers.trySend(heard)
+    }
+
+    /** Plays the current beep once more before answering (counted as two listens). */
+    fun replayBeep() {
+        replays.trySend(Unit)
     }
 
     fun pauseHearing(reason: PauseReason) {
@@ -582,13 +596,27 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 // with a Bluetooth floor in case the device doesn't report its codec delay.
                 val delay = maxOf(engine.latencyMs, if (output.value.kind == OutputDevice.Kind.BLUETOOTH) 250 else 0)
                 var outcome = awaitOutcome(stim.durationMs.toLong() + delay + 150)
+                var looks = 1
                 if (outcome == Outcome.Timeout) {
-                    _hearing.update { it.copy(playing = false, canSayNo = true) }
-                    outcome = awaitOutcome(null)
+                    while (replays.tryReceive().isSuccess) Unit
+                    _hearing.update { it.copy(playing = false, canSayNo = true, canReplay = true) }
+                    outcome = awaitOutcome(null, allowReplay = true)
+                    if (outcome == Outcome.Replay) {
+                        // The same beep once more; "No" waits for it again, and the answer counts both listens.
+                        looks = 2
+                        engine.stopTone()
+                        engine.playTone(stim)
+                        _hearing.update { it.copy(playing = true, canSayNo = false, canReplay = false) }
+                        outcome = awaitOutcome(stim.durationMs.toLong() + delay + 150)
+                        if (outcome == Outcome.Timeout) {
+                            _hearing.update { it.copy(playing = false, canSayNo = true) }
+                            outcome = awaitOutcome(null)
+                        }
+                    }
                 }
                 engine.stopTone()
-                if (outcome is Outcome.Answer) s.answer(outcome.heard)
-                _hearing.update { it.copy(playing = false, canSayYes = false, canSayNo = false, progress = s.progress) }
+                if (outcome is Outcome.Answer) s.answer(outcome.heard, looks)
+                _hearing.update { it.copy(playing = false, canSayYes = false, canSayNo = false, canReplay = false, progress = s.progress) }
                 if (!warned && s.catchTrials >= 3 && s.falseAlarms >= 2 && s.falseAlarms.toDouble() / s.catchTrials > 0.34) {
                     warned = true
                     _hearing.update { it.copy(guessingWarning = true) }
@@ -608,11 +636,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _hearing.first { it.pause == null }
     }
 
-    private suspend fun awaitOutcome(timeoutMs: Long?): Outcome {
+    private suspend fun awaitOutcome(timeoutMs: Long?, allowReplay: Boolean = false): Outcome {
         val wait = suspend {
             merge(
                 answers.receiveAsFlow().map { Outcome.Answer(it) },
                 _hearing.filter { it.pause != null }.map { Outcome.Paused },
+                if (allowReplay) replays.receiveAsFlow().map { Outcome.Replay } else emptyFlow(),
             ).first()
         }
         return if (timeoutMs == null) wait() else withTimeoutOrNull(timeoutMs) { wait() } ?: Outcome.Timeout
@@ -721,7 +750,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun startTaste() {
         val d = _draft.value
-        val ts = TasteSession(start = d.taste, maxRounds = if (d.includeHearing) d.length.tasteRounds else TasteSession.MAX_ROUNDS)
+        val ts = TasteSession(start = d.taste, maxRounds = if (d.includeHearing) d.length.tasteRounds else TasteSession.MAX_ROUNDS, corrected = d.headphoneModel != null)
         tasteSession = ts
         _taste.value = TasteUi(total = ts.total)
         viewModelScope.launch {
@@ -750,19 +779,26 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         engine.setSlot(1, specs[1])
         engine.select(0)
         debugLog { "compare a=${c.a.bass}/${c.a.treble} b=${c.b.bass}/${c.b.treble}" }
-        _taste.update { it.copy(comparison = c, listening = Choice.A, answered = ts.answered, certainty = ts.certainty) }
+        _taste.update { it.copy(comparison = c, listening = Choice.A, answered = ts.answered, certainty = ts.certainty, heardB = false, locked = true) }
+        viewModelScope.launch {
+            delay(NEW_PAIR_PAUSE_MS)
+            _taste.update { if (it.comparison == c) it.copy(locked = false) else it }
+        }
     }
 
     fun listen(side: Choice) {
         engine.select(if (side == Choice.B) 1 else 0)
-        _taste.update { it.copy(listening = side) }
+        _taste.update { it.copy(listening = side, heardB = it.heardB || side == Choice.B) }
         if (!_musicPlaying.value) setMusicPlaying(true)
     }
 
     fun choose(choice: Choice) {
-        // Ignore a second tap while the next pair is still being picked.
+        // Ignore a second tap while the next pair is still being picked, and any answer before both sides were heard.
         if (choosing?.isActive == true) return
+        val ui = _taste.value
+        if (ui.locked || !ui.heardB) return
         val ts = tasteSession ?: return
+        _taste.update { it.copy(locked = true) }
         ts.answer(choice)
         // Picking the next pair takes a few milliseconds; keep it off the main thread.
         choosing = viewModelScope.launch {
@@ -1010,6 +1046,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         /** Level of the volume-setup beep: the listener makes this "soft but clear". */
         const val CAL_DB = -40.0
         const val CHANNEL_DB = -30.0
+
+        /** How long a new taste pair holds answers back: long enough to see the round change. */
+        private const val NEW_PAIR_PAUSE_MS = 1000L
 
         /** Frequencies debug builds log curves at: the listening check's bands and a few around them. */
         private val DEBUG_HZ = doubleArrayOf(50.0, 100.0, 250.0, 500.0, 1000.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0, 12000.0)
