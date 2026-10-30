@@ -8,6 +8,7 @@ import app.pureeq.dsp.FreqGrid
 import app.pureeq.dsp.ParametricFit
 import app.pureeq.dsp.Response
 import app.pureeq.headphones.HeadphoneModel
+import app.pureeq.headphones.MeasuredCorrectionTest
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingSession
 import app.pureeq.hearing.HearingTestConfig
@@ -17,6 +18,7 @@ import app.pureeq.hearing.TestLength
 import app.pureeq.hearing.ThresholdFlag
 import app.pureeq.hearing.ThresholdPoint
 import app.pureeq.taste.TasteSettings
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -271,5 +273,47 @@ class ProfileTest {
     fun tasteOnlyProfileIgnoresTheHiddenCorrectionSlider() {
         val p = profile(null, strength = 0.8).copy(recommendedTaste = TasteSettings())
         assertTrue(p.isRecommended)
+    }
+
+    /** Sennheiser HD 650 (oratory1990) corrected from its measurement to Harman over-ear 2018, as the app does. */
+    private val hd650 by lazy { MeasuredCorrectionTest.model(0) }
+
+    @Test
+    fun aMeasuredModelIsNotCorrectedTwice() {
+        // A normal listener on HD 650s: every threshold carries exactly what the correction fixes.
+        val shift = HearingCompensation.correctionShift(hd650.filters)
+        val h = result { _, f -> shift(f) - shift(1000.0) }
+        val with = maxAbs(ProfileEq(profile(h).copy(headphoneModel = hd650)).hearingTargetLeft, 300.0, 12000.0)
+        val without = maxAbs(ProfileEq(profile(h)).hearingTargetLeft, 300.0, 12000.0)
+        println("hearing part through HD 650: %.2f dB with its model, %.2f dB without".format(with, without))
+        assertTrue("with $with", with < 0.5)
+        assertTrue("without $without", without > 1.5)
+        // The whole EQ is then the model's correction, its +6 dB of Harman bass included.
+        val eq = ProfileEq(profile(h).copy(headphoneModel = hd650))
+        val correction = Response.of(hd650.filters, FreqGrid.hz)
+        for (f in listOf(40.0, 105.0, 1000.0, 3000.0, 9000.0)) assertEquals("$f Hz", Curves.sample(correction, f), Curves.sample(eq.leftCurve, f), 0.6)
+        assertTrue("preamp ${eq.preampDb}", eq.preampDb < -8.0)
+    }
+
+    @Test
+    fun measuredModelsKeepTheirSourceAndOlderOnesStillLoad() {
+        val p = profile(result { _, _ -> 0.0 }).copy(headphoneModel = hd650, recommendedTaste = TasteSettings())
+        val back = Profile.fromJson(JSONObject(p.toJson().toString()))
+        assertEquals(p, back)
+        assertEquals("oratory1990/over-ear/Sennheiser%20HD%20650", back.headphoneModel?.path)
+        assertEquals(hd650.curveDb, back.headphoneModel?.curveDb)
+        // The per-device memory stores the same JSON.
+        assertEquals(hd650, Profile.modelFrom(JSONObject(Profile.modelJson(hd650).toString())))
+        // A 1.3 model (AutoEq's published filters only) loads as it was.
+        val old = p.toJson().apply {
+            getJSONObject("headphoneModel").apply { remove("path"); remove("target"); remove("curve"); remove("bassDb") }
+        }
+        val m = Profile.fromJson(old).headphoneModel!!
+        assertNull(m.path)
+        assertNull(m.curveDb)
+        assertEquals(hd650.filters, m.filters)
+        // A curve on another grid is dropped, the filters stay.
+        val odd = p.toJson().apply { getJSONObject("headphoneModel").put("curve", org.json.JSONArray(listOf(1.0, 2.0))) }
+        assertNull(Profile.fromJson(odd).headphoneModel!!.curveDb)
     }
 }

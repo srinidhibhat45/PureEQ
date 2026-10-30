@@ -12,7 +12,9 @@ import app.pureeq.audio.Matching
 import app.pureeq.audio.MusicTrack
 import app.pureeq.audio.NoiseMeter
 import app.pureeq.audio.OutputDevice
+import app.pureeq.dsp.Curves
 import app.pureeq.dsp.Ear
+import app.pureeq.dsp.Response
 import app.pureeq.dsp.Stimulus
 import app.pureeq.headphones.AutoEqClient
 import app.pureeq.headphones.AutoEqEntry
@@ -93,6 +95,8 @@ data class Draft(
     val headphonesChosen: Boolean = false,
     /** Measured correction from AutoEq, if the listener picked their model. */
     val headphoneModel: HeadphoneModel? = null,
+    /** [headphoneModel] came from the last pick for these headphones, not from this profile's own. */
+    val modelRemembered: Boolean = false,
     val noiseDb: Double? = null,
     val volumeIndex: Int? = null,
     val hearing: HearingTestResult? = null,
@@ -102,6 +106,18 @@ data class Draft(
     /** Set when redoing the taste test of this saved profile: the result goes back into it. */
     val retuneOf: String? = null,
 )
+
+/**
+ * This draft with the model remembered for its headphones ([remembered]; null when there is none):
+ * applied while the profile has no model of its own, and dropped again when the headphones change
+ * to a pair without one. A model picked for this profile always stays.
+ */
+fun Draft.withRememberedModel(remembered: HeadphoneModel?): Draft = when {
+    headphoneModel != null && !modelRemembered -> this
+    remembered != null -> copy(headphoneModel = remembered, headphones = remembered.type, modelRemembered = true)
+    modelRemembered -> copy(headphoneModel = null, modelRemembered = false, headphones = if (headphonesChosen) headphones else HeadphoneType.guess(device?.name))
+    else -> this
+}
 
 data class QuietUi(val measuring: Boolean = false, val level: Double? = null, val result: Double? = null, val failed: Boolean = false)
 
@@ -217,6 +233,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (audio) route.requestFocus()
         when (s) {
             Screen.Home -> route.abandonFocus()
+            Screen.Headphones -> applyRememberedModel()
             Screen.Volume -> {
                 _channel.value = ChannelUi()
                 startVolumeTone()
@@ -288,6 +305,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun updateDevice() {
         val out = route.currentOutput()
         _draft.update { if (it.headphonesChosen) it.copy(device = out) else it.copy(device = out, headphones = HeadphoneType.guess(out.name)) }
+        if (screen.value == Screen.Headphones) applyRememberedModel()
+    }
+
+    /**
+     * The new profile starts with the model picked for these headphones last time, and follows a
+     * change of headphones. A model picked for this profile stays.
+     */
+    private fun applyRememberedModel() {
+        val m = _draft.value.device?.takeIf { it.isHeadphones }?.name?.let { store.rememberedModel(it) }
+        _draft.update { it.withRememberedModel(m) }
     }
 
     fun onAppStopped() {
@@ -369,6 +396,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         pickerJob = viewModelScope.launch {
             runCatching { autoEq.model(entry) }
                 .onSuccess { m ->
+                    debugLog {
+                        val r = Response.of(m.filters, DEBUG_HZ)
+                        "model ${m.path} target=${m.target} filters=${m.filters.size} correction=" + DEBUG_HZ.indices.joinToString(" ") { "%.0f:%.1f".format(DEBUG_HZ[it], r[it]) }
+                    }
                     setHeadphoneModel(m, target.forEditor)
                     _picker.update { it.copy(fetching = null) }
                     back()
@@ -383,13 +414,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun setHeadphoneModel(m: HeadphoneModel?, forEditor: Boolean) {
         if (!forEditor) {
-            _draft.update { d -> if (m == null) d.copy(headphoneModel = null) else d.copy(headphoneModel = m, headphones = m.type, headphonesChosen = true) }
+            _draft.update { d -> if (m == null) d.copy(headphoneModel = null, modelRemembered = false) else d.copy(headphoneModel = m, headphones = m.type, headphonesChosen = true, modelRemembered = false) }
+            _draft.value.device?.takeIf { it.isHeadphones }?.name?.let { store.rememberModel(it, m) }
             return
         }
         val ui = _editor.value ?: return
         val p = ui.profile.copy(headphoneModel = m, headphoneCorrection = true)
         _editor.update { it?.copy(profile = p) }
-        if (ui.isDraft) _draft.update { it.copy(headphoneModel = m) } else store.upsert(p)
+        if (ui.isDraft) _draft.update { it.copy(headphoneModel = m, modelRemembered = false) } else store.upsert(p)
+        p.deviceName?.let { store.rememberModel(it, m) }
         recompute(save = false)
     }
 
@@ -845,6 +878,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             delay(40)
             val ui = _editor.value ?: return@launch
             val eq = withContext(Dispatchers.Default) { ProfileEq(ui.profile) }
+            debugLog {
+                fun at(c: DoubleArray) = DEBUG_HZ.joinToString(" ") { "%.0f:%.1f".format(it, Curves.sample(c, it)) }
+                "eq model=${ui.profile.headphoneModel?.path} on=${ui.profile.headphoneCorrection} preamp=${eq.preampDb} " +
+                    "hearingL=${at(eq.hearingTargetLeft)} hearingR=${at(eq.hearingTargetRight)} left=${at(eq.leftCurve)}"
+            }
             _editor.update { it?.copy(eq = eq) }
             if (_editor.value?.previewing == true) applyPreview(eq)
             if (save && !ui.isDraft) store.upsert(ui.profile)
@@ -963,5 +1001,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         /** Level of the volume-setup beep: the listener makes this "soft but clear". */
         const val CAL_DB = -40.0
         const val CHANNEL_DB = -30.0
+
+        /** Frequencies debug builds log curves at: the hearing check's bands and a few around them. */
+        private val DEBUG_HZ = doubleArrayOf(50.0, 100.0, 250.0, 500.0, 1000.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0, 12000.0)
     }
 }
