@@ -12,3 +12,7 @@
 *.apk
 !/dist/*.apk
 /ota/out/
+# Release signing: settings and keys stay out of git (docs/key-rotation.md).
+/keystore.properties
+*.jks
+*.keystore
