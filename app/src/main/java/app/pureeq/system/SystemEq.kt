@@ -27,12 +27,18 @@ class SystemCurves(val left: DoubleArray, val right: DoubleArray) {
  * (about 22-23 Hz per bin), so up to about 530 Hz every bin gets its own band and above that
  * bands are 1/16 octave: about 107 bands, inside the 128 that newer Android versions allow.
  * The last edge sits far above Nyquist so every bin is written; the engine bounds its loops
- * to the spectrum size.
+ * to the spectrum size. The block also sets the latency: about 43 ms at 48 kHz.
  */
 object DpBands {
     const val FRAME_MS = 40f
     private const val BIN_HZ = 48000.0 / 2048
     private val STEP = 2.0.pow(1.0 / 16)
+
+    /**
+     * The DC bin also holds everything below about 12 Hz. A boost there only spends headroom
+     * and driver excursion on sound nobody hears, so it's held well down instead.
+     */
+    private const val DC_GAIN_DB = -12.0
 
     /** Bands below this index each own one FFT bin; their gain is the curve at that bin. */
     private val binBands: Int
@@ -63,7 +69,9 @@ object DpBands {
         var lo = 0.0
         return FloatArray(edges.size) { b ->
             val hi = edges[b]
-            val g = if (b < binBands) {
+            val g = if (b == 0) {
+                DC_GAIN_DB
+            } else if (b < binBands) {
                 Curves.sample(curveDb, max(b * BIN_HZ, FreqGrid.MIN_HZ))
             } else {
                 val a = max(lo, FreqGrid.MIN_HZ)
@@ -100,7 +108,8 @@ class DpEffect(val sessionId: Int, curves: SystemCurves) {
         ).setPreferredFrameDuration(DpBands.FRAME_MS).build()
         config.setPreEqByChannelIndex(0, eqFor(curves.left))
         config.setPreEqByChannelIndex(1, eqFor(curves.right))
-        // Safety net only: the preamp already keeps every band at or below 0 dB.
+        // A ceiling on sustained level only: it follows each frame's RMS (about 21 ms) without
+        // look-ahead, so it can't catch sample peaks. The preamp is what keeps music below full scale.
         config.setLimiterAllChannelsTo(DynamicsProcessing.Limiter(true, true, 0, 1f, 60f, 10f, -1f, 0f))
         dp = DynamicsProcessing(PRIORITY, sessionId, config)
         dp.enabled = true

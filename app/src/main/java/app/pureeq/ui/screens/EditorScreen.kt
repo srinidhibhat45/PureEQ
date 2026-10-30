@@ -176,7 +176,7 @@ private fun FineTuning(
     val suggestedTaste = p.recommendedTaste
     val changed = buildList {
         if (p.headphoneModel != null && !p.headphoneCorrection) add("headphone correction")
-        if (p.hearing != null && p.hearingStrength != rec.hearingStrength) add("hearing correction")
+        if (p.hearing != null && p.hearingStrength != rec.hearingStrength) add("ear tuning")
         suggestedTaste?.let { t -> TasteBand.entries.filter { p.taste[it] != t[it] }.forEach { add(it.label.lowercase()) } }
         if (p.balanceDb != rec.balanceDb) add("balance")
     }
@@ -187,7 +187,7 @@ private fun FineTuning(
                 Text(
                     when {
                         changed.isNotEmpty() -> "Changed from PureEQ's suggestion: ${changed.joinToString(", ")}."
-                        suggestedTaste == null -> "Hearing correction and balance are as PureEQ suggested."
+                        suggestedTaste == null -> "Ear tuning and balance are as PureEQ suggested."
                         else -> "Everything is as PureEQ suggested from your tests."
                     },
                     style = MaterialTheme.typography.bodySmall,
@@ -239,9 +239,9 @@ private fun FineTuning(
         }
         if (p.hearing != null) {
             Control(
-                "Hearing correction",
+                "Ear tuning",
                 percent(p.hearingStrength),
-                "How much of the measured difference to correct. 75% corrects most of it while leaving room for measurement noise; larger hearing losses always get less, as hearing-aid fitting rules do.",
+                "How much of your listening check to apply. 75% applies most of it while leaving room for measurement noise; large differences always get proportionally less.",
                 suggested = percent(rec.hearingStrength).takeIf { p.hearingStrength != rec.hearingStrength },
                 onRestore = { edit { it.copy(hearingStrength = rec.hearingStrength) } },
             ) {

@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -102,11 +103,11 @@ private fun DrawScope.drawCurve(c: ChartCurve, x: (Double) -> Float, y: (Double)
     )
 }
 
-class HearingSeries(val points: List<Pair<Double, Double>>, val color: Color, val cross: Boolean)
+class HearingSeries(val points: List<Pair<Double, Double>>, val color: Color, val square: Boolean)
 
 /**
- * Audiogram-style view of the relative hearing levels: better hearing higher up. Left ear uses
- * crosses and right ear circles, as on a clinical audiogram.
+ * The relative listening profile: bands that get more help sit lower. Left ear dots, right ear
+ * squares, so the ears differ by shape as well as colour, without an audiogram's ✕ and ○.
  */
 @Composable
 fun HearingChart(series: List<HearingSeries>, modifier: Modifier = Modifier, height: Dp = 200.dp) {
@@ -128,7 +129,7 @@ fun HearingChart(series: List<HearingSeries>, modifier: Modifier = Modifier, hei
         val fLo = log2(freqs.first())
         val fHi = log2(freqs.last())
         fun x(f: Double) = left + pad + if (fHi == fLo) w / 2 else ((log2(f) - fLo) / (fHi - fLo)).toFloat() * w
-        // Worse hearing (higher relative level) goes down, like an audiogram.
+        // Higher relative levels (bands that get more help) go down.
         fun y(v: Double) = ((v - lo) / (hi - lo)).toFloat() * h
         var v = ceil(lo / 10) * 10
         while (v <= hi) {
@@ -147,11 +148,10 @@ fun HearingChart(series: List<HearingSeries>, modifier: Modifier = Modifier, hei
             val pts = s.points.sortedBy { it.first }.map { Offset(x(it.first), y(it.second)) }
             for (i in 1 until pts.size) drawLine(s.color.copy(alpha = 0.7f), pts[i - 1], pts[i], 2.dp.toPx(), StrokeCap.Round)
             for (p in pts) {
-                if (s.cross) {
-                    drawLine(s.color, p + Offset(-r, -r), p + Offset(r, r), 2.5.dp.toPx(), StrokeCap.Round)
-                    drawLine(s.color, p + Offset(-r, r), p + Offset(r, -r), 2.5.dp.toPx(), StrokeCap.Round)
+                if (s.square) {
+                    drawRect(s.color, topLeft = p + Offset(-0.85f * r, -0.85f * r), size = Size(1.7f * r, 1.7f * r))
                 } else {
-                    drawCircle(s.color, r, p, style = Stroke(2.5.dp.toPx()))
+                    drawCircle(s.color, r, p)
                 }
             }
         }

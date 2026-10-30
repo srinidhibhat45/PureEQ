@@ -267,7 +267,7 @@ private fun WelcomeCard(onStart: () -> Unit) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { ListeningOrb(active = true, size = 150.dp) }
         Text("Find your sound", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "A short hearing check plays beeps in each ear and asks if you heard them. Then a few A/B rounds on music learn what you like. " +
+            "A short listening check plays beeps in each ear and asks if you heard them. Then a few A/B rounds on music learn what you like. " +
                 "PureEQ turns both into an EQ for your headphones that you can apply to all audio or export to your EQ app.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -344,7 +344,7 @@ private fun ActiveProfileCard(
             title = { Text("Delete ${profile.name}?") },
             text = {
                 Text(
-                    "This is the profile PureEQ is using right now. Its hearing results and taste choices will be removed from this phone. " +
+                    "This is the profile PureEQ is using right now. Its listening results and taste choices will be removed from this phone. " +
                         if (successor != null) {
                             "PureEQ will switch to ${successor.name} (${subtitle(successor)})."
                         } else {
@@ -391,7 +391,7 @@ private fun ProfileRow(p: Profile, onActivate: () -> Unit, onEdit: () -> Unit, o
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete ${p.name}?") },
-            text = { Text("The hearing results and taste choices in this profile will be removed from this phone.") },
+            text = { Text("The listening results and taste choices in this profile will be removed from this phone.") },
             confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Delete") } },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
         )
@@ -411,7 +411,7 @@ fun curvesFor(eq: ProfileEq, combined: Color): List<ChartCurve> {
 private fun subtitle(p: Profile): String {
     val date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(p.createdAt))
     val kind = when {
-        p.hearing != null -> "Hearing + taste"
+        p.hearing != null -> "Ears + taste"
         else -> "Taste only"
     }
     return listOfNotNull(p.deviceName, kind, date).joinToString(" · ")

@@ -86,7 +86,7 @@ fun IntroScreen(vm: AppViewModel) {
             "PureEQ measures how well each ear hears each part of the spectrum through these headphones, then learns what you like. Both become one EQ.",
         )
         SectionCard {
-            InfoRow(Icons.Rounded.Hearing, "1 · Hearing check", "Short beeps in your left and right ear. Tap Yes whenever you hear one, even faintly. PureEQ picks each beep to learn as much as possible, so it's over in about 2 minutes.")
+            InfoRow(Icons.Rounded.Hearing, "1 · Listening check", "Short beeps in your left and right ear. Tap Yes whenever you hear one, even faintly. PureEQ picks each beep to learn as much as possible, so it's over in about 2 minutes.")
             InfoRow(Icons.Rounded.Tune, "2 · Taste", "Hear music as A and B, pick the one you like. Both are equally loud, so trust your ears. Usually 5 to 7 rounds.")
             InfoRow(Icons.Rounded.Equalizer, "3 · Your EQ", "Apply it to all audio on this phone, or export it to Wavelet, Poweramp Equalizer, JamesDSP and others.")
         }
@@ -103,7 +103,7 @@ fun IntroScreen(vm: AppViewModel) {
         SectionCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Hearing check", style = MaterialTheme.typography.titleSmall)
+                    Text("Listening check", style = MaterialTheme.typography.titleSmall)
                     Text(
                         if (draft.includeHearing) draft.length.detail else "Skipped: taste only",
                         style = MaterialTheme.typography.bodySmall,
@@ -160,13 +160,13 @@ fun HeadphonesScreen(vm: AppViewModel) {
             }
             if (!output.isHeadphones) {
                 Text(
-                    "No headphones detected. A hearing check needs one sound per ear, which a phone speaker can't do.",
+                    "No headphones detected. A listening check needs one sound per ear, which a phone speaker can't do.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = StatusColors.Warn,
                 )
             }
         }
-        // The type only matters for the hearing check's reference curve.
+        // The type only matters for the listening check's reference curve.
         if (draft.includeHearing) {
             SectionCard {
                 Text("Type", style = MaterialTheme.typography.titleSmall)
@@ -191,7 +191,7 @@ fun HeadphonesScreen(vm: AppViewModel) {
             val model = draft.headphoneModel
             if (model == null) {
                 Text(
-                    "Add your model's measured correction from AutoEq's database of over 6,000 headphones. It brings them to the Harman target, and the hearing check fine-tunes the rest.",
+                    "Add your model's measured correction from AutoEq's database of over 6,000 headphones. It brings them to the Harman target, and the listening check fine-tunes the rest.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -250,7 +250,7 @@ fun QuietScreen(vm: AppViewModel) {
     ) {
         Headline(
             "Is it quiet enough?",
-            "Background noise covers up quiet beeps and makes your hearing look worse than it is. PureEQ can listen for 3 seconds to check. Nothing is recorded or saved.",
+            "Background noise covers up quiet beeps and skews the result. PureEQ can listen for 3 seconds to check. Nothing is recorded or saved.",
         )
         SectionCard(padding = 22.dp) {
             val level = quiet.level
@@ -391,7 +391,7 @@ private fun ChannelCheck(vm: AppViewModel, c: ChannelUi) {
             }
             else -> SectionCard {
                 val (ok, text) = when (v) {
-                    ChannelVerdict.OK -> true to "Correct. Starting the hearing check…"
+                    ChannelVerdict.OK -> true to "Correct. Starting the listening check…"
                     ChannelVerdict.SWAPPED -> false to "That beep was on the other side, so left and right look swapped. Check the earbuds are in the correct ears (L/R markings), then try again."
                     ChannelVerdict.MONO -> false to "It sounded on both sides, so mono audio may be on. Turn it off and centre the balance in Settings > Accessibility > Audio, then try again."
                     ChannelVerdict.NOT_HEARD -> false to "The beep was missed. Check both earbuds are in and connected; the volume may be too low."

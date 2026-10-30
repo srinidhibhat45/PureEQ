@@ -372,7 +372,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     _picker.update { p -> p.copy(loading = false) }
                     searchHeadphones(_picker.value.query)
                 }
-                .onFailure { _picker.update { p -> p.copy(loading = false, error = "Couldn't reach AutoEq's database. Check the connection and try again, or skip this: the hearing check corrects your headphones either way.") } }
+                .onFailure { _picker.update { p -> p.copy(loading = false, error = "Couldn't reach AutoEq's database. Check the connection and try again, or skip this: the listening check corrects your headphones either way.") } }
         }
     }
 
@@ -692,7 +692,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private var tastePreparedFor: Triple<HearingTestResult?, HeadphoneModel?, MusicTrack?>? = null
 
     /**
-     * Fits the hearing correction once for the whole taste test and fixes one headroom for it:
+     * Fits the ear tuning once for the whole taste test and fixes one headroom for it:
      * the most extreme option the session can reach (bass and treble at their maximum) sets it.
      */
     private suspend fun prepareTaste() {
@@ -769,7 +769,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * Fine-tune → a fresh taste test for a saved profile, from a flat start like the first one.
-     * Its hearing result, name, correction and balance stay; backing out changes nothing.
+     * Its listening result, name, correction and balance stay; backing out changes nothing.
      */
     fun redoTaste(profileId: String) {
         val p = store.profile(profileId) ?: return
@@ -782,7 +782,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         go(Screen.TasteIntro)
     }
 
-    /** From the taste intro: keep the hearing result as is and go straight to the editor. */
+    /** From the taste intro: keep the listening result as is and go straight to the editor. */
     fun skipTasteFromIntro() {
         setMusicPlaying(false)
         if (_draft.value.retuneOf != null) {
@@ -859,7 +859,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Puts hearing correction, taste and balance back to what the tests recommended. Returns the
+     * Puts ear tuning, taste and balance back to what the tests recommended. Returns the
      * profile as it was, for Undo, or null when there was nothing to reset.
      */
     fun resetEditor(): Profile? {
@@ -1002,7 +1002,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         const val CAL_DB = -40.0
         const val CHANNEL_DB = -30.0
 
-        /** Frequencies debug builds log curves at: the hearing check's bands and a few around them. */
+        /** Frequencies debug builds log curves at: the listening check's bands and a few around them. */
         private val DEBUG_HZ = doubleArrayOf(50.0, 100.0, 250.0, 500.0, 1000.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0, 12000.0)
     }
 }

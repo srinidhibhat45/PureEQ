@@ -58,7 +58,7 @@ fun HearingScreen(vm: AppViewModel) {
     var confirmStop by remember { mutableStateOf(false) }
     BackHandler { confirmStop = true }
     StepScaffold(
-        title = "Hearing check",
+        title = "Listening check",
         onBack = { confirmStop = true },
         scroll = false,
         actions = { IconButton(onClick = { vm.pauseHearing(PauseReason.USER) }) { Icon(Icons.Rounded.Pause, "Pause") } },
@@ -134,7 +134,7 @@ fun HearingScreen(vm: AppViewModel) {
     if (confirmStop) {
         AlertDialog(
             onDismissRequest = { confirmStop = false },
-            title = { Text("Stop the hearing check?") },
+            title = { Text("Stop the listening check?") },
             text = { Text("Your answers so far will be discarded.") },
             confirmButton = { TextButton(onClick = { confirmStop = false; vm.home() }) { Text("Stop") } },
             dismissButton = { TextButton(onClick = { confirmStop = false }) { Text("Keep going") } },
@@ -152,12 +152,12 @@ fun HearingDoneScreen(vm: AppViewModel) {
         HearingSeries(
             HearingCompensation.chartPoints(result, type, ear, correction),
             if (ear == Ear.LEFT) EarColors.Left else EarColors.Right,
-            cross = ear == Ear.LEFT,
+            square = ear == Ear.RIGHT,
         )
     }
     val reliability = result.reliability
     StepScaffold(
-        title = "Hearing check",
+        title = "Listening check",
         onBack = null,
         step = 6,
         bottom = {
@@ -165,22 +165,22 @@ fun HearingDoneScreen(vm: AppViewModel) {
             TextButton(onClick = { vm.home(); vm.startNewProfile() }, modifier = Modifier.fillMaxWidth()) { Text("Start over") }
         },
     ) {
-        Text("Done. Here's how you hear", style = MaterialTheme.typography.headlineSmall)
+        Text("Done. Here's your listening profile", style = MaterialTheme.typography.headlineSmall)
         Text(
             if (correction.isEmpty()) {
-                "Each point is how well you hear that band through these headphones, compared with a young normal-hearing listener on well-tuned ${type.label.lowercase()} headphones, with your mid range as the zero line. Lower on the chart means that band needs more help. It includes your headphones' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point."
+                "Each point compares the quietest beep you heard in that band through these headphones with a reference listener on well-tuned ${type.label.lowercase()} headphones, with your mid range as the zero line. Lower on the chart means that band gets more help. It includes your headphones' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point."
             } else {
-                "Each point is how well you hear that band, compared with a young normal-hearing listener, after your headphones' measured response is taken out, with your mid range as the zero line. Lower on the chart means that band needs more help. What's left is your ears and how the headphones sit on them. The EQ follows the smooth trend, not every point."
+                "Each point compares the quietest beep you heard in that band with a reference listener, after your headphones' measured response is taken out, with your mid range as the zero line. Lower on the chart means that band gets more help. What's left is your ears and how the headphones sit on them. The EQ follows the smooth trend, not every point."
             },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         SectionCard {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Pill("✕ Left", EarColors.Left)
-                Pill("○ Right", EarColors.Right)
+                Pill("● Left", EarColors.Left)
+                Pill("■ Right", EarColors.Right)
                 Spacer(Modifier.weight(1f))
-                Text("dB, relative", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("dB, relative to the reference", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             HearingChart(series, height = 220.dp)
         }
@@ -222,7 +222,7 @@ fun HearingDoneScreen(vm: AppViewModel) {
             }
         }
         Text(
-            "PureEQ is not a medical device and this is not a diagnosis. If you're worried about your hearing, see an audiologist.",
+            "This is a relative listening profile for tuning sound, not a hearing test or an audiogram. PureEQ is not a medical device. A hearing care professional can help with any questions about your hearing.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

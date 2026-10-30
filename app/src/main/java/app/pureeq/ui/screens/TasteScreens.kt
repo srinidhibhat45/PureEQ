@@ -92,7 +92,7 @@ fun TasteIntroScreen(vm: AppViewModel) {
         bottom = {
             PrimaryButton("Start comparing", { vm.previewForVolume(false); vm.go(Screen.Taste) }, enabled = track != null)
             if (!retune) {
-                TextButton(onClick = { vm.skipTasteFromIntro() }, modifier = Modifier.fillMaxWidth()) { Text("Skip, use hearing result only") }
+                TextButton(onClick = { vm.skipTasteFromIntro() }, modifier = Modifier.fillMaxWidth()) { Text("Skip, use the listening check only") }
             }
         },
     ) {
@@ -100,7 +100,7 @@ fun TasteIntroScreen(vm: AppViewModel) {
             Headline(
                 "Redo the taste test",
                 "You'll hear the same music as A and B and pick the one you enjoy more, usually 5 to 7 rounds. Both are equally loud. " +
-                    "Your hearing result stays as it is; the outcome replaces your bass and treble (warmth and vocals go back to 0) and becomes what Reset goes back to.",
+                    "Your listening result stays as it is; the outcome replaces your bass and treble (warmth and vocals go back to 0) and becomes what Reset goes back to.",
             )
         } else {
             Headline(

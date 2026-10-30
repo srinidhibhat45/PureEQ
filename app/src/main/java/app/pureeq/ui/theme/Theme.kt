@@ -11,7 +11,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-/** Audiogram convention: left ear blue, right ear red. */
+/** Left ear blue, right ear red. */
 object EarColors {
     val Left = Color(0xFF5AA2FF)
     val Right = Color(0xFFFF6B7A)

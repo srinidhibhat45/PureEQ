@@ -56,7 +56,7 @@ fun HeadphonePickerScreen(vm: AppViewModel, forEditor: Boolean) {
     ) {
         Headline(
             "Find your model",
-            "PureEQ corrects your model from its lab measurement to the Harman target most listeners prefer. Your hearing check then only fixes what's left: your ears and how the headphones sit on them.",
+            "PureEQ corrects your model from its lab measurement to the Harman target most listeners prefer. Your listening check then only fixes what's left: your ears and how the headphones sit on them.",
         )
         OutlinedTextField(
             value = ui.query,
