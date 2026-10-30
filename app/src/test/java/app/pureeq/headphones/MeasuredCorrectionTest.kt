@@ -62,18 +62,44 @@ class MeasuredCorrectionTest {
     }
 
     @Test
-    fun eachModelIsCorrectedToItsRigsHarmanTargetAsAutoEqWould() {
-        // AutoEq's own code against the same targets (expected.csv) and the app's model agree.
+    fun eachRigsTargetGivesWhatAutoEqsOwnCodeGives() {
+        // AutoEq's own code against each rig's target without bass (expected.csv) and the app's pipeline agree.
         for (i in FIXTURES.indices) {
-            val (file, _, _) = FIXTURES[i]
-            val m = model(i)
+            val (file, _, target) = FIXTURES[i]
+            val eq = MeasuredCorrection.equalization(AutoEqCsv.parse(fixture("$file.csv")), AutoEqCsv.parse(fixture("target $target.csv")))
             val expected = AutoEqCsv.parse(fixture("$file expected.csv"), "equalization")
-            val onGrid = MeasuredCorrection.interpolate(expected, FreqGrid.hz.filter { it <= expected.freqs.last() }.toDoubleArray())
+            val at = FreqGrid.hz.filter { it <= expected.freqs.last() }.toDoubleArray()
+            val want = MeasuredCorrection.interpolate(expected, at)
+            val got = MeasuredCorrection.interpolate(AutoEqCsv.Curve(AutoEqEqualizer.GRID, eq), at)
             var d = 0.0
-            for (k in onGrid.indices) d = max(d, abs(onGrid[k] - m.curveDb!![k]))
-            println("${m.name}: stored curve within %.3f dB of AutoEq's code".format(d))
-            assertTrue("${m.name}: $d", d < 0.02)
+            for (k in at.indices) d = max(d, abs(want[k] - got[k]))
+            println("$file: within %.3f dB of AutoEq's code".format(d))
+            assertTrue("$file: $d", d < 0.02)
         }
+    }
+
+    @Test
+    fun theCapCoversTheTargetsBassAsInAutoEqsResults() {
+        // The target's bass counts towards the +6 dB cap, as with AutoEq's bass boost.
+        for (i in FIXTURES.indices) {
+            val m = model(i)
+            val total = MeasuredCorrection.withBass(m.curveDb!!, m.bassDb!!)
+            assertTrue("${m.name}: ${total.max()}", total.max() <= AutoEqEqualizer.MAX_GAIN_DB + 0.05)
+        }
+        // oratory1990's HD 650 was published against the full Harman over-ear 2018 target, which the
+        // target without bass plus its shelf rebuilds: the app's correction is AutoEq's published one.
+        val published = AutoEqCsv.parse(fixture("oratory1990 Sennheiser HD 650.csv"), "equalization")
+        val m = model(0)
+        val total = MeasuredCorrection.withBass(m.curveDb!!, m.bassDb!!)
+        val want = MeasuredCorrection.interpolate(published, FreqGrid.hz.filter { it <= published.freqs.last() }.toDoubleArray())
+        var d = 0.0
+        for (k in want.indices) d = max(d, abs(want[k] - total[k]))
+        println("HD 650 with the target's bass: within %.3f dB of AutoEq's published correction".format(d))
+        // Published values are rounded to 0.01 dB.
+        assertTrue("HD 650: $d", d <= 0.02)
+        // +6 dB at 20 and 30 Hz, where the full target would ask for about +10.5 and +7.7.
+        assertEquals(6.0, Curves.sample(total, 20.0), 0.1)
+        assertEquals(6.0, Curves.sample(total, 30.0), 0.1)
     }
 
     @Test
@@ -111,8 +137,7 @@ class MeasuredCorrectionTest {
         assertEquals("the Harman over-ear 2018 target", m.targetLabel)
         // AutoEq's published corrections (crinacle, 1.3 profiles) say so.
         assertEquals("AutoEq's target for it", m.copy(target = null).targetLabel)
-        // The +6 dB limit is on the correction; the target's bass comes on top.
-        assertTrue(m.curveDb!!.max() <= AutoEqEqualizer.MAX_GAIN_DB + 0.05)
+        // The target's bass is an exact shelf of its own among the filters.
         assertTrue(m.filters.any { it.type == FilterType.LOW_SHELF })
     }
 

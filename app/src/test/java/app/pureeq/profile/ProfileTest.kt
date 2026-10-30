@@ -292,7 +292,8 @@ class ProfileTest {
         val eq = ProfileEq(profile(h).copy(headphoneModel = hd650))
         val correction = Response.of(hd650.filters, FreqGrid.hz)
         for (f in listOf(40.0, 105.0, 1000.0, 3000.0, 9000.0)) assertEquals("$f Hz", Curves.sample(correction, f), Curves.sample(eq.leftCurve, f), 0.6)
-        assertTrue("preamp ${eq.preampDb}", eq.preampDb < -8.0)
+        // Room for the correction's +6 dB of bass, no more: AutoEq's own preamp for it is −6.1 dB.
+        assertTrue("preamp ${eq.preampDb}", eq.preampDb in -7.0..-5.5)
     }
 
     @Test

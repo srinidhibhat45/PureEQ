@@ -82,16 +82,22 @@ object AutoEqCsv {
 
 /**
  * A model's correction computed from its measurement the way AutoEq computes its results:
- * measurement and target on AutoEq's grid, both 0 dB at 1 kHz; error = measurement − target
- * without bass, shifted so its mean from 100 Hz to 10 kHz is 0 (so one narrow feature at 1 kHz
- * can't bias it); then [AutoEqEqualizer.equalize]. The target's own bass is added back as an
- * exact shelf, so the correction brings the headphones to the full target, bass included.
+ * measurement and target on AutoEq's grid, both 0 dB at 1 kHz, the target's own bass shelf added
+ * to the target as AutoEq's bass boost does; error = measurement − target, shifted so its mean
+ * from 100 Hz to 10 kHz is 0 (so one narrow feature at 1 kHz can't bias it); then
+ * [AutoEqEqualizer.equalize]. Its +6 dB cap so covers the bass too: an open-back short of bass
+ * gets +6 dB in the deep bass, as in AutoEq's own results, not the +10 dB or more the full target
+ * asks, which would cost as much volume. The curve is stored without the shelf, which the
+ * filters add back exactly.
  */
 object MeasuredCorrection {
 
     fun model(entry: AutoEqEntry, target: AutoEqTarget, raw: AutoEqCsv.Curve, targetCurve: AutoEqCsv.Curve): HeadphoneModel {
-        val eq = equalization(raw, targetCurve)
-        val curve = FreqGrid.hz.map { f -> round(onGrid(AutoEqEqualizer.GRID, eq, f) * 100) / 100 }
+        val g = AutoEqEqualizer.GRID
+        val shelf = Response.of(listOf(bassShelf(target.bassDb)), g)
+        val eq = equalization(raw, targetCurve, shelf)
+        val withoutShelf = DoubleArray(g.size) { eq[it] - shelf[it] }
+        val curve = FreqGrid.hz.map { f -> round(onGrid(g, withoutShelf, f) * 100) / 100 }
         return HeadphoneModel(
             name = entry.name,
             source = entry.source,
@@ -114,12 +120,12 @@ object MeasuredCorrection {
 
     fun bassShelf(bassDb: Double) = FilterSpec(FilterType.LOW_SHELF, 105.0, bassDb, 0.7)
 
-    /** The equalization curve on [AutoEqEqualizer.GRID]. */
-    fun equalization(raw: AutoEqCsv.Curve, target: AutoEqCsv.Curve): DoubleArray {
+    /** The equalization curve on [AutoEqEqualizer.GRID] against [target] plus [bass] (dB on that grid), as AutoEq adds its bass boost. */
+    fun equalization(raw: AutoEqCsv.Curve, target: AutoEqCsv.Curve, bass: DoubleArray? = null): DoubleArray {
         val g = AutoEqEqualizer.GRID
         val r = centred(g, interpolate(raw, g))
         val t = centred(g, interpolate(target, g))
-        val error = DoubleArray(g.size) { r[it] - t[it] }
+        val error = DoubleArray(g.size) { r[it] - t[it] - (bass?.get(it) ?: 0.0) }
         var sum = 0.0
         var n = 0
         for (i in g.indices) {

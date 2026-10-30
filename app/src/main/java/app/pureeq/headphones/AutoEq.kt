@@ -40,7 +40,7 @@ data class HeadphoneModel(
     val path: String? = null,
     /** The target it was computed for, e.g. "Harman in-ear 2019"; null for AutoEq's published correction. */
     val target: String? = null,
-    /** The computed correction on [app.pureeq.dsp.FreqGrid] without the target's bass (dB); null for AutoEq's published correction. */
+    /** The computed correction on [app.pureeq.dsp.FreqGrid] minus the target's bass shelf (dB); null for AutoEq's published correction. */
     val curveDb: List<Double>? = null,
     /** The target's own bass shelf (105 Hz, Q 0.7) that [filters] include on top of [curveDb]. */
     val bassDb: Double? = null,
