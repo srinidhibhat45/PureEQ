@@ -2,6 +2,9 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.5.2
+- Long-press the PureEQ tile in the swipe-down panel for a quick menu instead of App info: switch the EQ on or off, pick which profile (which headphones) it uses with one tap, or jump straight to Fine-tune. The headphones playing now are marked.
+
 ## 1.5.1
 - Export for convolution: your exact curve for each ear as an impulse response (a stereo WAV at 48 or 44.1 kHz) for the convolver in JamesDSP, ViPER4Android or Equalizer APO. Left and right, balance and level come out exactly as PureEQ applies them.
 

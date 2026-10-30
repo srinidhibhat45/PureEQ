@@ -218,6 +218,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         enter(Screen.Home)
     }
 
+    /** Fine-tune for a saved profile, from the tile's menu. A check or taste test in progress stays where it is. */
+    fun openFineTune(id: String) {
+        val now = stack.value.last()
+        if (store.profile(id) == null || now in audioScreens || now == Screen.Editor(id)) return
+        home()
+        go(Screen.Editor(id))
+    }
+
     /** Pops back to [target] and re-enters it, or goes home when it isn't on the stack. */
     private fun backTo(target: Screen) {
         val i = stack.value.lastIndexOf(target)

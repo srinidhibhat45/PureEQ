@@ -299,7 +299,7 @@ private fun ActiveProfileCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(profile.name, style = MaterialTheme.typography.titleLarge)
-                Text(subtitle(profile), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(profileSubtitle(profile), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Pill("Active", MaterialTheme.colorScheme.secondary)
             Box {
@@ -348,7 +348,7 @@ private fun ActiveProfileCard(
                 Text(
                     "This is the profile PureEQ is using right now. Its listening results and taste choices will be removed from this phone. " +
                         if (successor != null) {
-                            "PureEQ will switch to ${successor.name} (${subtitle(successor)})."
+                            "PureEQ will switch to ${successor.name} (${profileSubtitle(successor)})."
                         } else {
                             "It's your only profile, so the system-wide EQ turns off until you make a new one."
                         },
@@ -376,7 +376,7 @@ private fun ProfileRow(p: Profile, onActivate: () -> Unit, onEdit: () -> Unit, o
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(p.name, style = MaterialTheme.typography.titleSmall)
-                Text(subtitle(p), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(profileSubtitle(p), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Box {
                 IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, "More") }
@@ -410,7 +410,8 @@ fun curvesFor(eq: ProfileEq, combined: Color): List<ChartCurve> {
     }
 }
 
-private fun subtitle(p: Profile): String {
+/** "Galaxy Buds2 Pro · Ears + taste · 30 Oct 2026": the profile's headphones, what made it, and when. */
+internal fun profileSubtitle(p: Profile): String {
     val date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(p.createdAt))
     val kind = when {
         p.hearing != null -> "Ears + taste"

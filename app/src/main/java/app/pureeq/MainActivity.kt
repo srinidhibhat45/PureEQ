@@ -34,9 +34,10 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
     }
 
-    /** "Update ready" notification tapped. */
+    /** "Update ready" notification tapped, or Fine-tune chosen in the tile's long-press menu. */
     private fun handleIntent(intent: Intent?) {
         if (intent?.action == Updater.ACTION_INSTALL) updater.installNow()
+        intent?.getStringExtra(EXTRA_FINE_TUNE)?.let { vm.openFineTune(it) }
     }
 
     override fun onStart() {
@@ -51,5 +52,10 @@ class MainActivity : ComponentActivity() {
         updater.foreground = false
         updater.onAppHidden()
         super.onStop()
+    }
+
+    companion object {
+        /** A profile id: open its Fine-tune screen. */
+        const val EXTRA_FINE_TUNE = "app.pureeq.extra.FINE_TUNE"
     }
 }

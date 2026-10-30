@@ -46,6 +46,19 @@
                 android:value="Keeps the user's personal equalizer applied to system audio output" />
         </service>
 
+        <!-- Long-press on the Quick Settings tile: a sheet to switch the EQ, pick a profile or open Fine-tune,
+             instead of App info. -->
+        <activity
+            android:name=".system.TileMenuActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.PureEQ.Sheet">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+        </activity>
+
         <!-- Invisible: starts the EQ for the tile, where Android 12+ won't let it start from the background. -->
         <activity
             android:name=".system.TileTrampolineActivity"
