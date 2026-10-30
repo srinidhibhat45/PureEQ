@@ -36,18 +36,9 @@ import java.net.UnknownHostException
 import java.security.MessageDigest
 import javax.net.ssl.SSLException
 
-sealed interface UpdateState {
-    /** This build has no update address, so it can't update itself. */
-    data object Disabled : UpdateState
-    data object Idle : UpdateState
-    data object Checking : UpdateState
-    data object UpToDate : UpdateState
-    data class Downloading(val manifest: UpdateManifest, val fraction: Float) : UpdateState
-    /** Downloaded and verified; waiting for a good moment, or a tap, to install. */
-    data class Ready(val manifest: UpdateManifest) : UpdateState
-    data class Installing(val manifest: UpdateManifest) : UpdateState
-    data class Failed(val message: String) : UpdateState
-}
+/** The GitHub build's updater; with an update address it also schedules the background checks. */
+fun createUpdater(context: Context, store: ProfileStore): Updater =
+    GitHubUpdater(context, store).also { if (it.enabled) UpdateJob.schedule(context) }
 
 class UpdateError(message: String) : Exception(message)
 
@@ -61,7 +52,7 @@ class UpdateError(message: String) : Exception(message)
  * confirmation screen, so updates install by themselves while PureEQ is closed. Otherwise
  * Android asks once per update, from a notification or the Install button.
  */
-class Updater(private val context: Context, private val store: ProfileStore) {
+class GitHubUpdater(private val context: Context, private val store: ProfileStore) : Updater {
     private val prefs = context.getSharedPreferences("pureeq_update", Context.MODE_PRIVATE)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val mutex = Mutex()
@@ -70,58 +61,51 @@ class Updater(private val context: Context, private val store: ProfileStore) {
     private val allowHttp = BuildConfig.DEBUG
     private val audio = context.getSystemService(AudioManager::class.java)
 
-    val enabled = url.isNotEmpty()
+    override val enabled = url.isNotEmpty()
 
-    /** Where updates come from, for Settings: "github.com/owner/repo". */
-    val source: String = runCatching {
+    override val source: String = runCatching {
         URL(url).let { it.authority + it.path.substringBefore("/releases/").removeSuffix("/update.json") }
     }.getOrDefault("")
 
     private val _state = MutableStateFlow(if (enabled) restore() else UpdateState.Disabled)
-    val state: StateFlow<UpdateState> = _state.asStateFlow()
+    override val state: StateFlow<UpdateState> = _state.asStateFlow()
 
     private val _lastChecked = MutableStateFlow(prefs.getLong(KEY_LAST_CHECK, 0L))
-    val lastChecked: StateFlow<Long> = _lastChecked.asStateFlow()
+    override val lastChecked: StateFlow<Long> = _lastChecked.asStateFlow()
 
     private val _promptDismissed = MutableStateFlow(prefs.getBoolean(KEY_PROMPT_DISMISSED, false))
-    val promptDismissed: StateFlow<Boolean> = _promptDismissed.asStateFlow()
+    override val promptDismissed: StateFlow<Boolean> = _promptDismissed.asStateFlow()
 
-    /** Set by the activity: installing now would close the app under the user. */
-    @Volatile var foreground = false
+    @Volatile override var foreground = false
 
-    /** Set while a test or an unsaved new profile is open: installing would throw it away. */
-    @Volatile var busy = false
+    @Volatile override var busy = false
 
     /** The running install came from a button or notification, so a confirmation screen is expected. */
     @Volatile private var userAsked = false
 
-    /** Whether the user lets PureEQ install apps ("Install unknown apps"). */
-    fun installAllowed() = context.packageManager.canRequestPackageInstalls()
+    override fun installAllowed() = context.packageManager.canRequestPackageInstalls()
 
-    /** Android 12+ lets an app that may install apps update itself without asking. */
-    fun installsSilently() = Build.VERSION.SDK_INT >= 31 && installAllowed()
+    override fun installsSilently() = Build.VERSION.SDK_INT >= 31 && installAllowed()
 
-    fun dismissPrompt() {
+    override fun dismissPrompt() {
         _promptDismissed.value = true
         prefs.edit().putBoolean(KEY_PROMPT_DISMISSED, true).apply()
     }
 
-    /** App opened: check, unless a check has only just run. */
-    fun checkSoon() {
+    override fun checkSoon() {
         if (enabled && System.currentTimeMillis() - _lastChecked.value > RECHECK_MS) scope.launch { check() }
     }
 
-    fun checkNow() {
+    override fun checkNow() {
         if (enabled) scope.launch { check() }
     }
 
-    /** From the Install button or the "ready" notification; Android may show its confirmation. */
-    fun installNow() {
+    override fun installNow() {
         scope.launch { install(userAsked = true) }
     }
 
-    /** The app went to the background with an update waiting: install it shortly, from a job so it runs. */
-    fun onAppHidden() {
+    /** With an update waiting: install it shortly, from a job so it runs. */
+    override fun onAppHidden() {
         if (_state.value is UpdateState.Ready) UpdateJob.runSoon(context)
     }
 
@@ -248,14 +232,15 @@ class Updater(private val context: Context, private val store: ProfileStore) {
         }
     }
 
-    /** The download must be this app, the announced version, and signed with this copy's key. */
+    /** The download must be this app, the announced version, and signed with this copy's key (or its rotated successor). */
     private fun verifyPackage(apk: File, m: UpdateManifest) {
         val info = archiveInfo(apk) ?: throw UpdateError("The download isn't an Android app.")
         if (info.packageName != context.packageName) throw UpdateError("The download is a different app (${info.packageName}).")
         if (info.longVersionCode != m.versionCode) throw UpdateError("The download's version doesn't match the update notice.")
         val mine = installedInfo().signingInfo
         val theirs = info.signingInfo
-        if (mine != null && theirs != null && !sameSigner(mine, theirs)) {
+        // When Android doesn't report the certificates, PackageInstaller's own check still applies at install.
+        if (mine != null && theirs != null && !signers(mine).accepts(signers(theirs))) {
             throw UpdateError(
                 "This update is signed with a different key from the PureEQ on this phone, so Android can't install it over it. " +
                     "It was probably built on another computer.",
@@ -337,8 +322,7 @@ class Updater(private val context: Context, private val store: ProfileStore) {
         }
     }
 
-    /** This app was just replaced, by an update or a manual install. */
-    fun onPackageReplaced() {
+    override fun onPackageReplaced() {
         val code = prefs.getLong(KEY_PENDING_CODE, -1L)
         if (code in 1..BuildConfig.VERSION_CODE.toLong()) {
             UpdateNotifications.updated(context, BuildConfig.VERSION_NAME, prefs.getString(KEY_PENDING_NOTES, null).orEmpty())
@@ -399,15 +383,11 @@ class Updater(private val context: Context, private val store: ProfileStore) {
         context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
     }
 
-    /** The same key, or (after a key rotation) an update whose signing history includes this copy's key. */
-    private fun sameSigner(installed: SigningInfo, update: SigningInfo): Boolean {
-        val mine = installed.apkContentsSigners.toSet()
-        return if (update.hasMultipleSigners()) {
-            update.apkContentsSigners.toSet() == mine
-        } else {
-            update.signingCertificateHistory.any { it in mine }
-        }
-    }
+    /** The certificates as [Signers] digests; the rotation history only exists for a single signer. */
+    private fun signers(info: SigningInfo) = Signers(
+        current = info.apkContentsSigners.mapTo(HashSet()) { hex(digest(it.toByteArray())) },
+        history = if (info.hasMultipleSigners()) emptyList() else info.signingCertificateHistory.orEmpty().map { hex(digest(it.toByteArray())) },
+    )
 
     private fun describe(e: Exception): String = when (e) {
         is UpdateError -> e.message.orEmpty()
@@ -430,7 +410,6 @@ class Updater(private val context: Context, private val store: ProfileStore) {
     }
 
     companion object {
-        const val ACTION_INSTALL = "app.pureeq.INSTALL_UPDATE"
         private const val RECHECK_MS = 30_000L
         private const val MAX_NOTICE_BYTES = 64 * 1024
         private const val KEY_LAST_CHECK = "lastCheck"
@@ -453,6 +432,8 @@ class Updater(private val context: Context, private val store: ProfileStore) {
             }
             return d.digest()
         }
+
+        private fun digest(b: ByteArray): ByteArray = MessageDigest.getInstance("SHA-256").digest(b)
 
         private fun hex(b: ByteArray) = b.joinToString("") { "%02x".format(it) }
 

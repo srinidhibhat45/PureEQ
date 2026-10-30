@@ -24,6 +24,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 
+/** In the GitHub build the app's updater is always a [GitHubUpdater] (see createUpdater). */
+private val Context.gitHubUpdater get() = (applicationContext as PureEqApp).updater as GitHubUpdater
+
 /**
  * Background update runs, kept off the battery: every 30 minutes only while the phone charges on
  * Wi-Fi, otherwise once a day (never on low battery), plus one run a few seconds after the app
@@ -33,7 +36,7 @@ class UpdateJob : JobService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onStartJob(params: JobParameters): Boolean {
-        val updater = (application as PureEqApp).updater
+        val updater = gitHubUpdater
         scope.launch {
             runCatching { updater.runInBackground() }
             jobFinished(params, false)
@@ -107,7 +110,7 @@ class UpdateReceiver : BroadcastReceiver() {
         if (intent.action != ACTION_STATUS) return
         val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
         val confirm = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_INTENT, Intent::class.java)
-        (context.applicationContext as PureEqApp).updater.onInstallStatus(status, intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE), confirm)
+        context.gitHubUpdater.onInstallStatus(status, intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE), confirm)
     }
 
     companion object {

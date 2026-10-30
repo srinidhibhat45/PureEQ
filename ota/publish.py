@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build PureEQ and publish it as an over-the-air update on GitHub Releases.
+"""Build PureEQ's GitHub flavour and publish it as an over-the-air update on GitHub Releases.
 
 Installed copies read https://github.com/<repo>/releases/latest/download/update.json when the app
 opens, every 30 minutes while the phone charges on Wi-Fi, and once a day otherwise. When that
@@ -11,13 +11,17 @@ package, version and signing key, and installs it.
     python3 ota/publish.py --dry-run               build and write ota/out/update.json; publish nothing
 
 Needs the GitHub CLI, logged in to the account that hosts the updates (brew install gh; gh auth login).
-Android only installs an update signed with the same key as the copy on the phone. Builds here are
-signed with this computer's debug key, so publish from this computer.
+Android only installs an update signed with the same key as the copy on the phone, or with a newer
+key whose lineage includes it. Gradle signs with the release key from keystore.properties or the
+PUREEQ_* variables, and without one with this computer's debug key; with a lineage configured, the
+APK is re-signed with it. Nothing is published unless the APK is signed so that phones with the
+first and the latest APK in dist/ accept it. See docs/key-rotation.md.
 """
 
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -34,7 +38,16 @@ OTA_FILE = ROOT / "ota.properties"
 CHANGELOG = ROOT / "CHANGELOG.md"
 OUT = ROOT / "ota" / "out"
 DIST = ROOT / "dist"
-BUILT_APK = ROOT / "app" / "build" / "outputs" / "apk" / "release" / "app-release.apk"
+BUILT_APK = ROOT / "app" / "build" / "outputs" / "apk" / "github" / "release" / "app-github-release.apk"
+KEYSTORE_PROPS = ROOT / "keystore.properties"
+# keystore.properties names and the environment variables that replace that file, as in app/build.gradle.kts.
+SIGNING_NAMES = {
+    "storeFile": "PUREEQ_KEYSTORE",
+    "storePassword": "PUREEQ_KEYSTORE_PASSWORD",
+    "keyAlias": "PUREEQ_KEY_ALIAS",
+    "keyPassword": "PUREEQ_KEY_PASSWORD",
+    "lineage": "PUREEQ_LINEAGE",
+}
 APP_ID = "app.pureeq"
 REPO_RE = re.compile(r"^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$")
 
@@ -115,6 +128,81 @@ def sha256(path):
     return h.hexdigest()
 
 
+def release_key():
+    """The release key settings and optional lineage: the PUREEQ_* variables when any key one is set,
+    otherwise keystore.properties; None when neither (Gradle then signs with the debug key)."""
+    if any(os.environ.get(env, "").strip() for name, env in SIGNING_NAMES.items() if name != "lineage"):
+        return {name: os.environ.get(env, "") for name, env in SIGNING_NAMES.items()}
+    if KEYSTORE_PROPS.exists():
+        props = read_props(KEYSTORE_PROPS)
+        return {name: props.get(name, "") for name in SIGNING_NAMES}
+    if os.environ.get("PUREEQ_LINEAGE"):
+        die("PUREEQ_LINEAGE is set but no release key is (docs/key-rotation.md).")
+    return None
+
+
+def apksigner():
+    """apksigner from the newest build-tools of the Android SDK that Gradle uses."""
+    sdk = read_props(ROOT / "local.properties").get("sdk.dir") or os.environ.get("ANDROID_HOME") or os.environ.get("ANDROID_SDK_ROOT")
+    found = sorted(Path(sdk).glob("build-tools/*/apksigner"), key=lambda p: version_key(p.parent.name)) if sdk else []
+    if not found:
+        die("Can't find apksigner in the Android SDK's build-tools (set ANDROID_HOME, or sdk.dir in local.properties).")
+    return str(found[-1])
+
+
+def sign_with_lineage(built, apk, key):
+    """Re-signs with the release key plus the lineage proving it took over from the old key, so phones
+    with an APK signed by the old key accept the update (docs/key-rotation.md)."""
+    def path(p):
+        return str(Path(p) if Path(p).is_absolute() else ROOT / p)
+
+    env = dict(os.environ, PUREEQ_KEYSTORE_PASSWORD=key["storePassword"], PUREEQ_KEY_PASSWORD=key["keyPassword"])
+    subprocess.run([
+        apksigner(), "sign",
+        # Every phone PureEQ runs on (Android 9+) checks the v3 signature, which carries the lineage.
+        # v1/v2 signatures would also need the oldest key of the lineage to sign.
+        "--v1-signing-enabled", "false", "--v2-signing-enabled", "false", "--v3-signing-enabled", "true",
+        "--v4-signing-enabled", "false", "--rotation-min-sdk-version", "28",
+        "--lineage", path(key["lineage"]),
+        "--ks", path(key["storeFile"]), "--ks-key-alias", key["keyAlias"],
+        "--ks-pass", "env:PUREEQ_KEYSTORE_PASSWORD", "--key-pass", "env:PUREEQ_KEY_PASSWORD",
+        "--out", str(apk), str(built),
+    ], cwd=ROOT, check=True, env=env)
+
+
+def signing_of(apk):
+    """(SHA-256 digests of the APK's signer certificates, of its v3 lineage oldest first) by apksigner."""
+    tool = apksigner()
+    certs = re.findall(r"^Signer #\d+ certificate SHA-256 digest: ([0-9a-f]{64})$", output([tool, "verify", "--print-certs", str(apk)]), re.M)
+    lineage = subprocess.run([tool, "lineage", "--in", str(apk), "--print-certs"], cwd=ROOT, capture_output=True, text=True)
+    # An APK without a v3 lineage makes apksigner fail here: it has no history then.
+    history = re.findall(r"SHA-256 digest: ([0-9a-f]{64})", lineage.stdout) if lineage.returncode == 0 else []
+    return certs, history
+
+
+def accepts(installed, update):
+    """Whether Android lets the update replace the installed APK: the app's Signers.accepts."""
+    (mine, _), (theirs, history) = installed, update
+    if not mine or not theirs:
+        return False
+    if set(mine) == set(theirs):
+        return True
+    return len(mine) == 1 and len(theirs) == 1 and mine[0] in history
+
+
+def check_signing(apk):
+    """Phones may still have the first published APK or already the latest: both must accept this one."""
+    apks = sorted(DIST.glob("PureEQ-*.apk"), key=lambda p: version_key(p.stem))
+    olds = list(dict.fromkeys(apks[:1] + apks[-1:]))
+    new = signing_of(apk)
+    for old in olds:
+        if not accepts(signing_of(old), new):
+            die(f"{apk.name} isn't signed with the key of dist/{old.name} or a lineage from it, so phones with that "
+                "version would refuse it. Check keystore.properties or the PUREEQ_* variables (docs/key-rotation.md).")
+    if olds:
+        print(f"Signing key: accepted by phones with {' and '.join(p.name for p in olds)}.")
+
+
 def confirm(question, assume_yes):
     if assume_yes:
         return True
@@ -193,16 +281,24 @@ def main():
         print(f"{live[1]} (build {live[0]}) is already published; this one is {name} (build {code}).")
 
     notes = args.notes or changelog_notes(name) or "Improvements and fixes."
-    tasks = [":app:assembleRelease"] if args.skip_tests else [":app:testDebugUnitTest", ":app:assembleRelease"]
+    tasks = [":app:assembleGithubRelease"] if args.skip_tests else [":app:testGithubDebugUnitTest", ":app:assembleGithubRelease"]
     print(f"\nBuilding PureEQ {name} (build {code}) for {repo}…")
     # -Pota.repo bakes the update address into this build, so it can update itself next time.
     run(["./gradlew", "--console=plain", f"-Pota.repo={repo}", *tasks])
 
-    # A dry run's APK stays in ota/out so it can't be mistaken for a published one in dist/.
-    folder = OUT if args.dry_run else DIST
-    folder.mkdir(parents=True, exist_ok=True)
-    apk = folder / f"PureEQ-{name}.apk"
-    shutil.copy2(BUILT_APK, apk)
+    # The APK waits in ota/out until its signature checks out; a dry run's stays there, so it can't
+    # be mistaken for a published one in dist/.
+    OUT.mkdir(parents=True, exist_ok=True)
+    apk = OUT / f"PureEQ-{name}.apk"
+    key = release_key()
+    if key and key["lineage"]:
+        sign_with_lineage(BUILT_APK, apk, key)
+    else:
+        shutil.copy2(BUILT_APK, apk)
+    check_signing(apk)
+    if not args.dry_run:
+        DIST.mkdir(parents=True, exist_ok=True)
+        apk = Path(shutil.move(str(apk), str(DIST / apk.name)))
     tag = f"v{name}"
     manifest = {
         "package": APP_ID,

@@ -85,7 +85,7 @@ fun SettingsScreen(vm: AppViewModel) {
                 s.warbleTones,
             ) { v -> update { it.copy(warbleTones = v) } }
         }
-        UpdatesSection(vm, s.autoUpdate) { v -> update { it.copy(autoUpdate = v) } }
+        if (BuildConfig.SELF_UPDATER) UpdatesSection(vm, s.autoUpdate) { v -> update { it.copy(autoUpdate = v) } }
         SectionCard {
             OutlinedButton(onClick = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Rounded.FileOpen, null)

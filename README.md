@@ -114,6 +114,14 @@ Requires JDK 17 and the Android SDK (platform 36). The version lives in `version
 
 The APK lands in `app/build/outputs/apk/release/`. Debug builds log each test trial (`adb logcat -s PureEQ`); release builds don't.
 
+## Builds and distribution
+
+Two flavours of the same app (`app.pureeq`): **github** updates itself from GitHub Releases as described above (`ota/publish.py` builds, tests and publishes it), and **play** is for Google Play, with no self-updater, install permissions or update checks, and no Updates section in Settings. Tasks name the flavour, for example `:app:testGithubDebugUnitTest`, `:app:testPlayDebugUnitTest`, `:app:assembleGithubRelease` (APK in `app/build/outputs/apk/github/release/`) and `:app:bundlePlayRelease`. Release builds are signed with the key in a git-ignored `keystore.properties` or the `PUREEQ_*` environment variables, and with this computer's debug key when neither is set.
+
+- [Key rotation](docs/key-rotation.md): moving to a release key without breaking updates, and registering for Android developer verification.
+- [Google Play checklist](docs/play-store.md): declarations, Data safety, store listing.
+- [Privacy policy](docs/privacy-policy.md).
+
 ## Layout
 
 ```
