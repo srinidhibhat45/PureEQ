@@ -118,8 +118,11 @@ data class Profile(
     }
 
     companion object {
-        /** 2 = PureEQ 1.2's Bayesian test and smooth fitting. */
-        const val FIT_VERSION = 2
+        /**
+         * 2 = PureEQ 1.2's Bayesian test and smooth fitting; 3 = 1.5's: anchored on 500 Hz-1.5 kHz,
+         * a gentler slope beyond 6 dB, each ear's own level. Results refit from their trial logs.
+         */
+        const val FIT_VERSION = 3
 
         fun fromJson(o: JSONObject): Profile {
             val hearing = o.optJSONObject("hearing")?.let { h ->

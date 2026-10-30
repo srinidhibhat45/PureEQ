@@ -73,8 +73,8 @@ data class Node(val ear: Ear, val freq: Double)
 /**
  * Gaussian prior over the thresholds (dBFS) at every node, both ears together:
  *
- *   threshold = calibration offset + reference curve + shape (common to both ears, ± a smaller
- *   left/right difference) + a local part per node.
+ *   threshold = calibration offset + reference curve + shape (common to both ears, ± a smooth
+ *   left/right difference, + each ear's own level offset) + a local part per node.
  *
  * The shape is smooth across frequency (squared-exponential in octaves), so each answer also
  * informs neighbouring frequencies and the other ear: that is what lets the test stop early.
@@ -106,9 +106,18 @@ class ThresholdPrior(
      * the nodes. The shape relates to the nodes only through the prior, so with k = cov(shape, nodes)
      * and K the prior covariance: mean = kᵀK⁻¹(m − m₀), variance = k(f,f) − kᵀK⁻¹k + kᵀK⁻¹ Σ K⁻¹k.
      */
-    fun shape(ear: Ear, freq: Double, belief: ThresholdBelief): Pair<Double, Double> {
+    fun shape(ear: Ear, freq: Double, belief: ThresholdBelief): Pair<Double, Double> =
+        if (ear == Ear.LEFT) combination(freq, 1.0, 0.0, belief) else combination(freq, 0.0, 1.0, belief)
+
+    /**
+     * Mean and standard deviation of wLeft × the left shape + wRight × the right shape at [freq]:
+     * (½, ½) is what both ears share, (½, −½) half their difference, each with its own uncertainty.
+     */
+    fun combination(freq: Double, wLeft: Double, wRight: Double, belief: ThresholdBelief): Pair<Double, Double> {
         val n = nodes.size
-        val k = DoubleArray(n) { shapeCov(ear, freq, nodes[it].ear, nodes[it].freq) }
+        val k = DoubleArray(n) { wLeft * shapeCov(Ear.LEFT, freq, nodes[it].ear, nodes[it].freq) + wRight * shapeCov(Ear.RIGHT, freq, nodes[it].ear, nodes[it].freq) }
+        val prior = wLeft * wLeft * shapeCov(Ear.LEFT, freq, Ear.LEFT, freq) + wRight * wRight * shapeCov(Ear.RIGHT, freq, Ear.RIGHT, freq) +
+            2 * wLeft * wRight * shapeCov(Ear.LEFT, freq, Ear.RIGHT, freq)
         val a = DoubleArray(n) { i -> var s = 0.0; for (j in 0 until n) s += covInverse[i][j] * k[j]; s }
         var m = 0.0
         var explained = 0.0
@@ -120,7 +129,7 @@ class ThresholdPrior(
             for (j in 0 until n) row += belief.cov[i][j] * a[j]
             left += a[i] * row
         }
-        val variance = shapeCov(ear, freq, ear, freq) - explained + left
+        val variance = prior - explained + left
         return m to sqrt(max(variance, 0.0))
     }
 
@@ -130,7 +139,13 @@ class ThresholdPrior(
         const val OFFSET_SD = 12.0
         const val COMMON_LENGTH_OCT = 1.0
         const val DIFFERENCE_LENGTH_OCT = 1.2
-        const val DIFFERENCE_SD = 2.5
+        const val DIFFERENCE_SD = 4.0
+
+        /**
+         * Each ear's own level, on top of the smooth difference: fit, a blocked ear, a weaker ear.
+         * With only the smooth difference, a 15 dB difference between the ears came out 6 dB short.
+         */
+        const val EAR_OFFSET_SD = 3.0
 
         /** Shape spread: 4.5 dB up to 2 kHz, widening to 8 dB at 8 kHz, where hearing varies most with age. */
         fun commonSd(freq: Double): Double {
@@ -144,7 +159,7 @@ class ThresholdPrior(
             val d = log2(f1 / f2)
             val common = commonSd(f1) * commonSd(f2) * exp(-0.5 * (d / COMMON_LENGTH_OCT) * (d / COMMON_LENGTH_OCT))
             val diff = DIFFERENCE_SD * DIFFERENCE_SD * exp(-0.5 * (d / DIFFERENCE_LENGTH_OCT) * (d / DIFFERENCE_LENGTH_OCT))
-            return common + if (e1 == e2) diff else -diff
+            return common + if (e1 == e2) diff + EAR_OFFSET_SD * EAR_OFFSET_SD else -diff
         }
     }
 }

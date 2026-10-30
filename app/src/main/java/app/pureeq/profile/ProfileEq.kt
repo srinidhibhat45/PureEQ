@@ -28,23 +28,37 @@ import kotlin.math.sign
  * 1. Deviation: the smooth part of each ear's thresholds relative to the reference (what a
  *    normal-hearing listener needs through Harman-tuned headphones of this type), taken from the
  *    test's Bayesian belief. Narrow resonances and measurement noise stay out; a left/right
- *    difference counts only as far as the answers support it. The mid band (500 Hz-4 kHz) is 0.
+ *    difference counts only as far as the answers support it. The band from 500 Hz to 1.5 kHz is 0:
+ *    anchoring on the whole 500 Hz-4 kHz band split a sloping loss around its own mean, cutting
+ *    the low mids where hearing was fine and doubling the treble tilt.
  *    Each frequency then gives up [UNCERTAINTY_SHRINK] of its own uncertainty, so what the answers
  *    can't tell from noise isn't corrected (in simulation this halves the coloration a normal
  *    listener gets, at little cost to real corrections).
  * 2. Gain: up to [KNEE_DB] the deviation is corrected by the strength (75 % by default). Small,
  *    smooth deviations are mostly the headphones' own response, which can be corrected nearly
- *    fully. Beyond the knee only [ABOVE_KNEE] of that applies: larger differences are hearing loss,
- *    where full gain sounds harsh (cochlear loss recruits; fitting rules give about 0.3 dB per dB).
+ *    fully. Beyond the knee only [ABOVE_KNEE] of that applies, 0.35 dB per dB at the default
+ *    strength: larger differences are the ears themselves, where full gain sounds harsh. NAL-R
+ *    gives 0.31 dB per dB, and listeners fitting themselves choose about 0.29 (Sabin 2020).
+ *    Bands heard better than the reference (usually a headphone peak) are cut by the strength.
  * 3. Range: full between 400 Hz and 8 kHz, fading out by 200 Hz and 16 kHz, where thresholds say
  *    little about music. Boosts are capped ([maxBoost]): +2 dB in the bass, +8 dB in the mids,
  *    +6 dB in the treble. Cuts stop at −6 dB.
  */
 object HearingCompensation {
     const val DEFAULT_STRENGTH = 0.75
-    const val KNEE_DB = 10.0
-    const val ABOVE_KNEE = 0.4
+    const val KNEE_DB = 6.0
+    const val ABOVE_KNEE = 0.47
     const val UNCERTAINTY_SHRINK = 0.25
+
+    /**
+     * The left/right difference gives up three quarters of its own standard deviation: a real
+     * difference between the ears is much larger and still comes through, while the spread of a
+     * normal listener's answers doesn't tilt the stereo image. In simulation (FitSimulationTest),
+     * against 1.4's fit: a normal listener's left/right difference falls from 0.39 to 0.14 dB RMS,
+     * a 15 dB difference between the ears is read 3.3 dB short instead of 6, and a one-sided treble
+     * loss 6-8 dB short instead of 9-10.
+     */
+    const val DIFFERENCE_SHRINK = 0.75
     const val MAX_CUT_DB = -6.0
 
     class EarCurves(val left: DoubleArray, val right: DoubleArray)
@@ -65,22 +79,21 @@ object HearingCompensation {
      */
     fun deviations(result: HearingTestResult, type: HeadphoneType, correction: List<FilterSpec> = emptyList()): EarCurves {
         val belief = ThresholdBelief.of(result, type, correctionShift(correction))
-        val left = Array(FreqGrid.SIZE) { belief.prior.shape(Ear.LEFT, FreqGrid.hz[it], belief) }
-        val right = Array(FreqGrid.SIZE) { belief.prior.shape(Ear.RIGHT, FreqGrid.hz[it], belief) }
+        val common = Array(FreqGrid.SIZE) { belief.prior.combination(FreqGrid.hz[it], 0.5, 0.5, belief) }
+        val half = Array(FreqGrid.SIZE) { belief.prior.combination(FreqGrid.hz[it], 0.5, -0.5, belief) }
         var sum = 0.0
         var n = 0
         for (i in FreqGrid.hz.indices) {
             if (FreqGrid.hz[i] in MID_LOW_HZ..MID_HIGH_HZ) {
-                sum += (left[i].first + right[i].first) / 2
+                sum += common[i].first
                 n++
             }
         }
         val anchor = sum / n
-        fun shrink(p: Pair<Double, Double>): Double {
-            val d = p.first - anchor
-            return sign(d) * max(abs(d) - UNCERTAINTY_SHRINK * p.second, 0.0)
-        }
-        return EarCurves(DoubleArray(FreqGrid.SIZE) { shrink(left[it]) }, DoubleArray(FreqGrid.SIZE) { shrink(right[it]) })
+        fun shrink(v: Double, by: Double) = sign(v) * max(abs(v) - by, 0.0)
+        val c = DoubleArray(FreqGrid.SIZE) { shrink(common[it].first - anchor, UNCERTAINTY_SHRINK * common[it].second) }
+        val h = DoubleArray(FreqGrid.SIZE) { shrink(half[it].first, DIFFERENCE_SHRINK * half[it].second) }
+        return EarCurves(DoubleArray(FreqGrid.SIZE) { c[it] + h[it] }, DoubleArray(FreqGrid.SIZE) { c[it] - h[it] })
     }
 
     fun curves(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec> = emptyList()): EarCurves {
@@ -91,7 +104,7 @@ object HearingCompensation {
     private fun gain(dev: DoubleArray, strength: Double) = DoubleArray(FreqGrid.SIZE) { i ->
         val f = FreqGrid.hz[i]
         val d = dev[i]
-        val g = strength * (d.coerceIn(-KNEE_DB, KNEE_DB) + ABOVE_KNEE * sign(d) * max(abs(d) - KNEE_DB, 0.0))
+        val g = strength * if (d > 0) min(d, KNEE_DB) + ABOVE_KNEE * max(d - KNEE_DB, 0.0) else d
         (taper(f) * g).coerceIn(MAX_CUT_DB, maxBoost(f))
     }
 
@@ -127,9 +140,22 @@ object HearingCompensation {
     private val commonSlots = listOf(500.0, 1000.0, 2000.0, 4000.0, 8000.0, 12000.0)
         .map { ParametricFit.Slot(FilterType.PEAK, it, 1.0, -9.0, 10.0, minQ = 0.5, maxQ = 1.6) }
 
-    /** Three gentle peaks for the left/right difference, applied with opposite signs to each ear. */
-    private val residualSlots = listOf(700.0, 2000.0, 5500.0)
+    /**
+     * Gentle peaks for the left/right difference above 1.5 kHz, applied with opposite signs to each
+     * ear. Below that, where the ears compare timing, mirrored peaks would shift the phase between
+     * them (±3 dB at 700 Hz: 15-19°), so the difference there goes in as a plain level instead.
+     */
+    private val residualSlots = listOf(2500.0, 6000.0)
         .map { ParametricFit.Slot(FilterType.PEAK, it, 0.7, -6.0, 6.0, minQ = 0.4, maxQ = 1.0) }
+
+    /** A level change from about 40 Hz up: a shelf far below the music, so no phase shift where it matters. */
+    fun levelFilter(db: Double) = FilterSpec(FilterType.HIGH_SHELF, 20.0, db, 0.7)
+
+    /** Mean of [c] over [from]..[to] Hz on [FreqGrid]. */
+    private fun mean(c: DoubleArray, from: Double, to: Double): Double {
+        val idx = FreqGrid.hz.indices.filter { FreqGrid.hz[it] in from..to }
+        return idx.sumOf { c[it] } / idx.size
+    }
 
     /**
      * Fits [target] with [slots]: gains first, then frequency, Q and gain together. Filters that do
@@ -164,7 +190,10 @@ object HearingCompensation {
         val filtersCommon: List<FilterSpec> = fit(Curves.average(targetLeft, targetRight), commonSlots)
         private val residual: List<FilterSpec> = run {
             val half = DoubleArray(FreqGrid.SIZE) { (targetLeft[it] - targetRight[it]) / 2 }
-            if (Curves.max(DoubleArray(half.size) { abs(half[it]) }, 300.0, 12000.0) < MIN_DIFFERENCE_DB) emptyList() else fit(half, residualSlots)
+            if (Curves.max(DoubleArray(half.size) { abs(half[it]) }, 300.0, 12000.0) < MIN_DIFFERENCE_DB) return@run emptyList()
+            val level = round(mean(half, 300.0, 1500.0) * 10) / 10
+            val rest = DoubleArray(half.size) { half[it] - level }
+            listOf(levelFilter(level)).filter { abs(level) >= 0.1 } + fit(rest, residualSlots)
         }
         val filtersLeft: List<FilterSpec> = filtersCommon + residual
         val filtersRight: List<FilterSpec> = filtersCommon + residual.map { it.copy(gainDb = -it.gainDb) }
@@ -182,7 +211,7 @@ object HearingCompensation {
         cache.getOrPut(Key(result, type, strength, correction)) { Fitted(result, type, strength, correction) }
 
     private const val MID_LOW_HZ = 500.0
-    private const val MID_HIGH_HZ = 4000.0
+    private const val MID_HIGH_HZ = 1500.0
 
     /** A left/right difference smaller than this everywhere is left out: it's below what anyone hears. */
     private const val MIN_DIFFERENCE_DB = 0.5
