@@ -206,10 +206,15 @@ fun HeadphonesScreen(vm: AppViewModel) {
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(model.name, style = MaterialTheme.typography.bodyLarge)
-                        Text("Measured by ${model.source}, via AutoEq", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            if (draft.modelRemembered) "Corrected to ${model.targetLabel}. Picked for these headphones last time." else "Corrected to ${model.targetLabel}.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     TextButton(onClick = { vm.openHeadphonePicker(forEditor = false) }) { Text("Change") }
                 }
+                Text(model.attribution, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Text(

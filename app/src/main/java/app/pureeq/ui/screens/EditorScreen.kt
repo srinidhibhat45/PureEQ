@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pureeq.headphones.AutoEqTarget
 import app.pureeq.profile.Exporters
 import app.pureeq.profile.Profile
 import app.pureeq.taste.TasteBand
@@ -216,14 +217,18 @@ private fun FineTuning(
                     Column(Modifier.weight(1f).padding(end = 12.dp)) {
                         Text("Headphone correction", style = MaterialTheme.typography.titleSmall)
                         Text(
-                            "${model.name}, measured by ${model.source} (AutoEq). Brings them to the Harman target.",
+                            "${model.name}, corrected to ${model.targetLabel}.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        Text(model.attribution, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(checked = p.headphoneCorrection, onCheckedChange = { on -> edit { it.copy(headphoneCorrection = on) } })
                 }
-                TextButton(onClick = onPickModel, contentPadding = PaddingValues(horizontal = 0.dp)) { Text("Change model") }
+                TextButton(onClick = onPickModel, contentPadding = PaddingValues(horizontal = 0.dp)) {
+                    // Models picked with 1.3 carry AutoEq's published correction; picking again computes the new one.
+                    Text(if (model.path == null && AutoEqTarget.hasMeasurement(model.source)) "Update to the Harman correction" else "Change model")
+                }
             }
         } else {
             OutlinedButton(onClick = onPickModel, modifier = Modifier.fillMaxWidth()) {

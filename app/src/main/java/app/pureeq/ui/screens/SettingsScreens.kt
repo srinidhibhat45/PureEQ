@@ -244,8 +244,11 @@ fun AboutScreen(vm: AppViewModel) {
         AboutSection(
             "Your headphones' measured response",
             "Optionally, pick your model from AutoEq's database (over 6,000 headphones measured by oratory1990, crinacle, Rtings and others; " +
-                "AutoEq by Jaakko Pasanen, MIT licence). Its correction brings the headphones to the Harman target, and the hearing check's reference " +
-                "allows for it, so the measured response isn't corrected twice: the hearing check then only fixes your ears and how the headphones sit.",
+                "AutoEq by Jaakko Pasanen, MIT licence). PureEQ downloads the model's measurement and corrects it the way AutoEq does: compared with the " +
+                "Harman target as measured on the same rig, smoothed and inverted, with gentle slopes, boosts limited to +6 dB, narrow notches left alone, " +
+                "and the target's own bass added back. crinacle publishes only finished corrections, so those use AutoEq's own. The hearing check's " +
+                "reference allows for the correction, so the measured response isn't corrected twice: the hearing check then only fixes your ears and how the headphones sit. " +
+                "PureEQ remembers the model you picked for each pair of headphones.",
         )
         AboutSection(
             "The taste test",

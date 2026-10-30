@@ -3,6 +3,10 @@
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
 ## 1.4.0
+- Truly to the Harman target: PureEQ now downloads your model's lab measurement and works out the correction on the phone, the way AutoEq does, against the Harman target as measured on the same rig. In-ears used to land on AutoEq's own in-ear target, about 1 dB away in places.
+- The target's bass comes with it, and your taste test's bass sits on top as before.
+- PureEQ remembers the model you picked for each pair of headphones, so the next profile for them starts with it.
+- Profiles that got their model with 1.3 keep their correction; to move one over, open Fine-tune and tap Update to the Harman correction. Models measured only by crinacle keep AutoEq's own correction.
 - A Quick Settings tile: switch PureEQ's system-wide EQ on and off from the swipe-down panel. The tile shows the profile in use.
 - Add it from Settings › Quick Settings tile (Android 13+ adds it for you), or swipe down twice, tap the pencil and drag PureEQ in.
 

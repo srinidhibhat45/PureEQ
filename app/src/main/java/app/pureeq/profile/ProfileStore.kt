@@ -1,6 +1,7 @@
 package app.pureeq.profile
 
 import android.content.Context
+import app.pureeq.headphones.HeadphoneModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,6 +69,19 @@ class ProfileStore(context: Context) {
         prefs.edit().putString(KEY_ACTIVE, id).apply()
     }
 
+    /** The headphone model last picked for an output device, so the next profile for it starts with it. */
+    fun rememberedModel(device: String): HeadphoneModel? = runCatching { models().optJSONObject(device)?.let(Profile::modelFrom) }.getOrNull()
+
+    /** Remembers [model] for [device]; null forgets the device's model. */
+    @Synchronized
+    fun rememberModel(device: String, model: HeadphoneModel?) {
+        val all = models()
+        if (model == null) all.remove(device) else all.put(device, Profile.modelJson(model))
+        prefs.edit().putString(KEY_MODELS, all.toString()).apply()
+    }
+
+    private fun models(): JSONObject = runCatching { JSONObject(prefs.getString(KEY_MODELS, null) ?: "{}") }.getOrDefault(JSONObject())
+
     @Synchronized
     fun updateSettings(transform: (AppSettings) -> AppSettings) {
         _settings.update(transform)
@@ -108,6 +122,7 @@ class ProfileStore(context: Context) {
     companion object {
         private const val KEY_PROFILES = "profiles"
         private const val KEY_ACTIVE = "active"
+        private const val KEY_MODELS = "headphoneModels"
 
         /** Parses a profile exported with "PureEQ profile (.json)"; gives it a fresh id. */
         fun importJson(text: String, newId: String): Profile = Profile.fromJson(JSONObject(text)).copy(id = newId)

@@ -3,6 +3,7 @@ package app.pureeq.profile
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FilterSpec
 import app.pureeq.dsp.FilterType
+import app.pureeq.dsp.FreqGrid
 import app.pureeq.headphones.HeadphoneModel
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingTestResult
@@ -62,18 +63,7 @@ data class Profile(
         put("balanceDb", balanceDb)
         put("taste", taste.toJson())
         recommendedTaste?.let { put("recommendedTaste", it.toJson()) }
-        headphoneModel?.let { m ->
-            put("headphoneModel", JSONObject().apply {
-                put("name", m.name)
-                put("source", m.source)
-                m.rig?.let { put("rig", it) }
-                put("type", m.type.name)
-                // Compact: [Equalizer APO type, Hz, dB, Q].
-                put("filters", JSONArray().apply {
-                    m.filters.forEach { f -> put(JSONArray().apply { put(f.type.apoCode); put(f.freq); put(f.gainDb); put(f.q) }) }
-                })
-            })
-        }
+        headphoneModel?.let { put("headphoneModel", modelJson(it)) }
         put("headphoneCorrection", headphoneCorrection)
         hearing?.let { h ->
             put("hearing", JSONObject().apply {
@@ -164,20 +154,43 @@ data class Profile(
                 taste = tasteFrom(o.optJSONObject("taste")),
                 balanceDb = o.optDouble("balanceDb", 0.0),
                 recommendedTaste = o.optJSONObject("recommendedTaste")?.let(::tasteFrom),
-                headphoneModel = o.optJSONObject("headphoneModel")?.let { m ->
-                    val fs = m.getJSONArray("filters")
-                    HeadphoneModel(
-                        name = m.getString("name"),
-                        source = m.getString("source"),
-                        rig = if (m.has("rig")) m.getString("rig") else null,
-                        type = HeadphoneType.entries.firstOrNull { it.name == m.optString("type") } ?: HeadphoneType.IN_EAR,
-                        filters = (0 until fs.length()).map { i ->
-                            val f = fs.getJSONArray(i)
-                            FilterSpec(FilterType.entries.first { it.apoCode == f.getString(0) }, f.getDouble(1), f.getDouble(2), f.getDouble(3))
-                        },
-                    )
-                },
+                headphoneModel = o.optJSONObject("headphoneModel")?.let(::modelFrom),
                 headphoneCorrection = o.optBoolean("headphoneCorrection", true),
+            )
+        }
+
+        /** A headphone model as stored in a profile (and in the per-device memory). */
+        fun modelJson(m: HeadphoneModel) = JSONObject().apply {
+            put("name", m.name)
+            put("source", m.source)
+            m.rig?.let { put("rig", it) }
+            put("type", m.type.name)
+            // Compact: [Equalizer APO type, Hz, dB, Q].
+            put("filters", JSONArray().apply {
+                m.filters.forEach { f -> put(JSONArray().apply { put(f.type.apoCode); put(f.freq); put(f.gainDb); put(f.q) }) }
+            })
+            m.path?.let { put("path", it) }
+            m.target?.let { put("target", it) }
+            m.curveDb?.let { c -> put("curve", JSONArray().apply { c.forEach { put(it) } }) }
+            m.bassDb?.let { put("bassDb", it) }
+        }
+
+        fun modelFrom(m: JSONObject): HeadphoneModel {
+            val fs = m.getJSONArray("filters")
+            return HeadphoneModel(
+                name = m.getString("name"),
+                source = m.getString("source"),
+                rig = if (m.has("rig")) m.getString("rig") else null,
+                type = HeadphoneType.entries.firstOrNull { it.name == m.optString("type") } ?: HeadphoneType.IN_EAR,
+                filters = (0 until fs.length()).map { i ->
+                    val f = fs.getJSONArray(i)
+                    FilterSpec(FilterType.entries.first { it.apoCode == f.getString(0) }, f.getDouble(1), f.getDouble(2), f.getDouble(3))
+                },
+                path = if (m.has("path")) m.getString("path") else null,
+                target = if (m.has("target")) m.getString("target") else null,
+                // A curve on another frequency grid would be misread, so it's dropped (the filters still apply).
+                curveDb = m.optJSONArray("curve")?.takeIf { it.length() == FreqGrid.SIZE }?.let { c -> List(c.length()) { c.getDouble(it) } },
+                bassDb = if (m.has("bassDb")) m.getDouble("bassDb") else null,
             )
         }
 

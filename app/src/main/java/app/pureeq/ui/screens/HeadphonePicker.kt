@@ -56,7 +56,7 @@ fun HeadphonePickerScreen(vm: AppViewModel, forEditor: Boolean) {
     ) {
         Headline(
             "Find your model",
-            "PureEQ applies its measured correction, which brings your headphones to the Harman target most listeners prefer. Your hearing check then only fixes what's left: your ears and how the headphones sit on them.",
+            "PureEQ corrects your model from its lab measurement to the Harman target most listeners prefer. Your hearing check then only fixes what's left: your ears and how the headphones sit on them.",
         )
         OutlinedTextField(
             value = ui.query,
@@ -92,7 +92,8 @@ fun HeadphonePickerScreen(vm: AppViewModel, forEditor: Boolean) {
             }
         }
         Text(
-            "Measurements from oratory1990, crinacle, Rtings and others, collected and corrected by AutoEq (Jaakko Pasanen, MIT licence). " +
+            "Headphone data via AutoEq (Jaakko Pasanen, MIT licence), measured by oratory1990, Rtings, crinacle and others. PureEQ computes the correction " +
+                "from the measurement with AutoEq's method; crinacle publishes only finished corrections, so those are AutoEq's own, to AutoEq's target. " +
                 "The same model can be listed by several measurers; the first is usually the most trusted. Pick a variant (ANC on, passive…) if it matches how you listen.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
