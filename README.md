@@ -10,7 +10,7 @@ Everything runs on the phone. Profiles and results stay on it (and in your Googl
 
 ## Install
 
-The first install is by hand: open `https://github.com/srinidhibhat45/pureeq-updates/releases/latest` on the phone (or copy the newest APK in `dist/`), download the APK and open it. Allow "install unknown apps" for the browser or file manager when asked. After that, PureEQ updates itself (see [Updates](#updates)). The APK is signed with this computer's debug key, which is fine for personal sideloading, but every update must be built on this computer (Android only installs an update signed with the same key).
+The first install is by hand: open `https://github.com/srinidhibhat45/pureeq-updates/releases/latest` on the phone (or copy the newest APK in `dist/`), download the APK and open it. Allow "install unknown apps" for the browser or file manager when asked. After that, PureEQ updates itself (see [Updates](#updates)). Android only installs an update signed with the same key as the installed copy, or with a newer key whose rotation lineage includes it. The GitHub build is signed with this computer's debug key until a release key is set up ([key rotation](docs/key-rotation.md)), so keep that key and any release key backed up.
 
 ## Using it
 
@@ -105,14 +105,14 @@ Nothing in PureEQ polls while it's in the background.
 Requires JDK 17 and the Android SDK (platform 36). The version lives in `version.properties`; the update repository in `ota.properties` (written by `ota/publish.py`). A build without it can't update itself. `-Pota.manifestUrl=http://10.0.2.2:8765/update.json` points a debug build at a test server on this computer (debug builds allow plain http to 10.0.2.2 and localhost only).
 
 ```bash
-./gradlew :app:testDebugUnitTest
+./gradlew :app:testGithubDebugUnitTest :app:testPlayDebugUnitTest
 ```
 
 ```bash
-./gradlew :app:assembleRelease
+./gradlew :app:assembleGithubRelease
 ```
 
-The APK lands in `app/build/outputs/apk/release/`. Debug builds log each test trial (`adb logcat -s PureEQ`); release builds don't.
+The APK lands in `app/build/outputs/apk/github/release/` (the Play build: `:app:bundlePlayRelease`). Debug builds log each test trial (`adb logcat -s PureEQ`); release builds don't.
 
 ## Builds and distribution
 
@@ -132,15 +132,18 @@ app/src/main/java/app/pureeq/
   headphones/ AutoEq index parsing, name matching, downloads (pinned commit), the equalize() port and
              the correction computed from a model's measurement
   taste/     A/B taste session and tone controls
-  profile/   profile model + JSON, hearing compensation, ProfileEq (all derived curves), exporters, store
+  profile/   profile model + JSON, hearing compensation, bass guard, ProfileEq (all derived curves), exporters, store
   audio/     AudioTrack engine (A/B slots with crossfade), routing/volume/focus, noise meter, song decoder
   system/    DynamicsProcessing bands/effect, foreground service, boot receiver
-  update/    over-the-air updates: update notice, download + verification, PackageInstaller, background job
+  update/    the Updater interface and update state; the GitHub updater itself (update notice, download +
+             verification, PackageInstaller, background job) lives in app/src/github, a no-op in app/src/play
   ui/        Compose screens, charts, view model
-app/src/test/  unit tests: DSP accuracy, hearing-test simulation, fitting and profile maths, reset, taste convergence,
-               export formats, update notice parsing, AutoEq index and matching, the equalize() port against
-               AutoEq's published results (fixtures in src/test/resources/autoeq, test-only)
-ota/publish.py  builds and publishes an update to GitHub Releases
+app/src/test/  unit tests: DSP accuracy, hearing-test simulation, whole-pipeline fitting simulations, a clipping audit,
+               profile maths, reset, taste convergence, export formats, update notice parsing, AutoEq index and
+               matching, the equalize() port against AutoEq's published results (fixtures in
+               src/test/resources/autoeq, test-only); app/src/testGithub: the update signer check
+docs/          key rotation, the Google Play checklist, the privacy policy
+ota/publish.py  builds, tests, checks the signing key of and publishes a GitHub-build update
 ```
 
 ## Limits worth knowing

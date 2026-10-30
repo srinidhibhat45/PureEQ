@@ -85,7 +85,12 @@ fun SettingsScreen(vm: AppViewModel) {
                 s.warbleTones,
             ) { v -> update { it.copy(warbleTones = v) } }
         }
-        if (BuildConfig.SELF_UPDATER) UpdatesSection(vm, s.autoUpdate) { v -> update { it.copy(autoUpdate = v) } }
+        if (BuildConfig.SELF_UPDATER) {
+            UpdatesSection(vm, s.autoUpdate) { v -> update { it.copy(autoUpdate = v) } }
+        } else {
+            // The Play build updates through Google Play; only the version is worth showing.
+            SectionCard { Text("PureEQ ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodyLarge) }
+        }
         SectionCard {
             OutlinedButton(onClick = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Rounded.FileOpen, null)
@@ -277,7 +282,7 @@ fun AboutScreen(vm: AppViewModel) {
         AboutSection(
             "Privacy",
             "Your profiles and results stay on this phone, and in your Google account's encrypted backup if Android backup is on. The optional room check listens for 3 seconds to measure noise level and stores nothing. " +
-                "PureEQ only goes online to check for its own updates (a small update notice, then the new version when there is one) and, if you look up " +
+                (if (BuildConfig.SELF_UPDATER) "PureEQ only goes online to check for its own updates (a small update notice, then the new version when there is one) and, if you look up " else "PureEQ only goes online if you look up ") +
                 "your headphones, to download AutoEq's public list and that model's correction from the jsDelivr or GitHub servers. Nothing about you or your results is sent.",
         )
         AboutSection(

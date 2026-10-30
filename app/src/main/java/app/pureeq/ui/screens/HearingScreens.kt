@@ -174,9 +174,9 @@ fun HearingDoneScreen(vm: AppViewModel) {
         Text("Done. Here's your listening profile", style = MaterialTheme.typography.headlineSmall)
         Text(
             if (correction.isEmpty()) {
-                "Each point compares the quietest beep you heard in that band through these headphones with a reference listener on well-tuned ${type.label.lowercase()} headphones, with your mid range as the zero line. Lower on the chart means that band gets more help. It includes your headphones' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point."
+                "Each point compares the quietest beep you heard in that band through these headphones with a reference listener on well-tuned ${type.label.lowercase()} headphones, with your low mids (500 Hz to 1.5 kHz) as the zero line. Lower on the chart means that band gets more help. It includes your headphones' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point."
             } else {
-                "Each point compares the quietest beep you heard in that band with a reference listener, after your headphones' measured response is taken out, with your mid range as the zero line. Lower on the chart means that band gets more help. What's left is your ears and how the headphones sit on them. The EQ follows the smooth trend, not every point."
+                "Each point compares the quietest beep you heard in that band with a reference listener, after your headphones' measured response is taken out, with your low mids (500 Hz to 1.5 kHz) as the zero line. Lower on the chart means that band gets more help. What's left is your ears and how the headphones sit on them. The EQ follows the smooth trend, not every point."
             },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

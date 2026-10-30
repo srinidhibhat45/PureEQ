@@ -68,6 +68,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pureeq.BuildConfig
 import app.pureeq.audio.OutputDevice
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
@@ -107,8 +108,9 @@ fun HomeScreen(vm: AppViewModel) {
     val promptDismissed by vm.updatePromptDismissed.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val active = profiles.firstOrNull { it.id == activeId } ?: profiles.firstOrNull()
-    val updateBusy = update is UpdateState.Downloading || update is UpdateState.Ready || update is UpdateState.Installing
-    val askToAllow = !installAllowed && !promptDismissed && !updateBusy && update !is UpdateState.Disabled
+    // Only the GitHub build updates itself; in the Play build these cards are compiled out.
+    val updateBusy = BuildConfig.SELF_UPDATER && (update is UpdateState.Downloading || update is UpdateState.Ready || update is UpdateState.Installing)
+    val askToAllow = BuildConfig.SELF_UPDATER && !installAllowed && !promptDismissed && !updateBusy && update !is UpdateState.Disabled
 
     val notifPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { vm.setSystemEq(true) }
     val enableSystemEq = {
