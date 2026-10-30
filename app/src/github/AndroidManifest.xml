@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GitHub build only: PureEQ updates itself from GitHub Releases. The Play build has none of this. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Over-the-air updates: fetch the update notice and APK, then install it. Android 12+ lets an
+         app the user allowed to install apps update itself without a confirmation screen. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
+
+    <application>
+        <receiver
+            android:name=".update.UpdateReceiver"
+            android:exported="false" />
+
+        <service
+            android:name=".update.UpdateJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+    </application>
+</manifest>

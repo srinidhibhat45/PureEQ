@@ -32,7 +32,22 @@ android {
         targetSdk = 36
         versionCode = versionProps.getProperty("versionCode").toInt()
         versionName = versionProps.getProperty("versionName")
-        buildConfigField("String", "UPDATE_URL", "\"$updateUrl\"")
+    }
+
+    // Same app (applicationId) either way; only how it's updated differs.
+    flavorDimensions += "distribution"
+    productFlavors {
+        // Sideloaded from GitHub Releases: updates itself (src/github, ota/publish.py).
+        create("github") {
+            dimension = "distribution"
+            buildConfigField("String", "UPDATE_URL", "\"$updateUrl\"")
+            buildConfigField("boolean", "SELF_UPDATER", "true")
+        }
+        // Google Play updates it: no self-updater, install permissions or update checks (src/play).
+        create("play") {
+            dimension = "distribution"
+            buildConfigField("boolean", "SELF_UPDATER", "false")
+        }
     }
 
     buildTypes {

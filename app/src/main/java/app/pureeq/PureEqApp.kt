@@ -5,8 +5,8 @@ import app.pureeq.audio.AudioEngine
 import app.pureeq.audio.AudioRoute
 import app.pureeq.audio.MusicLibrary
 import app.pureeq.profile.ProfileStore
-import app.pureeq.update.UpdateJob
 import app.pureeq.update.Updater
+import app.pureeq.update.createUpdater
 
 /** Process-wide singletons shared by the UI and the equalizer service. */
 class PureEqApp : Application() {
@@ -27,7 +27,7 @@ class PureEqApp : Application() {
         engine = AudioEngine(this)
         route = AudioRoute(this)
         library = MusicLibrary(this)
-        updater = Updater(this, store)
-        if (updater.enabled) UpdateJob.schedule(this)
+        // GitHub build: the over-the-air updater and its background checks. Play build: never updates itself.
+        updater = createUpdater(this, store)
     }
 }
