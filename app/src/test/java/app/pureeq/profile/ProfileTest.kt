@@ -283,6 +283,44 @@ class ProfileTest {
     private val hd650 by lazy { MeasuredCorrectionTest.model(0) }
 
     @Test
+    fun overEarSubBassStaysNearThe50HzLevelUnlessAskedFor() {
+        val p = profile(null, taste = TasteSettings(bass = 5.0)).copy(headphoneModel = hd650)
+        val eq = ProfileEq(p)
+        val c = eq.leftCurve
+        val at50 = Curves.sample(c, 50.0)
+        for (f in listOf(20.0, 25.0, 30.0, 40.0)) assertTrue("$f Hz", Curves.sample(c, f) <= at50 + BassGuard.CORNER_ALLOWANCE_DB + 0.15)
+        // From about 60 Hz up the bass is as set: the cut sits below it.
+        val unguarded = Response.of(eq.baseFiltersLeft + eq.tasteFilters, FreqGrid.hz)
+        for (f in listOf(60.0, 100.0, 200.0)) assertEquals("$f Hz", Curves.sample(unguarded, f), Curves.sample(c, f), 1.0)
+        // Full sub-bass: no corner, a price in volume the editor can state, still within the ceiling.
+        // (Without taste bass, so the ceiling doesn't limit both alike.)
+        val plain = ProfileEq(profile(null).copy(headphoneModel = hd650))
+        val full = ProfileEq(profile(null).copy(headphoneModel = hd650, fullSubBass = true))
+        assertTrue("full ${Curves.sample(full.leftCurve, 20.0)} vs ${Curves.sample(plain.leftCurve, 20.0)}", Curves.sample(full.leftCurve, 20.0) > Curves.sample(plain.leftCurve, 20.0) + 2.0)
+        assertTrue("cost ${plain.subBassCostDb}", plain.subBassCostDb > 1.0)
+        assertTrue("preamp ${full.preampDb} vs ${plain.preampDb}", full.preampDb < plain.preampDb)
+        val ceiling = Curves.max(full.leftCurve, 20.0, 200.0) - Curves.sample(full.leftCurve, 1000.0)
+        assertTrue("ceiling $ceiling", ceiling <= BassGuard.ceilingDb(HeadphoneType.OVER_EAR) + 0.15)
+        // Both ears get the same cut, and the exports carry it.
+        assertEquals(eq.leftFilters.takeLast(eq.guardFilters.size), eq.rightFilters.takeLast(eq.guardFilters.size))
+        assertTrue("guard ${eq.guardFilters}", eq.guardFilters.isNotEmpty() && eq.linkedFilters.containsAll(eq.guardFilters))
+    }
+
+    @Test
+    fun inEarsKeepTheirSubBassUnderTheCeiling() {
+        // A bass-light in-ear: the target's +9 dB shelf plus 3 dB more, then a bass-loving taste.
+        val buds = HeadphoneModel("Test buds", "test", null, HeadphoneType.IN_EAR, listOf(FilterSpec(FilterType.LOW_SHELF, 105.0, 12.0, 0.7)))
+        val eq = ProfileEq(profile(null, taste = TasteSettings(bass = 8.0)).copy(headphoneModel = buds))
+        val c = eq.leftCurve
+        assertEquals(0.0, eq.subBassCostDb, 0.0)
+        // No 50 Hz corner for sealed in-ears: 20 Hz stays level with 50 Hz.
+        assertEquals(Curves.sample(c, 50.0), Curves.sample(c, 20.0), 1.0)
+        val ceiling = Curves.max(c, 20.0, 200.0) - Curves.sample(c, 1000.0)
+        assertTrue("ceiling $ceiling", ceiling <= BassGuard.ceilingDb(HeadphoneType.IN_EAR) + 0.15)
+        assertTrue(ceiling > BassGuard.ceilingDb(HeadphoneType.IN_EAR) - 1.0)
+    }
+
+    @Test
     fun aMeasuredModelIsNotCorrectedTwice() {
         // A normal listener on HD 650s: every threshold carries exactly what the correction fixes.
         val shift = HearingCompensation.correctionShift(hd650.filters)
@@ -290,14 +328,17 @@ class ProfileTest {
         val with = maxAbs(ProfileEq(profile(h).copy(headphoneModel = hd650)).hearingTargetLeft, 300.0, 12000.0)
         val without = maxAbs(ProfileEq(profile(h)).hearingTargetLeft, 300.0, 12000.0)
         println("hearing part through HD 650: %.2f dB with its model, %.2f dB without".format(with, without))
-        assertTrue("with $with", with < 0.5)
-        assertTrue("without $without", without > 1.5)
-        // The whole EQ is then the model's correction, its +6 dB of Harman bass included.
+        // Since 1.5 the treble of a fixture's correction applies at half strength, so the difference is smaller but clear.
+        assertTrue("with $with", with < 0.35)
+        assertTrue("without $without", without > 0.5 && without > 2.5 * with)
+        // The whole EQ is then the model's correction, Harman bass included from the corner up; below
+        // 50 Hz the bass guard holds an over-ear near its 50 Hz level instead of the full +10.5 dB.
         val eq = ProfileEq(profile(h).copy(headphoneModel = hd650))
         val correction = Response.of(hd650.filters, FreqGrid.hz)
-        for (f in listOf(40.0, 105.0, 1000.0, 3000.0, 9000.0)) assertEquals("$f Hz", Curves.sample(correction, f), Curves.sample(eq.leftCurve, f), 0.6)
-        // Room for the correction's +6 dB of bass, no more: AutoEq's own preamp for it is −6.1 dB.
-        assertTrue("preamp ${eq.preampDb}", eq.preampDb in -7.0..-5.5)
+        for (f in listOf(60.0, 105.0, 1000.0, 3000.0, 9000.0)) assertEquals("$f Hz", Curves.sample(correction, f), Curves.sample(eq.leftCurve, f), 0.6)
+        assertTrue(Curves.sample(eq.leftCurve, 20.0) <= Curves.sample(eq.leftCurve, 50.0) + BassGuard.CORNER_ALLOWANCE_DB + 0.15)
+        // Room for about +7 dB of bass: close to AutoEq's own −6.1 dB, not the −11 dB of the full sub-bass.
+        assertTrue("preamp ${eq.preampDb}", eq.preampDb in -7.5..-5.5)
     }
 
     @Test

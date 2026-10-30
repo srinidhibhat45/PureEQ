@@ -257,8 +257,23 @@ class ProfileEq(val profile: Profile) {
     val baseFiltersLeft: List<FilterSpec> = correctionFilters + hearingFiltersLeft
     val baseFiltersRight: List<FilterSpec> = correctionFilters + hearingFiltersRight
 
-    val leftFilters: List<FilterSpec> = baseFiltersLeft + tasteFilters
-    val rightFilters: List<FilterSpec> = baseFiltersRight + tasteFilters
+    /** Cuts that keep the whole EQ's bass within what it's worth ([BassGuard]); the same for both ears. */
+    val guardFilters: List<FilterSpec> = guard(tasteFilters, profile.fullSubBass)
+
+    val leftFilters: List<FilterSpec> = baseFiltersLeft + tasteFilters + guardFilters
+    val rightFilters: List<FilterSpec> = baseFiltersRight + tasteFilters + guardFilters
+
+    private fun guard(taste: List<FilterSpec>, fullSubBass: Boolean): List<FilterSpec> = BassGuard.filters(
+        listOf(Response.of(baseFiltersLeft + taste, FreqGrid.hz), Response.of(baseFiltersRight + taste, FreqGrid.hz)),
+        headphones,
+        fullSubBass,
+    )
+
+    /** Left and right filters for [taste] on this profile's correction and ear tuning, bass-guarded as the profile would be. */
+    fun withTaste(taste: List<FilterSpec>): Pair<List<FilterSpec>, List<FilterSpec>> {
+        val g = guard(taste, profile.fullSubBass)
+        return (baseFiltersLeft + taste + g) to (baseFiltersRight + taste + g)
+    }
 
     /** Manual balance only ever turns one side down, so it can't add clipping. */
     val leftTrimDb: Double = if (profile.balanceDb > 0) -profile.balanceDb else 0.0
@@ -270,8 +285,21 @@ class ProfileEq(val profile: Profile) {
 
     val preampDb: Double = preampFor(leftCurve, rightCurve)
 
+    /**
+     * Volume that full sub-bass costs over the guarded bass on these headphones (dB, ≥ 0): the
+     * preamp difference between the two. 0 for in-ears, whose sub-bass is never held back.
+     */
+    val subBassCostDb: Double by lazy {
+        if (headphones == HeadphoneType.IN_EAR) return@lazy 0.0
+        fun preampWith(fullSubBass: Boolean): Double {
+            val g = guard(tasteFilters, fullSubBass)
+            return preampFor(Response.of(baseFiltersLeft + tasteFilters + g, FreqGrid.hz, leftTrimDb), Response.of(baseFiltersRight + tasteFilters + g, FreqGrid.hz, rightTrimDb))
+        }
+        max(0.0, preampWith(false) - preampWith(true))
+    }
+
     /** Stereo-linked filters: headphone correction, the compensation both ears share, plus taste. */
-    val linkedFilters: List<FilterSpec> by lazy { correctionFilters + (fitted?.filtersCommon ?: emptyList()) + tasteFilters }
+    val linkedFilters: List<FilterSpec> by lazy { correctionFilters + (fitted?.filtersCommon ?: emptyList()) + tasteFilters + guardFilters }
     val linkedCurve: DoubleArray by lazy { Response.of(linkedFilters, FreqGrid.hz) }
     val linkedPreampDb: Double by lazy { preampFor(linkedCurve) }
 

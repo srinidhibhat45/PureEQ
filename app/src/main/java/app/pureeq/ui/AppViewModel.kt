@@ -110,6 +110,8 @@ data class Draft(
     val tasteLevel: ListeningLevel? = null,
     /** Set when redoing the taste test of this saved profile: the result goes back into it. */
     val retuneOf: String? = null,
+    /** The saved profile's sub-bass choice, so a redone taste test hears its bass as it will play. */
+    val fullSubBass: Boolean = false,
 )
 
 /**
@@ -741,10 +743,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (track != null) {
             val extreme = TasteSession.extreme(d.taste).filters()
             tasteHeadroom = withContext(Dispatchers.Default) {
-                Matching.headroom(
-                    listOf(ListeningOption(base.baseFiltersLeft, base.baseFiltersRight), ListeningOption(base.baseFiltersLeft + extreme, base.baseFiltersRight + extreme)),
-                    track.spectrumDb,
-                )
+                val (l, r) = base.withTaste(extreme)
+                Matching.headroom(listOf(ListeningOption(base.baseFiltersLeft, base.baseFiltersRight), ListeningOption(l, r)), track.spectrumDb)
             }
         }
         tastePreparedFor = Triple(d.hearing, d.headphoneModel, track)
@@ -773,8 +773,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
         val opts = listOf(Choice.A, Choice.B).map { side ->
-            val t = ts.candidate(c, side).filters()
-            ListeningOption(base.baseFiltersLeft + t, base.baseFiltersRight + t)
+            val (l, r) = base.withTaste(ts.candidate(c, side).filters())
+            ListeningOption(l, r)
         }
         val specs = Matching.matched(opts, track.spectrumDb, tasteHeadroom)
         engine.setSlot(0, specs[0])
@@ -822,6 +822,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             hearing = p.hearing,
             retuneOf = p.id,
             headphoneModel = p.headphoneModel?.takeIf { p.headphoneCorrection },
+            fullSubBass = p.fullSubBass,
         )
         go(Screen.TasteIntro)
     }
@@ -873,6 +874,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             headphoneModel = d.headphoneModel,
             checkLevel = d.checkLevel,
             tasteLevel = d.tasteLevel,
+            fullSubBass = d.fullSubBass,
         )
     }
 

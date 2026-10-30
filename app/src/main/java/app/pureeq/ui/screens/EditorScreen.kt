@@ -150,6 +150,7 @@ fun EditorScreen(vm: AppViewModel) {
         }
         FineTuning(
             p,
+            subBassCostDb = e.eq?.subBassCostDb ?: 0.0,
             isDraft = e.isDraft,
             onReset = reset,
             onRedoTaste = { vm.redoTaste(p.id) },
@@ -166,6 +167,7 @@ fun EditorScreen(vm: AppViewModel) {
 @Composable
 private fun FineTuning(
     p: Profile,
+    subBassCostDb: Double,
     isDraft: Boolean,
     onReset: () -> Unit,
     onRedoTaste: () -> Unit,
@@ -176,6 +178,7 @@ private fun FineTuning(
     val suggestedTaste = p.recommendedTaste
     val changed = buildList {
         if (p.headphoneModel != null && !p.headphoneCorrection) add("headphone correction")
+        if (p.fullSubBass) add("full sub-bass")
         if (p.hearing != null && p.hearingStrength != rec.hearingStrength) add("ear tuning")
         suggestedTaste?.let { t -> TasteBand.entries.filter { p.taste[it] != t[it] }.forEach { add(it.label.lowercase()) } }
         if (p.balanceDb != rec.balanceDb) add("balance")
@@ -268,6 +271,24 @@ private fun FineTuning(
                     onValueChange = { x -> edit { it.copy(taste = it.taste.with(band, (x * 2).roundToInt() / 2.0)) } },
                     valueRange = band.minDb.toFloat()..band.maxDb.toFloat(),
                 )
+            }
+            // Over-ears hold bass below 50 Hz near the 50 Hz level; worth offering only when that saves volume.
+            if (band == TasteBand.BASS && (p.fullSubBass || subBassCostDb >= 0.5)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Full sub-bass", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            if (p.fullSubBass) {
+                                "Bass below 50 Hz follows your settings all the way down, at about ${"%.1f".format(subBassCostDb)} dB less volume."
+                            } else {
+                                "Bass below 50 Hz is held near the 50 Hz level, where little music lives. Letting it follow your settings would cost about ${"%.1f".format(subBassCostDb)} dB of volume on these headphones."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(checked = p.fullSubBass, onCheckedChange = { on -> edit { it.copy(fullSubBass = on) } })
+                }
             }
         }
         Control(

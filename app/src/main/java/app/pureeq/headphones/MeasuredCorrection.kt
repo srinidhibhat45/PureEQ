@@ -7,6 +7,7 @@ import app.pureeq.dsp.ParametricFit
 import app.pureeq.dsp.Response
 import kotlin.math.abs
 import kotlin.math.log10
+import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sqrt
@@ -82,22 +83,20 @@ object AutoEqCsv {
 
 /**
  * A model's correction computed from its measurement the way AutoEq computes its results:
- * measurement and target on AutoEq's grid, both 0 dB at 1 kHz, the target's own bass shelf added
- * to the target as AutoEq's bass boost does; error = measurement − target, shifted so its mean
- * from 100 Hz to 10 kHz is 0 (so one narrow feature at 1 kHz can't bias it); then
- * [AutoEqEqualizer.equalize]. Its +6 dB cap so covers the bass too: an open-back short of bass
- * gets +6 dB in the deep bass, as in AutoEq's own results, not the +10 dB or more the full target
- * asks, which would cost as much volume. The curve is stored without the shelf, which the
- * filters add back exactly.
+ * measurement and target on AutoEq's grid, both 0 dB at 1 kHz; error = measurement − target
+ * without bass, shifted so its mean from 100 Hz to 10 kHz is 0 (so one narrow feature at 1 kHz
+ * can't bias it); then [AutoEqEqualizer.equalize], +6 dB cap included. Above 4-8 kHz, where a
+ * fixture's response says little about any one ear (people differ by 5-30 dB there), half of it
+ * applies and boosts stop at +3 dB ([trebleTrust]). The target's own bass is added back as an
+ * exact shelf, so sealed in-ears get the full Harman bass; how far the whole EQ's bass may go is
+ * [app.pureeq.profile.BassGuard]'s job, after taste and ear tuning are added.
  */
 object MeasuredCorrection {
 
     fun model(entry: AutoEqEntry, target: AutoEqTarget, raw: AutoEqCsv.Curve, targetCurve: AutoEqCsv.Curve): HeadphoneModel {
         val g = AutoEqEqualizer.GRID
-        val shelf = Response.of(listOf(bassShelf(target.bassDb)), g)
-        val eq = equalization(raw, targetCurve, shelf)
-        val withoutShelf = DoubleArray(g.size) { eq[it] - shelf[it] }
-        val curve = FreqGrid.hz.map { f -> round(onGrid(g, withoutShelf, f) * 100) / 100 }
+        val eq = trebleTrust(g, equalization(raw, targetCurve))
+        val curve = FreqGrid.hz.map { f -> round(onGrid(g, eq, f) * 100) / 100 }
         return HeadphoneModel(
             name = entry.name,
             source = entry.source,
@@ -119,6 +118,27 @@ object MeasuredCorrection {
     }
 
     fun bassShelf(bassDb: Double) = FilterSpec(FilterType.LOW_SHELF, 105.0, bassDb, 0.7)
+
+    /** Share of a fixture's correction that applies above the 4-8 kHz blend (AutoEq's treble_gain_k). */
+    const val TREBLE_TRUST = 0.5
+
+    /**
+     * [eq] on [freqs] with the treble trusted less: full up to 4 kHz, blending to [TREBLE_TRUST] by
+     * 8 kHz along AutoEq's own log-frequency sigmoid, and boosts capped from +6 dB at 4 kHz down to
+     * +3 dB from 6 kHz.
+     */
+    fun trebleTrust(freqs: DoubleArray, eq: DoubleArray): DoubleArray {
+        val k = AutoEqEqualizer.logFSigmoid(freqs, 4000.0, 8000.0)
+        return DoubleArray(eq.size) { i ->
+            val f = freqs[i]
+            val cap = when {
+                f <= 4000.0 -> AutoEqEqualizer.MAX_GAIN_DB
+                f >= 6000.0 -> 3.0
+                else -> AutoEqEqualizer.MAX_GAIN_DB - 3.0 * log2(f / 4000.0) / log2(1.5)
+            }
+            minOf(eq[i] * (1 - k[i] * (1 - TREBLE_TRUST)), cap)
+        }
+    }
 
     /** The equalization curve on [AutoEqEqualizer.GRID] against [target] plus [bass] (dB on that grid), as AutoEq adds its bass boost. */
     fun equalization(raw: AutoEqCsv.Curve, target: AutoEqCsv.Curve, bass: DoubleArray? = null): DoubleArray {
@@ -197,8 +217,8 @@ object CorrectionFit {
             val resp = Response.of(filters, FreqGrid.hz)
             val bump = largestBump(DoubleArray(FreqGrid.SIZE) { target[it] - resp[it] }) ?: break
             // Shelves stay within half an octave of AutoEq's; each peak may keep moving half an octave from where it is now.
-            slots = filters.mapIndexed { j, f -> if (slots[j].type == FilterType.PEAK) slots[j].copy(freq = f.freq, q = f.q) else slots[j] } +
-                ParametricFit.Slot(FilterType.PEAK, bump.freq, bump.q, -12.0, 12.0, minQ = 0.3, maxQ = 6.0)
+            slots = filters.mapIndexed { j, f -> if (slots[j].type == FilterType.PEAK) slots[j].copy(freq = f.freq, q = f.q.coerceAtMost(maxQ(f.freq)), maxQ = maxQ(f.freq)) else slots[j] } +
+                ParametricFit.Slot(FilterType.PEAK, bump.freq, bump.q, -12.0, 12.0, minQ = 0.3, maxQ = maxQ(bump.freq))
             filters = ParametricFit.refine(target, filters + bump, slots, ridge = RIDGE, iterations = iterations)
         }
         val kept = filters.indices.filter { abs(filters[it].gainDb) >= 0.2 }
@@ -207,10 +227,16 @@ object CorrectionFit {
             .filter { abs(it.gainDb) >= 0.1 }
     }
 
-    /** A peak filter for the largest residual feature between 25 Hz and 16 kHz, as wide as the feature at half its height. */
+    /** Above 4 kHz no narrow peaks: ears differ there by more than such a peak would fix. */
+    private fun maxQ(freq: Double) = if (freq > 4000.0) 2.0 else 6.0
+
+    /**
+     * A peak filter for the largest residual feature between 25 Hz and 10 kHz, as wide as the
+     * feature at half its height. Above 10 kHz only the high shelf follows the trend, as in AutoEq.
+     */
     private fun largestBump(r: DoubleArray): FilterSpec? {
         val from = FreqGrid.nearestIndex(25.0)
-        val to = FreqGrid.nearestIndex(16000.0)
+        val to = FreqGrid.nearestIndex(10000.0)
         var k = from
         for (i in from..to) if (abs(r[i]) > abs(r[k])) k = i
         val height = r[k]
@@ -220,7 +246,7 @@ object CorrectionFit {
         var hi = k
         while (hi < r.size - 1 && r[hi + 1] * height > 0 && abs(r[hi + 1]) > abs(height) / 2) hi++
         val bw = ((hi - lo + 1) * FreqGrid.stepOctaves).coerceAtLeast(0.1)
-        val q = (sqrt(2.0.pow(bw)) / (2.0.pow(bw) - 1)).coerceIn(0.3, 6.0)
+        val q = (sqrt(2.0.pow(bw)) / (2.0.pow(bw) - 1)).coerceIn(0.3, maxQ(FreqGrid.hz[k]))
         return FilterSpec(FilterType.PEAK, FreqGrid.hz[k], height, q)
     }
 }

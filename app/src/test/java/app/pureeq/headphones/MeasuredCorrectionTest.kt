@@ -79,27 +79,26 @@ class MeasuredCorrectionTest {
     }
 
     @Test
-    fun theCapCoversTheTargetsBassAsInAutoEqsResults() {
-        // The target's bass counts towards the +6 dB cap, as with AutoEq's bass boost.
+    fun theCorrectionKeepsAutoEqsCapAndTrustsTheTrebleLess() {
         for (i in FIXTURES.indices) {
+            val (file, _, target) = FIXTURES[i]
             val m = model(i)
-            val total = MeasuredCorrection.withBass(m.curveDb!!, m.bassDb!!)
-            assertTrue("${m.name}: ${total.max()}", total.max() <= AutoEqEqualizer.MAX_GAIN_DB + 0.05)
+            val c = m.curveDb!!.toDoubleArray()
+            // AutoEq's +6 dB cap on the correction itself; the target's bass comes as its own exact filter.
+            assertTrue("${m.name}: ${c.max()}", c.max() <= AutoEqEqualizer.MAX_GAIN_DB + 0.05)
+            // From 6 kHz boosts stop at +3 dB, and above 8 kHz half of what the fixture asks applies.
+            for (k in FreqGrid.hz.indices) if (FreqGrid.hz[k] >= 6000.0) assertTrue("${m.name} ${FreqGrid.hz[k]}", c[k] <= 3.05)
+            val pure = MeasuredCorrection.equalization(AutoEqCsv.parse(fixture("$file.csv")), AutoEqCsv.parse(fixture("target $target.csv")))
+            val onGrid = MeasuredCorrection.interpolate(AutoEqCsv.Curve(AutoEqEqualizer.GRID, pure), FreqGrid.hz)
+            for (f in listOf(10000.0, 12000.0)) {
+                val k = FreqGrid.nearestIndex(f)
+                if (onGrid[k] < 6.0) assertEquals("${m.name} $f", minOf(onGrid[k] * MeasuredCorrection.TREBLE_TRUST, 3.0), c[k], 0.15)
+            }
         }
-        // oratory1990's HD 650 was published against the full Harman over-ear 2018 target, which the
-        // target without bass plus its shelf rebuilds: the app's correction is AutoEq's published one.
-        val published = AutoEqCsv.parse(fixture("oratory1990 Sennheiser HD 650.csv"), "equalization")
+        // HD 650: the target's bass shelf on top of the correction reaches the full Harman bass (+10.5 dB
+        // at 20 Hz) before the bass guard decides how much of it the whole EQ keeps.
         val m = model(0)
-        val total = MeasuredCorrection.withBass(m.curveDb!!, m.bassDb!!)
-        val want = MeasuredCorrection.interpolate(published, FreqGrid.hz.filter { it <= published.freqs.last() }.toDoubleArray())
-        var d = 0.0
-        for (k in want.indices) d = max(d, abs(want[k] - total[k]))
-        println("HD 650 with the target's bass: within %.3f dB of AutoEq's published correction".format(d))
-        // Published values are rounded to 0.01 dB.
-        assertTrue("HD 650: $d", d <= 0.02)
-        // +6 dB at 20 and 30 Hz, where the full target would ask for about +10.5 and +7.7.
-        assertEquals(6.0, Curves.sample(total, 20.0), 0.1)
-        assertEquals(6.0, Curves.sample(total, 30.0), 0.1)
+        assertEquals(10.5, Curves.sample(MeasuredCorrection.withBass(m.curveDb!!, m.bassDb!!), 20.0), 0.3)
     }
 
     @Test
@@ -113,8 +112,14 @@ class MeasuredCorrectionTest {
             val rms = sqrt(band.sumOf { (got[it] - want[it]).let { e -> e * e } } / band.size)
             val worst = band.maxOf { abs(got[it] - want[it]) }
             println("${m.name}: ${m.filters.size} filters, error RMS %.2f dB, worst %.2f dB".format(rms, worst))
+            val top = FreqGrid.hz.indices.filter { FreqGrid.hz[it] in 10000.0..16000.0 }.maxOf { abs(got[it] - want[it]) }
+            val worstAt = band.maxBy { abs(got[it] - want[it]) }.let { FreqGrid.hz[it] }
+            println("  worst at %.0f Hz; worst above 10 kHz %.2f dB".format(worstAt, top))
             assertTrue("${m.name}: rms $rms", rms < 0.35)
-            assertTrue("${m.name}: worst $worst", worst < 1.0)
+            // Above 4 kHz peaks stay broad (Q ≤ 2), so a fixture's narrow features there are followed only roughly.
+            val upTo4k = band.filter { FreqGrid.hz[it] <= 4000.0 }.maxOf { abs(got[it] - want[it]) }
+            assertTrue("${m.name}: worst up to 4 kHz $upTo4k", upTo4k < 1.0)
+            assertTrue("${m.name}: worst $worst", worst < 1.5)
             // At most twelve for the correction, plus the target's bass shelf.
             assertTrue(m.filters.size <= CorrectionFit.MAX_FILTERS + 1)
             assertEquals(MeasuredCorrection.bassShelf(t.bassDb), m.filters.first())

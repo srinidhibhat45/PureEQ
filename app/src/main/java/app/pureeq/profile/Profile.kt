@@ -41,6 +41,8 @@ data class Profile(
     val headphoneModel: HeadphoneModel? = null,
     /** Whether [headphoneModel]'s correction is applied (it is by default). */
     val headphoneCorrection: Boolean = true,
+    /** Over-ears: let bass below 50 Hz follow the settings fully instead of [BassGuard]'s limit. */
+    val fullSubBass: Boolean = false,
     /** Media volume during the listening check. */
     val checkLevel: ListeningLevel? = null,
     /**
@@ -55,6 +57,7 @@ data class Profile(
         taste = recommendedTaste ?: taste,
         balanceDb = 0.0,
         headphoneCorrection = true,
+        fullSubBass = false,
     )
 
     val isRecommended: Boolean get() = recommended() == this
@@ -73,6 +76,7 @@ data class Profile(
         recommendedTaste?.let { put("recommendedTaste", it.toJson()) }
         headphoneModel?.let { put("headphoneModel", modelJson(it)) }
         put("headphoneCorrection", headphoneCorrection)
+        if (fullSubBass) put("fullSubBass", true)
         if (checkLevel != null || tasteLevel != null) {
             put("levels", JSONObject().apply {
                 checkLevel?.let { put("check", levelJson(it)) }
@@ -174,6 +178,7 @@ data class Profile(
                 recommendedTaste = o.optJSONObject("recommendedTaste")?.let(::tasteFrom),
                 headphoneModel = o.optJSONObject("headphoneModel")?.let(::modelFrom),
                 headphoneCorrection = o.optBoolean("headphoneCorrection", true),
+                fullSubBass = o.optBoolean("fullSubBass", false),
                 checkLevel = o.optJSONObject("levels")?.optJSONObject("check")?.let(::levelFrom),
                 tasteLevel = o.optJSONObject("levels")?.optJSONObject("taste")?.let(::levelFrom),
             )
