@@ -231,30 +231,42 @@ fun AboutScreen(vm: AppViewModel) {
             "Pulsed beeps (two per presentation, 25 ms soft edges) play in one ear at a time, 500 Hz to 8 kHz. PureEQ keeps one statistical model " +
                 "of your thresholds in every band and both ears, linked across frequency and between the ears. " +
                 "Each beep is played at the level expected to teach it the most, and a band is finished as soon as its " +
-                "threshold is known well enough. Silent beeps measure guessing, and the model allows for the odd slip. About 2 minutes instead of 6.",
+                "threshold is known well enough. Silent beeps measure guessing, and the model allows for the odd slip. Missed a beep? Play it again once; " +
+                "the answer then counts as heard on either listen. About 2 minutes instead of 6.",
         )
         AboutSection(
             "From the listening check to EQ",
             "Your thresholds are compared with a reference listener's through well-tuned headphones of your type " +
                 "(ISO 389-7 thresholds, Harman target). The difference covers your ears and your headphones together, which is what an EQ can fix. " +
-                "PureEQ corrects the smooth trend, not every point, and only what the answers clearly show: small differences at 75 % " +
-                "(usually the headphones' own sound), large ones less, so the sound stays natural. Bass below 400 Hz is left to your taste, " +
-                "treble boosts stop at +6 dB, and both ears share one filter set so voices stay centred.",
+                "PureEQ corrects the smooth trend, not every point, measured from your low mids (500 Hz to 1.5 kHz), and only what the answers clearly " +
+                "show: small differences at 75 % (usually the headphones' own sound), larger ones at about a third, so the sound stays natural. " +
+                "Bass below 400 Hz is left to your taste and treble boosts stop at +6 dB. Both ears share one filter set, and a difference between " +
+                "your ears counts only when the answers clearly show it, so voices stay centred.",
         )
         AboutSection(
             "Your headphones' measured response",
             "Optionally, pick your model from AutoEq's database (over 6,000 headphones measured by oratory1990, crinacle, Rtings and others; " +
                 "AutoEq by Jaakko Pasanen, MIT licence). PureEQ downloads the model's measurement and corrects it the way AutoEq does: compared with the " +
                 "Harman target as measured on the same rig, smoothed and inverted, with gentle slopes, boosts limited to +6 dB, narrow notches left alone, " +
-                "and the target's own bass added back. crinacle publishes only finished corrections, so those use AutoEq's own. The listening check's " +
+                "and the target's own bass added back. Above about 5 kHz, where people's ears differ by 5 to 30 dB, only half of it applies. " +
+                "crinacle publishes only finished corrections, so those use AutoEq's own. The listening check's " +
                 "reference allows for the correction, so the measured response isn't corrected twice: the listening check then only fixes your ears and how the headphones sit. " +
                 "PureEQ remembers the model you picked for each pair of headphones.",
         )
         AboutSection(
+            "Bass within reason",
+            "The whole EQ's bass, from the correction, the listening check and your taste together, is kept within what it's worth. Over-ear " +
+                "headphones hold bass below 50 Hz near the 50 Hz level: little music lives down there, and a boost costs as much volume. Full " +
+                "sub-bass in Fine-tuning lifts this and says what it costs on your headphones. Sealed earbuds keep their deep bass. No headphones " +
+                "get more than +12 dB (over-ear) or +15 dB (in-ear) of bass over the mids.",
+        )
+        AboutSection(
             "The taste test",
-            "Bass (a 105 Hz shelf, as in Harman's headphone research) and treble (an 8 kHz shelf) are tuned by blind A/B comparisons, " +
-                "each pair loudness-matched with the ITU BS.1770 weighting so louder never wins by default. PureEQ starts from what most " +
-                "listeners prefer, learns from every answer, \"Same\" included, and picks each next pair to learn the most: usually 5 to 7 rounds.",
+            "Bass (a 105 Hz shelf, as in Harman's headphone research) and treble (a broad shelf from 2.5 kHz, the shape Harman's listeners " +
+                "adjusted) are tuned by blind A/B comparisons, each pair loudness-matched with the ITU BS.1770 weighting so louder never wins by " +
+                "default. PureEQ starts from Harman's three groups of listeners (most like the target, some want more bass, some less with a " +
+                "little more treble), learns from every answer, \"Same\" included, and picks each next pair to learn the most: usually 5 to 7 " +
+                "rounds. Each new pair is marked and waits until you've heard both. Air (above 10 kHz), warmth and vocals are yours to set by hand.",
         )
         AboutSection(
             "Applying it",

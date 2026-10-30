@@ -2,6 +2,15 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.5.0
+- A more natural fit: your listening check is now measured from your low mids, and larger differences get gentler correction, close to what people choose when they tune their own sound. A result that slopes toward the treble gets about a third less treble tilt, and the low mids are no longer turned down. Saved profiles refit automatically.
+- Fairer between your ears: a real difference between your ears now comes through (a flat one is read 3 dB short instead of 6), while everyone else's voices stay dead centre.
+- A better taste test: treble is now the broad shelf Harman's listeners tuned, and the test starts from Harman's three groups of listeners. A new Air control for the very top is in Fine-tuning. Profiles tuned before keep their sound until you redo the taste test.
+- No more mixed-up rounds: each new pair is clearly marked and waits until you've heard both A and B. In the listening check you can play a beep again once.
+- Bass within reason: over-ear headphones keep the deepest bass (below 50 Hz) near the 50 Hz level, which saves several dB of volume on bass-light models; Full sub-bass in Fine-tuning brings it back. Sealed earbuds now get the full Harman bass.
+- Headphone corrections trust lab measurements less in the high treble, where everyone's ears differ, and nothing below 20 Hz is boosted any more.
+- "Hearing check" is now the Listening check and "Hearing correction" Ear tuning: PureEQ tunes sound and isn't a medical test. Profiles remember the volume they were tuned at, for volume-aware features coming next.
+
 ## 1.4.0
 - Truly to the Harman target: PureEQ now downloads your model's lab measurement and works out the correction on the phone, the way AutoEq does, against the Harman target as measured on the same rig. In-ears used to land on AutoEq's own in-ear target, about 1 dB away in places.
 - The target's bass comes with it, never boosted by more than 6 dB (AutoEq's own limit, which keeps bass-light headphones loud and clean), and your taste test's bass sits on top as before.
