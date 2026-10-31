@@ -82,6 +82,10 @@ import app.pureeq.ui.components.ListeningOrb
 import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.kindLabel
+import app.pureeq.ui.outputInText
+import app.pureeq.ui.outputList
+import app.pureeq.ui.outputName
 import app.pureeq.ui.theme.EarColors
 import app.pureeq.ui.theme.StatusColors
 import app.pureeq.update.UpdateState
@@ -131,8 +135,10 @@ fun HomeScreen(vm: AppViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(deviceIcon(output), null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.width(6.dp))
+                        val name = outputName(output.name)
+                        val kind = kindLabel(output.kind)
                         Text(
-                            if (output.name == output.kind.label) output.name else "${output.name} · ${output.kind.label}",
+                            if (name == kind) name else "$name · $kind",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -435,10 +441,11 @@ private fun statusText(s: SystemEqStatus): String = when (s) {
  * The EQ is off for [output]: "Off for the phone speaker. On for Galaxy Buds2." when it's on for
  * other outputs, otherwise what turning it on would do.
  */
+@Composable
 internal fun offText(output: OutputDevice, outputs: OutputStates, profiles: List<Profile>): String {
     val onFor = outputs.onElsewhere(output, profiles)
     return when {
-        onFor.isNotEmpty() -> "Off for ${OutputStates.label(output)}. On for ${OutputStates.names(onFor)}."
+        onFor.isNotEmpty() -> "Off for ${outputInText(OutputStates.keyOf(output))}. On for ${outputList(onFor)}."
         output.kind == OutputDevice.Kind.SPEAKER -> "Off for the phone speaker. Connect your headphones to turn it on for them."
         else -> "Off. Turn on to hear this profile in every app."
     }

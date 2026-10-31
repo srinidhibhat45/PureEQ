@@ -49,7 +49,7 @@ class OutputStatesTest {
         val budsOff = s.turned(buds, false)
         assertFalse(budsOff.isOn(buds, profiles))
         assertTrue(budsOff.armed)
-        assertEquals(listOf("the phone speaker"), budsOff.onElsewhere(buds, profiles))
+        assertEquals(listOf(OutputStates.SPEAKER), budsOff.onElsewhere(buds, profiles))
     }
 
     @Test
@@ -88,7 +88,7 @@ class OutputStatesTest {
         val s = OutputStates().turned(model, true)
         assertTrue(s.isOn(speaker, profiles))
         assertTrue(s.isOn(earpiece, profiles))
-        assertEquals("the phone speaker", OutputStates.label(model))
+        assertEquals(OutputStates.SPEAKER, OutputStates.keyOf(model))
         // A profile can't claim the speaker by name.
         val odd = Profile("x", "Odd", 4L, deviceName = "Phone speaker")
         assertFalse(OutputStates().turned(buds, true).isOn(speaker, listOf(odd)))
@@ -119,7 +119,6 @@ class OutputStatesTest {
         val s = OutputStates().turned(car, true)
         assertEquals(listOf(cans.name, "Phone speaker", car.name, buds.name), s.known(profiles, cans).map { it.name })
         assertEquals(listOf("Phone speaker", car.name, buds.name, cans.name), s.known(profiles, speaker).map { it.name })
-        assertEquals("Galaxy Buds2 Pro and 2 more", OutputStates.names(listOf(buds.name, cans.name, car.name)))
         // A profile saved with the speaker's type (made before headphones were required) is still headphones.
         val odd = Profile("x", "Old", 5L, deviceName = "Old buds", deviceType = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
         val listed = OutputStates().known(listOf(odd), speaker)

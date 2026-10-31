@@ -43,6 +43,7 @@ import app.pureeq.system.SystemEqStatus
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.outputName
 import app.pureeq.ui.components.StepScaffold
 import app.pureeq.ui.theme.StatusColors
 import app.pureeq.update.UpdateState
@@ -137,7 +138,7 @@ private fun OutputsSection(vm: AppViewModel, s: AppSettings) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(deviceIcon(d), null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
-                    Text(d.name, style = MaterialTheme.typography.bodyLarge)
+                    Text(outputName(d.name), style = MaterialTheme.typography.bodyLarge)
                     Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(checked = on, enabled = active != null, onCheckedChange = { vm.setOutputOn(d, it) })

@@ -67,6 +67,8 @@ import app.pureeq.ui.components.KeepScreenOn
 import app.pureeq.ui.components.ListeningOrb
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.kindLabel
+import app.pureeq.ui.outputName
 import app.pureeq.ui.components.StepScaffold
 import app.pureeq.ui.theme.StatusColors
 import kotlinx.coroutines.delay
@@ -152,9 +154,11 @@ fun HeadphonesScreen(vm: AppViewModel) {
                 )
                 Spacer(Modifier.width(16.dp))
                 Column {
-                    Text(output.name, style = MaterialTheme.typography.titleLarge)
-                    if (output.kind.label != output.name) {
-                        Text(output.kind.label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    val name = outputName(output.name)
+                    val kind = kindLabel(output.kind)
+                    Text(name, style = MaterialTheme.typography.titleLarge)
+                    if (kind != name) {
+                        Text(kind, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

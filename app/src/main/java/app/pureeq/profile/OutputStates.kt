@@ -46,12 +46,12 @@ data class OutputStates(val byKey: Map<String, OutputPref> = emptyMap()) {
         return profiles.firstOrNull { madeWith(it, out) }
     }
 
-    /** The other outputs PureEQ is on for, as names to show ("the phone speaker" for the speaker). */
+    /** The other outputs PureEQ is on for, by name ([SPEAKER] for the phone speaker). */
     fun onElsewhere(out: OutputDevice, profiles: List<Profile>): List<String> {
         val here = keyOf(out)
         val remembered = byKey.filter { it.value.on && it.key != here }.keys
         val madeWith = if (armed) profiles.mapNotNull { it.deviceName }.filter { it != here && it != SPEAKER && it !in byKey } else emptyList()
-        return (remembered + madeWith).distinct().map { if (it == SPEAKER) SPEAKER_IN_TEXT else it }
+        return (remembered + madeWith).distinct()
     }
 
     /**
@@ -85,8 +85,7 @@ data class OutputStates(val byKey: Map<String, OutputPref> = emptyMap()) {
     }
 
     companion object {
-        const val SPEAKER = "Phone speaker"
-        private const val SPEAKER_IN_TEXT = "the phone speaker"
+        const val SPEAKER = OutputDevice.SPEAKER_NAME
 
         // AudioDeviceInfo.TYPE_BUILTIN_SPEAKER and TYPE_BLUETOOTH_A2DP.
         private const val TYPE_BUILTIN_SPEAKER = 2
@@ -94,17 +93,6 @@ data class OutputStates(val byKey: Map<String, OutputPref> = emptyMap()) {
 
         /** One key for the phone's own speaker (and earpiece) whatever it reports as its name. */
         fun keyOf(out: OutputDevice): String = if (out.kind == OutputDevice.Kind.SPEAKER) SPEAKER else out.name
-
-        /** [out] in a sentence: "the phone speaker", or the headphones' name. */
-        fun label(out: OutputDevice): String = if (out.kind == OutputDevice.Kind.SPEAKER) SPEAKER_IN_TEXT else out.name
-
-        /** "Galaxy Buds2", "Galaxy Buds2 and WH-1000XM4", "Galaxy Buds2 and 2 more". */
-        fun names(list: List<String>): String = when (list.size) {
-            0 -> ""
-            1 -> list[0]
-            2 -> "${list[0]} and ${list[1]}"
-            else -> "${list[0]} and ${list.size - 1} more"
-        }
 
         /**
          * The output called [name], with [type] unless that's unknown or would make headphones the

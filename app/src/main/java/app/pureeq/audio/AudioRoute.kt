@@ -40,12 +40,23 @@ data class OutputDevice(val name: String, val type: Int) {
         WIRED("Wired"), USB("USB-C"), BLUETOOTH("Bluetooth"), HEARING_AID("Hearing aid"), SPEAKER("Phone speaker"), OTHER("Audio output")
     }
 
-    private companion object {
+    companion object {
+        /**
+         * Names of outputs without a product name of their own. They are also keys (profiles and
+         * the per-output switches are stored by output name), so they stay English here and are
+         * translated only when shown (`ui/Labels`).
+         */
+        const val SPEAKER_NAME = "Phone speaker"
+        const val WIRED_NAME = "Wired headphones"
+        const val USB_NAME = "USB-C headphones"
+        const val HEADPHONES_NAME = "Headphones"
+        const val OTHER_NAME = "Audio output"
+
         // Constants added after API 28; numeric values from AudioDeviceInfo.
-        const val TYPE_BUILTIN_SPEAKER_SAFE = 24
-        const val TYPE_BLE_HEADSET = 26
-        const val TYPE_BLE_SPEAKER = 27
-        const val TYPE_BLE_BROADCAST = 30
+        private const val TYPE_BUILTIN_SPEAKER_SAFE = 24
+        private const val TYPE_BLE_HEADSET = 26
+        private const val TYPE_BLE_SPEAKER = 27
+        private const val TYPE_BLE_BROADCAST = 30
     }
 }
 
@@ -92,7 +103,7 @@ class AudioRoute(context: Context) {
         }
         val outs = am.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
         val best = PRIORITY.firstNotNullOfOrNull { t -> outs.firstOrNull { it.type == t } } ?: outs.firstOrNull()
-        return best?.let { describe(it) } ?: OutputDevice("Phone speaker", AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+        return best?.let { describe(it) } ?: OutputDevice(OutputDevice.SPEAKER_NAME, AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
     }
 
     private fun describe(d: AudioDeviceInfo): OutputDevice {
@@ -100,12 +111,12 @@ class AudioRoute(context: Context) {
         val generic = product.isEmpty() || product.equals(Build.MODEL, ignoreCase = true)
         val probe = OutputDevice("", d.type)
         val name = when {
-            probe.kind == OutputDevice.Kind.SPEAKER -> "Phone speaker"
+            probe.kind == OutputDevice.Kind.SPEAKER -> OutputDevice.SPEAKER_NAME
             !generic -> product
-            d.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES || d.type == AudioDeviceInfo.TYPE_WIRED_HEADSET -> "Wired headphones"
-            d.type == AudioDeviceInfo.TYPE_USB_HEADSET || d.type == AudioDeviceInfo.TYPE_USB_DEVICE -> "USB-C headphones"
-            probe.isHeadphones -> "Headphones"
-            else -> OutputDevice.Kind.OTHER.label
+            d.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES || d.type == AudioDeviceInfo.TYPE_WIRED_HEADSET -> OutputDevice.WIRED_NAME
+            d.type == AudioDeviceInfo.TYPE_USB_HEADSET || d.type == AudioDeviceInfo.TYPE_USB_DEVICE -> OutputDevice.USB_NAME
+            probe.isHeadphones -> OutputDevice.HEADPHONES_NAME
+            else -> OutputDevice.OTHER_NAME
         }
         return OutputDevice(name, d.type)
     }

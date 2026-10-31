@@ -34,6 +34,7 @@ import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.system.EqService
 import app.pureeq.ui.components.Pill
+import app.pureeq.ui.outputInText
 import app.pureeq.ui.theme.StatusColors
 
 /**
@@ -64,7 +65,7 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
                     Text(
                         when {
                             current == null -> "No profile yet"
-                            on -> "On for ${OutputStates.label(playingOn)}"
+                            on -> "On for ${outputInText(OutputStates.keyOf(playingOn))}"
                             else -> offText(playingOn, settings.outputs, profiles)
                         },
                         style = MaterialTheme.typography.bodyMedium,

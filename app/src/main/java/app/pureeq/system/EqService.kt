@@ -24,6 +24,7 @@ import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
 import app.pureeq.profile.SystemEqMode
+import app.pureeq.ui.Labels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -78,7 +79,7 @@ class EqService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        startInForeground(buildNotification("Starting…"))
+        startInForeground(buildNotification(getString(R.string.notif_starting)))
         val filter = IntentFilter().apply {
             addAction(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION)
             addAction(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION)
@@ -139,8 +140,8 @@ class EqService : LifecycleService() {
         val profile = s.profiles.firstOrNull { it.id == s.activeId } ?: s.profiles.firstOrNull()
         if (profile == null) {
             releaseAll()
-            EqRuntime.status.value = SystemEqStatus.Failed("No profile yet")
-            updateNotification("No profile yet. Open PureEQ to create one.")
+            EqRuntime.status.value = SystemEqStatus.Failed(getString(R.string.status_no_profile))
+            updateNotification(getString(R.string.notif_no_profile))
             return
         }
         if (!outputs.isOn(s.output, s.profiles)) {
@@ -152,8 +153,8 @@ class EqService : LifecycleService() {
             val onFor = outputs.onElsewhere(s.output, s.profiles)
             EqRuntime.status.value = SystemEqStatus.Standby(s.output, onFor)
             updateNotification(
-                "It comes back on with ${OutputStates.names(onFor)}.",
-                title = "PureEQ is off for ${OutputStates.label(s.output)}",
+                getString(R.string.notif_comes_back, Labels.outputList(this, onFor)),
+                title = getString(R.string.notif_off_for, Labels.outputInText(this, OutputStates.keyOf(s.output))),
                 standby = true,
             )
             return
@@ -196,9 +197,9 @@ class EqService : LifecycleService() {
                 appliedProfile = profile
             } catch (e: Exception) {
                 releaseAll()
-                val msg = "This phone refused the system equalizer (${e.javaClass.simpleName}). Try the \"Music apps\" mode in Settings."
+                val msg = getString(R.string.status_refused, e.javaClass.simpleName)
                 EqRuntime.status.value = SystemEqStatus.Failed(msg)
-                updateNotification("Couldn't start the equalizer")
+                updateNotification(getString(R.string.notif_failed))
                 return
             }
         }
@@ -218,8 +219,13 @@ class EqService : LifecycleService() {
         } else {
             SystemEqStatus.Active(profile.name, global, sessions.size)
         }
-        val where = if (global) "All audio" else "Music apps · ${sessions.size} playing"
-        updateNotification(if (paused) "${profile.name} · paused while PureEQ plays" else "${profile.name} · $where")
+        updateNotification(
+            when {
+                paused -> getString(R.string.notif_paused, profile.name)
+                global -> getString(R.string.notif_all_audio, profile.name)
+                else -> resources.getQuantityString(R.plurals.notif_music_apps, sessions.size, profile.name, sessions.size)
+            },
+        )
     }
 
     private fun openSession(session: Int) {
@@ -260,12 +266,12 @@ class EqService : LifecycleService() {
         }
     }
 
-    private fun updateNotification(text: String, title: String = "PureEQ is on", standby: Boolean = false) {
+    private fun updateNotification(text: String, title: String = getString(R.string.notif_on), standby: Boolean = false) {
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(text, title, standby))
     }
 
     /** [standby]: off for this output; its button then turns PureEQ off for every output. */
-    private fun buildNotification(text: String, title: String = "PureEQ is on", standby: Boolean = false): Notification {
+    private fun buildNotification(text: String, title: String = getString(R.string.notif_on), standby: Boolean = false): Notification {
         val nm = getSystemService(NotificationManager::class.java)
         if (nm.getNotificationChannel(CHANNEL_ID) == null) {
             nm.createNotificationChannel(
@@ -290,7 +296,7 @@ class EqService : LifecycleService() {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setContentIntent(open)
-            .addAction(0, if (standby) "Turn off everywhere" else "Turn off", off)
+            .addAction(0, getString(if (standby) R.string.notif_turn_off_everywhere else R.string.notif_turn_off), off)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
     }

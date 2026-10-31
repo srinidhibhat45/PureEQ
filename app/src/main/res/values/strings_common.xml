@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Words from the model, shared by several screens and the system-wide EQ's notification. -->
+<resources>
+    <!-- Names of outputs that report no product name of their own. A product name such as
+         "Galaxy Buds2 Pro" is shown as it is. -->
+    <string name="output_phone_speaker">Phone speaker</string>
+    <string name="output_wired_headphones">Wired headphones</string>
+    <string name="output_usb_headphones">USB-C headphones</string>
+    <string name="output_headphones">Headphones</string>
+    <string name="output_other">Audio output</string>
+    <!-- The phone speaker inside a sentence: "Off for the phone speaker." -->
+    <string name="output_phone_speaker_in_text">the phone speaker</string>
+
+    <!-- The kind of output, after its name: "Galaxy Buds2 Pro · Bluetooth". -->
+    <string name="kind_wired">Wired</string>
+    <string name="kind_usb">USB-C</string>
+    <string name="kind_bluetooth">Bluetooth</string>
+    <string name="kind_hearing_aid">Hearing aid</string>
+    <string name="kind_speaker">Phone speaker</string>
+    <string name="kind_other">Audio output</string>
+
+    <!-- Lists of outputs: "Galaxy Buds2 and WH-1000XM4", "Galaxy Buds2 and 2 more". -->
+    <string name="list_two">%1$s and %2$s</string>
+    <plurals name="list_more">
+        <item quantity="one">%1$s and %2$d more</item>
+        <item quantity="other">%1$s and %2$d more</item>
+    </plurals>
+
+    <!-- How the system-wide EQ attaches (Settings). -->
+    <string name="mode_global">All audio</string>
+    <string name="mode_global_detail">Attaches to Android\'s output mix, so every app is covered. Works on most phones.</string>
+    <string name="mode_per_app">Music apps</string>
+    <string name="mode_per_app_detail">Attaches to players that announce themselves (Spotify, YouTube Music, Samsung Music, Poweramp…). Use this if \"All audio\" has no effect on your phone.</string>
+
+    <!-- The taste controls in Fine-tune. -->
+    <string name="band_bass">Bass</string>
+    <string name="band_bass_hint">Kick drum and bass guitar weight</string>
+    <string name="band_warmth">Warmth</string>
+    <string name="band_warmth_hint">Body of voices and instruments</string>
+    <string name="band_vocals">Vocals</string>
+    <string name="band_vocals_hint">Clarity and presence of voices</string>
+    <string name="band_treble">Treble</string>
+    <string name="band_treble_hint">Brightness: the edge of voices, cymbals and detail</string>
+    <string name="band_air">Air</string>
+    <string name="band_air_hint">Sparkle and space at the very top</string>
+
+    <!-- Kinds of headphones. -->
+    <string name="headphones_in_ear">In-ear</string>
+    <string name="headphones_over_ear">Over-ear</string>
+
+    <!-- Lengths of the listening check. -->
+    <string name="length_quick">Quick</string>
+    <string name="length_quick_detail">7 bands per ear · about 1½ min</string>
+    <string name="length_standard">Standard</string>
+    <string name="length_standard_detail">7 bands per ear · about 2 min</string>
+    <string name="length_thorough">Thorough</string>
+    <string name="length_thorough_detail">7 bands, extra precise · about 3 min</string>
+
+    <!-- Graphic EQ layouts on the Export screen, and where each one is used. -->
+    <string name="bands_ten">10-band</string>
+    <string name="bands_ten_where">Poweramp graphic mode, most player and phone EQs</string>
+    <string name="bands_samsung">Samsung 9-band</string>
+    <string name="bands_samsung_where">Galaxy Settings › Sound quality and effects › Equalizer › Custom</string>
+    <string name="bands_android">5-band</string>
+    <string name="bands_android_where">Android\'s built-in equalizer, Spotify on Android, many phone EQs</string>
+    <string name="bands_james">JamesDSP 15-band</string>
+    <string name="bands_james_where">JamesDSP / RootlessJamesDSP multimodal equalizer</string>
+    <string name="bands_third_octave">31-band</string>
+    <string name="bands_third_octave_where">1/3-octave graphic EQs</string>
+
+    <!-- The system-wide EQ's notification. -->
+    <string name="notif_on">PureEQ is on</string>
+    <string name="notif_starting">Starting…</string>
+    <!-- %1$s: the profile's name. -->
+    <string name="notif_all_audio">%1$s · All audio</string>
+    <plurals name="notif_music_apps">
+        <item quantity="one">%1$s · Music apps · %2$d playing</item>
+        <item quantity="other">%1$s · Music apps · %2$d playing</item>
+    </plurals>
+    <string name="notif_paused">%1$s · paused while PureEQ plays</string>
+    <!-- %1$s: an output in a sentence, such as "the phone speaker". -->
+    <string name="notif_off_for">PureEQ is off for %1$s</string>
+    <!-- %1$s: the outputs PureEQ is on for, such as "Galaxy Buds2 and WH-1000XM4". -->
+    <string name="notif_comes_back">It comes back on with %1$s.</string>
+    <string name="notif_turn_off">Turn off</string>
+    <string name="notif_turn_off_everywhere">Turn off everywhere</string>
+    <string name="notif_no_profile">No profile yet. Open PureEQ to create one.</string>
+    <string name="notif_failed">Couldn\'t start the equalizer</string>
+    <string name="status_no_profile">No profile yet</string>
+    <!-- %1$s: the error's technical name. -->
+    <string name="status_refused">This phone refused the system equalizer (%1$s). Try the \"Music apps\" mode in Settings.</string>
+</resources>
