@@ -4,9 +4,11 @@ import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.util.Log
 import android.net.Uri
+import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import app.pureeq.PureEqApp
+import app.pureeq.R
 import app.pureeq.audio.ListeningLevel
 import app.pureeq.audio.ListeningOption
 import app.pureeq.audio.Matching
@@ -79,11 +81,12 @@ sealed interface Screen {
     data object About : Screen
 }
 
-enum class PauseReason(val title: String, val text: String) {
-    USER("Paused", "Take a breath. Continue whenever you're ready."),
-    VOLUME("Volume changed", "The test needs the volume you set at the start. Restore it and carry on."),
-    HEADPHONES("Headphones disconnected", "Reconnect the same headphones to continue."),
-    BACKGROUND("Paused", "The test paused while PureEQ was in the background."),
+/** Why the listening check paused. [titleRes] and [textRes] are [title] and [text] in the phone's language. */
+enum class PauseReason(val title: String, val text: String, @StringRes val titleRes: Int, @StringRes val textRes: Int) {
+    USER("Paused", "Take a breath. Continue whenever you're ready.", R.string.msg_paused, R.string.msg_pause_user),
+    VOLUME("Volume changed", "The test needs the volume you set at the start. Restore it and carry on.", R.string.msg_pause_volume_title, R.string.msg_pause_volume),
+    HEADPHONES("Headphones disconnected", "Reconnect the same headphones to continue.", R.string.msg_pause_headphones_title, R.string.msg_pause_headphones),
+    BACKGROUND("Paused", "The test paused while PureEQ was in the background.", R.string.msg_paused, R.string.msg_pause_background),
 }
 
 /** Everything gathered while creating a new profile. */
@@ -393,7 +396,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     _picker.update { p -> p.copy(loading = false) }
                     searchHeadphones(_picker.value.query)
                 }
-                .onFailure { _picker.update { p -> p.copy(loading = false, error = "Couldn't reach AutoEq's database. Check the connection and try again, or skip this: the listening check corrects your headphones either way.") } }
+                .onFailure { _picker.update { p -> p.copy(loading = false, error = getApplication<Application>().getString(R.string.msg_autoeq_unreachable)) } }
         }
     }
 
@@ -425,7 +428,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     _picker.update { it.copy(fetching = null) }
                     back()
                 }
-                .onFailure { _picker.update { it.copy(fetching = null, error = "Couldn't download that correction. Check the connection and try again.") } }
+                .onFailure { _picker.update { it.copy(fetching = null, error = getApplication<Application>().getString(R.string.msg_correction_failed)) } }
         }
     }
 
@@ -684,7 +687,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _musicBusy.value = true
             runCatching { library.decode(uri) }
                 .onSuccess { setTrack(it) }
-                .onFailure { musicError.value = "Couldn't play that file (${it.message ?: it.javaClass.simpleName})." }
+                .onFailure { musicError.value = getApplication<Application>().getString(R.string.msg_cant_play_file, it.message ?: it.javaClass.simpleName) }
             _musicBusy.value = false
         }
     }
@@ -870,11 +873,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun draftProfile(): Profile {
         val d = _draft.value
+        val app = getApplication<Application>()
+        val headphones = d.device?.takeIf { it.isHeadphones }?.name
         return Profile(
             id = d.id,
-            name = d.device?.takeIf { it.isHeadphones }?.name ?: "My sound",
+            // Named after the headphones as the phone shows them; deviceName keeps the output's own name.
+            name = headphones?.let { Labels.outputName(app, it) } ?: app.getString(R.string.msg_default_profile_name),
             createdAt = System.currentTimeMillis(),
-            deviceName = d.device?.takeIf { it.isHeadphones }?.name,
+            deviceName = headphones,
             deviceType = d.device?.type,
             hearing = d.hearing,
             taste = d.taste,
@@ -1029,7 +1035,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }.onSuccess {
                 store.upsert(it)
                 store.setActive(it.id)
-            }.onFailure { musicError.value = "That file isn't a PureEQ profile." }
+            }.onFailure { musicError.value = getApplication<Application>().getString(R.string.msg_not_a_profile) }
         }
     }
 

@@ -15,7 +15,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pureeq.R
 import app.pureeq.ui.screens.AboutScreen
 import app.pureeq.ui.screens.EditorScreen
 import app.pureeq.ui.screens.ExportScreen
@@ -48,7 +50,7 @@ fun PureEqRoot(vm: AppViewModel, onExit: () -> Unit) {
     if (error != null) {
         AlertDialog(
             onDismissRequest = { vm.musicError.value = null },
-            confirmButton = { TextButton(onClick = { vm.musicError.value = null }) { Text("OK") } },
+            confirmButton = { TextButton(onClick = { vm.musicError.value = null }) { Text(stringResource(R.string.root_ok)) } },
             text = { Text(error ?: "") },
         )
     }

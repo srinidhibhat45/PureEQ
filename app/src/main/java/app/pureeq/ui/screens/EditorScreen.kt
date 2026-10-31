@@ -1,5 +1,6 @@
 package app.pureeq.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -41,8 +42,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pureeq.R
 import app.pureeq.headphones.AutoEqTarget
 import app.pureeq.profile.Exporters
 import app.pureeq.profile.Profile
@@ -54,9 +57,11 @@ import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.StepScaffold
+import app.pureeq.ui.hintRes
 import app.pureeq.ui.theme.EarColors
 import app.pureeq.ui.theme.NumberStyle
 import app.pureeq.ui.theme.StatusColors
+import app.pureeq.ui.titleRes
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -69,24 +74,26 @@ fun EditorScreen(vm: AppViewModel) {
     val scope = rememberCoroutineScope()
     val e = ui ?: return
     val p = e.profile
+    val resetDone = stringResource(R.string.editor_reset_done)
+    val undo = stringResource(R.string.editor_undo)
     val reset = {
         vm.resetEditor()?.let { before ->
             scope.launch {
                 snackbar.currentSnackbarData?.dismiss()
-                val r = snackbar.showSnackbar("Back to PureEQ's suggestion", actionLabel = "Undo", duration = SnackbarDuration.Long)
+                val r = snackbar.showSnackbar(resetDone, actionLabel = undo, duration = SnackbarDuration.Long)
                 if (r == SnackbarResult.ActionPerformed) vm.restoreAdjustments(before)
             }
         }
         Unit
     }
     StepScaffold(
-        title = if (e.isDraft) "Your sound" else "Fine-tune",
+        title = stringResource(if (e.isDraft) R.string.editor_title_draft else R.string.editor_title),
         onBack = { vm.back() },
         step = if (e.isDraft) 8 else null,
         snackbarHost = { SnackbarHost(snackbar) },
         bottom = {
             if (e.isDraft) {
-                PrimaryButton("Save profile", vm::saveEditor)
+                PrimaryButton(stringResource(R.string.editor_save_profile), vm::saveEditor)
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(
@@ -96,9 +103,9 @@ fun EditorScreen(vm: AppViewModel) {
                     ) {
                         Icon(Icons.Rounded.IosShare, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Export")
+                        Text(stringResource(R.string.editor_export))
                     }
-                    Button(onClick = vm::saveEditor, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(16.dp)) { Text("Done") }
+                    Button(onClick = vm::saveEditor, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(16.dp)) { Text(stringResource(R.string.editor_done)) }
                 }
             }
         },
@@ -106,7 +113,7 @@ fun EditorScreen(vm: AppViewModel) {
         OutlinedTextField(
             value = p.name,
             onValueChange = { n -> vm.editProfile { it.copy(name = n.take(40)) } },
-            label = { Text("Profile name") },
+            label = { Text(stringResource(R.string.editor_profile_name)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
@@ -116,33 +123,33 @@ fun EditorScreen(vm: AppViewModel) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 val split = eq != null && eq.leftCurve.indices.any { abs(eq.leftCurve[it] - eq.rightCurve[it]) >= 0.05 }
                 if (split) {
-                    Pill("Left", EarColors.Left)
-                    Pill("Right", EarColors.Right)
+                    Pill(stringResource(R.string.editor_left), EarColors.Left)
+                    Pill(stringResource(R.string.editor_right), EarColors.Right)
                 } else {
-                    Pill("Both ears", MaterialTheme.colorScheme.primary)
+                    Pill(stringResource(R.string.editor_both_ears), MaterialTheme.colorScheme.primary)
                 }
                 Spacer(Modifier.weight(1f))
                 if (eq != null) {
-                    Text("Preamp ${Exporters.signed(eq.preampDb)} dB", style = MaterialTheme.typography.labelMedium.merge(NumberStyle), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.editor_preamp, Exporters.signed(eq.preampDb)), style = MaterialTheme.typography.labelMedium.merge(NumberStyle), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             if (eq != null) EqChart(curvesFor(eq, MaterialTheme.colorScheme.primary), height = 220.dp) else Spacer(Modifier.height(220.dp))
         }
         SectionCard {
-            Text("Listen", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.editor_listen), style = MaterialTheme.typography.titleSmall)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FilledTonalButton(onClick = { vm.setPreview(!e.previewing || !playing) }) {
                     Icon(if (e.previewing && playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, null)
                     Spacer(Modifier.width(6.dp))
-                    Text(if (e.previewing && playing) "Pause" else "Play")
+                    Text(stringResource(if (e.previewing && playing) R.string.editor_pause else R.string.editor_play))
                 }
                 SingleChoiceSegmentedButtonRow(Modifier.weight(1f)) {
-                    SegmentedButton(selected = e.eqOn, onClick = { vm.setEqOn(true) }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text("EQ on") }
-                    SegmentedButton(selected = !e.eqOn, onClick = { vm.setEqOn(false) }, shape = SegmentedButtonDefaults.itemShape(1, 2)) { Text("Off") }
+                    SegmentedButton(selected = e.eqOn, onClick = { vm.setEqOn(true) }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text(stringResource(R.string.editor_eq_on)) }
+                    SegmentedButton(selected = !e.eqOn, onClick = { vm.setEqOn(false) }, shape = SegmentedButtonDefaults.itemShape(1, 2)) { Text(stringResource(R.string.editor_eq_off)) }
                 }
             }
             Text(
-                "On and off are loudness-matched, so you hear the change in balance, not just a volume jump.",
+                stringResource(R.string.editor_loudness_matched),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -176,22 +183,26 @@ private fun FineTuning(
 ) {
     val rec = p.recommended()
     val suggestedTaste = p.recommendedTaste
-    val changed = buildList {
-        if (p.headphoneModel != null && !p.headphoneCorrection) add("headphone correction")
-        if (p.fullSubBass) add("full sub-bass")
-        if (p.hearing != null && p.hearingStrength != rec.hearingStrength) add("ear tuning")
-        suggestedTaste?.let { t -> TasteBand.entries.filter { p.taste[it] != t[it] }.forEach { add(it.label.lowercase()) } }
-        if (p.balanceDb != rec.balanceDb) add("balance")
+    // What differs from the suggestion, each as it reads in the "Changed from…" sentence.
+    val changed = buildList<Int> {
+        if (p.headphoneModel != null && !p.headphoneCorrection) add(R.string.editor_changed_headphone_correction)
+        if (p.fullSubBass) add(R.string.editor_changed_full_sub_bass)
+        if (p.hearing != null && p.hearingStrength != rec.hearingStrength) add(R.string.editor_changed_ear_tuning)
+        suggestedTaste?.let { t -> TasteBand.entries.filter { p.taste[it] != t[it] }.forEach { add(it.changedRes) } }
+        if (p.balanceDb != rec.balanceDb) add(R.string.editor_changed_balance)
     }
     SectionCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                Text("Fine-tuning", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.editor_fine_tuning), style = MaterialTheme.typography.titleMedium)
                 Text(
                     when {
-                        changed.isNotEmpty() -> "Changed from PureEQ's suggestion: ${changed.joinToString(", ")}."
-                        suggestedTaste == null -> "Ear tuning and balance are as PureEQ suggested."
-                        else -> "Everything is as PureEQ suggested from your tests."
+                        changed.isNotEmpty() -> stringResource(
+                            R.string.editor_changed,
+                            changed.map { stringResource(it) }.joinToString(stringResource(R.string.editor_changed_separator)),
+                        )
+                        suggestedTaste == null -> stringResource(R.string.editor_as_suggested_no_taste)
+                        else -> stringResource(R.string.editor_as_suggested)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = if (changed.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -200,51 +211,55 @@ private fun FineTuning(
             FilledTonalButton(onClick = onReset, enabled = changed.isNotEmpty()) {
                 Icon(Icons.Rounded.RestartAlt, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Reset")
+                Text(stringResource(R.string.editor_reset))
             }
         }
         if (suggestedTaste == null) {
             // Saved by 1.0.0, which didn't store the taste test's result.
             Text(
-                "This profile was made with PureEQ 1.0, which didn't save its suggestion for bass, warmth, vocals and treble, so Reset can't bring those back. " +
-                    "Redo the taste test (about 2 minutes) and PureEQ will remember its suggestion from then on.",
+                stringResource(R.string.editor_legacy_profile),
                 style = MaterialTheme.typography.bodySmall,
                 color = StatusColors.Warn,
             )
-            if (!isDraft) FilledTonalButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text("Redo taste test") }
+            if (!isDraft) FilledTonalButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.editor_redo_taste_legacy)) }
         }
         val model = p.headphoneModel
         if (model != null) {
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                        Text("Headphone correction", style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.editor_headphone_correction), style = MaterialTheme.typography.titleSmall)
+                        val target = model.target
                         Text(
-                            "${model.name}, corrected to ${model.targetLabel}.",
+                            if (target != null) {
+                                stringResource(R.string.editor_corrected_to_target, model.name, target)
+                            } else {
+                                stringResource(R.string.editor_corrected_to_autoeq_target, model.name)
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Text(model.attribution, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.editor_headphone_data, model.source), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(checked = p.headphoneCorrection, onCheckedChange = { on -> edit { it.copy(headphoneCorrection = on) } })
                 }
                 TextButton(onClick = onPickModel, contentPadding = PaddingValues(horizontal = 0.dp)) {
                     // Models picked with 1.3 carry AutoEq's published correction; picking again computes the new one.
-                    Text(if (model.path == null && AutoEqTarget.hasMeasurement(model.source)) "Update to the Harman correction" else "Change model")
+                    Text(stringResource(if (model.path == null && AutoEqTarget.hasMeasurement(model.source)) R.string.editor_update_correction else R.string.editor_change_model))
                 }
             }
         } else {
             OutlinedButton(onClick = onPickModel, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Rounded.Headphones, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Add your headphones' measured correction")
+                Text(stringResource(R.string.editor_add_correction))
             }
         }
         if (p.hearing != null) {
             Control(
-                "Ear tuning",
+                stringResource(R.string.editor_ear_tuning),
                 percent(p.hearingStrength),
-                "How much of your listening check to apply. 75% applies most of it while leaving room for measurement noise; large differences always get proportionally less.",
+                stringResource(R.string.editor_ear_tuning_hint),
                 suggested = percent(rec.hearingStrength).takeIf { p.hearingStrength != rec.hearingStrength },
                 onRestore = { edit { it.copy(hearingStrength = rec.hearingStrength) } },
             ) {
@@ -260,9 +275,9 @@ private fun FineTuning(
             val v = p.taste[band]
             val r = suggestedTaste?.get(band)
             Control(
-                band.label,
+                stringResource(band.titleRes),
                 "${Exporters.signed(v)} dB",
-                if (band == TasteBand.TREBLE && p.taste.legacyTreble) "Cymbals and sparkle: PureEQ's earlier 8 kHz treble. Redo the taste test for today's broader one." else band.hint,
+                stringResource(if (band == TasteBand.TREBLE && p.taste.legacyTreble) R.string.editor_treble_legacy_hint else band.hintRes),
                 suggested = r?.takeIf { it != v }?.let { "${Exporters.signed(it)} dB" },
                 onRestore = { if (r != null) edit { it.copy(taste = it.taste.with(band, r)) } },
             ) {
@@ -276,13 +291,12 @@ private fun FineTuning(
             if (band == TasteBand.BASS && (p.fullSubBass || subBassCostDb >= 0.5)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Column(Modifier.weight(1f)) {
-                        Text("Full sub-bass", style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.editor_full_sub_bass), style = MaterialTheme.typography.titleSmall)
                         Text(
-                            if (p.fullSubBass) {
-                                "Bass below 50 Hz follows your settings all the way down, at about ${"%.1f".format(subBassCostDb)} dB less volume."
-                            } else {
-                                "Bass below 50 Hz is held near the 50 Hz level, where little music lives. Letting it follow your settings would cost about ${"%.1f".format(subBassCostDb)} dB of volume on these headphones."
-                            },
+                            stringResource(
+                                if (p.fullSubBass) R.string.editor_full_sub_bass_on else R.string.editor_full_sub_bass_off,
+                                "%.1f".format(subBassCostDb),
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -292,9 +306,9 @@ private fun FineTuning(
             }
         }
         Control(
-            "Balance",
+            stringResource(R.string.editor_balance),
             balanceLabel(p.balanceDb),
-            "Only needed if one side still sounds louder",
+            stringResource(R.string.editor_balance_hint),
             suggested = balanceLabel(rec.balanceDb).takeIf { p.balanceDb != rec.balanceDb },
             onRestore = { edit { it.copy(balanceDb = rec.balanceDb) } },
         ) {
@@ -305,7 +319,7 @@ private fun FineTuning(
             )
         }
         if (!isDraft && suggestedTaste != null) {
-            TextButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text("Redo the taste test") }
+            TextButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.editor_redo_taste)) }
         }
     }
 }
@@ -336,7 +350,7 @@ private fun Control(
             ) {
                 Icon(Icons.Rounded.RestartAlt, null, Modifier.size(16.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Suggested $suggested", style = MaterialTheme.typography.labelMedium.merge(NumberStyle))
+                Text(stringResource(R.string.editor_suggested, suggested), style = MaterialTheme.typography.labelMedium.merge(NumberStyle))
             }
         }
         slider()
@@ -345,8 +359,20 @@ private fun Control(
 
 private fun percent(x: Double) = "${(x * 100).roundToInt()}%"
 
+@Composable
 private fun balanceLabel(b: Double) = when {
-    abs(b) < 0.05 -> "Centre"
-    b > 0 -> "Right +${"%.1f".format(b)} dB"
-    else -> "Left +${"%.1f".format(-b)} dB"
+    abs(b) < 0.05 -> stringResource(R.string.editor_balance_centre)
+    b > 0 -> stringResource(R.string.editor_balance_right, "%.1f".format(b))
+    else -> stringResource(R.string.editor_balance_left, "%.1f".format(-b))
 }
+
+/** A taste band in the list of what was changed from PureEQ's suggestion. */
+@get:StringRes
+private val TasteBand.changedRes: Int
+    get() = when (this) {
+        TasteBand.BASS -> R.string.editor_changed_bass
+        TasteBand.WARMTH -> R.string.editor_changed_warmth
+        TasteBand.VOCALS -> R.string.editor_changed_vocals
+        TasteBand.TREBLE -> R.string.editor_changed_treble
+        TasteBand.AIR -> R.string.editor_changed_air
+    }

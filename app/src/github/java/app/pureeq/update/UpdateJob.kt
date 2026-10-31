@@ -124,12 +124,12 @@ internal object UpdateNotifications {
     private const val UPDATED_ID = 3
 
     fun ready(context: Context, m: UpdateManifest) {
-        val tap = "Tap to install. PureEQ closes for a moment while it updates."
+        val tap = context.getString(R.string.update_ready_text)
         post(
             context,
             READY_ID,
             NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentTitle("PureEQ ${m.versionName} is ready")
+                .setContentTitle(context.getString(R.string.update_ready_title, m.versionName))
                 .setContentText(tap)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(listOf(m.notes, tap).filter { it.isNotBlank() }.joinToString("\n\n")))
                 .setContentIntent(openApp(context, Updater.ACTION_INSTALL)),
@@ -137,12 +137,12 @@ internal object UpdateNotifications {
     }
 
     fun updated(context: Context, versionName: String, notes: String) {
-        val text = notes.ifBlank { "Tap to open." }
+        val text = notes.ifBlank { context.getString(R.string.update_updated_text) }
         post(
             context,
             UPDATED_ID,
             NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentTitle("PureEQ updated to $versionName")
+                .setContentTitle(context.getString(R.string.update_updated_title, versionName))
                 .setContentText(text)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(text))
                 .setSilent(true)

@@ -11,6 +11,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.SystemClock
 import app.pureeq.BuildConfig
+import app.pureeq.R
 import app.pureeq.profile.ProfileStore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -172,7 +173,7 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
             when (c.responseCode) {
                 HttpURLConnection.HTTP_OK -> Unit
                 HttpURLConnection.HTTP_NOT_FOUND -> return null
-                else -> throw IOException("the update address answered ${c.responseCode}")
+                else -> throw IOException(context.getString(R.string.update_problem_address_answered, c.responseCode))
             }
             val text = c.inputStream.use { it.readAtMost(MAX_NOTICE_BYTES) }.toString(Charsets.UTF_8)
             return UpdateManifest.parse(text, context.packageName, allowHttp)
@@ -189,7 +190,7 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
         val digest = MessageDigest.getInstance("SHA-256")
         val c = open(m.url)
         try {
-            if (c.responseCode != HttpURLConnection.HTTP_OK) throw IOException("the download answered ${c.responseCode}")
+            if (c.responseCode != HttpURLConnection.HTTP_OK) throw IOException(context.getString(R.string.update_problem_download_answered, c.responseCode))
             var got = 0L
             var shown = 0L
             c.inputStream.use { input ->
@@ -200,7 +201,7 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
                         val n = input.read(buf)
                         if (n < 0) break
                         got += n
-                        if (got > m.size) throw UpdateError("The download is bigger than the update notice says, so it was thrown away.")
+                        if (got > m.size) throw UpdateError(context.getString(R.string.update_error_too_big))
                         digest.update(buf, 0, n)
                         out.write(buf, 0, n)
                         val now = SystemClock.elapsedRealtime()
@@ -211,7 +212,7 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
                     }
                 }
             }
-            if (got != m.size) throw UpdateError("The download stopped early.")
+            if (got != m.size) throw UpdateError(context.getString(R.string.update_error_incomplete))
         } catch (e: Exception) {
             part.delete()
             throw e
@@ -220,10 +221,10 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
         }
         if (hex(digest.digest()) != m.sha256) {
             part.delete()
-            throw UpdateError("The download didn't match its checksum, so it was thrown away.")
+            throw UpdateError(context.getString(R.string.update_error_checksum))
         }
         val apk = apkFile(m)
-        if (!part.renameTo(apk)) throw IOException("couldn't store the download")
+        if (!part.renameTo(apk)) throw IOException(context.getString(R.string.update_problem_not_stored))
         try {
             verifyPackage(apk, m)
         } catch (e: Exception) {
@@ -234,17 +235,14 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
 
     /** The download must be this app, the announced version, and signed with this copy's key (or its rotated successor). */
     private fun verifyPackage(apk: File, m: UpdateManifest) {
-        val info = archiveInfo(apk) ?: throw UpdateError("The download isn't an Android app.")
-        if (info.packageName != context.packageName) throw UpdateError("The download is a different app (${info.packageName}).")
-        if (info.longVersionCode != m.versionCode) throw UpdateError("The download's version doesn't match the update notice.")
+        val info = archiveInfo(apk) ?: throw UpdateError(context.getString(R.string.update_error_not_an_app))
+        if (info.packageName != context.packageName) throw UpdateError(context.getString(R.string.update_error_other_app, info.packageName))
+        if (info.longVersionCode != m.versionCode) throw UpdateError(context.getString(R.string.update_error_version))
         val mine = installedInfo().signingInfo
         val theirs = info.signingInfo
         // When Android doesn't report the certificates, PackageInstaller's own check still applies at install.
         if (mine != null && theirs != null && !signers(mine).accepts(signers(theirs))) {
-            throw UpdateError(
-                "This update is signed with a different key from the PureEQ on this phone, so Android can't install it over it. " +
-                    "It was probably built on another computer.",
-            )
+            throw UpdateError(context.getString(R.string.update_error_key))
         }
     }
 
@@ -269,7 +267,7 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
         try {
             commit(apk)
         } catch (e: Exception) {
-            _state.value = UpdateState.Failed("Couldn't start the install (${e.message ?: e.javaClass.simpleName}).")
+            _state.value = UpdateState.Failed(context.getString(R.string.update_error_install_start, e.message ?: e.javaClass.simpleName))
         }
     }
 
@@ -391,22 +389,41 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
 
     private fun describe(e: Exception): String = when (e) {
         is UpdateError -> e.message.orEmpty()
-        is IllegalArgumentException -> e.message ?: "The update notice isn't valid."
-        is JSONException -> "The update notice couldn't be read."
-        is UnknownHostException -> "No internet connection."
-        is SocketTimeoutException -> "The update server didn't answer in time."
-        is SSLException -> "Couldn't connect securely to the update server."
-        is IOException -> "Couldn't reach the update server (${e.message ?: e.javaClass.simpleName})."
+        is NoticeRefused -> when (e.problem) {
+            NoticeRefused.Problem.OTHER_APP -> context.getString(R.string.update_error_notice_other_app, e.detail)
+            NoticeRefused.Problem.NO_VERSION -> context.getString(R.string.update_error_notice_no_version)
+            NoticeRefused.Problem.NO_CHECKSUM -> context.getString(R.string.update_error_notice_no_checksum)
+            NoticeRefused.Problem.IMPOSSIBLE_SIZE -> context.getString(R.string.update_error_notice_bad_size)
+            NoticeRefused.Problem.NOT_HTTPS -> context.getString(R.string.update_error_notice_not_https)
+        }
+        is IllegalArgumentException -> e.message ?: context.getString(R.string.update_error_notice_invalid)
+        is JSONException -> context.getString(R.string.update_error_notice_unreadable)
+        is UnknownHostException -> context.getString(R.string.update_error_offline)
+        is SocketTimeoutException -> context.getString(R.string.update_error_timeout)
+        is SSLException -> context.getString(R.string.update_error_insecure)
+        is IOException -> context.getString(R.string.update_error_unreachable, e.message ?: e.javaClass.simpleName)
         else -> e.message ?: e.javaClass.simpleName
     }
 
-    private fun describeFailure(status: Int, message: String?) = when (status) {
-        PackageInstaller.STATUS_FAILURE_BLOCKED -> "This phone blocked the install."
-        PackageInstaller.STATUS_FAILURE_CONFLICT -> "Android refused the update: it conflicts with the installed copy, usually because it was signed with a different key."
-        PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> "This version doesn't run on this phone."
-        PackageInstaller.STATUS_FAILURE_INVALID -> "Android found the downloaded update damaged."
-        PackageInstaller.STATUS_FAILURE_STORAGE -> "Not enough free storage to install the update."
-        else -> "The update didn't install" + (message?.let { " ($it)." } ?: ".")
+    private fun describeFailure(status: Int, message: String?): String = when (status) {
+        PackageInstaller.STATUS_FAILURE_BLOCKED -> context.getString(R.string.update_error_blocked)
+        PackageInstaller.STATUS_FAILURE_CONFLICT -> context.getString(R.string.update_error_conflict)
+        PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> context.getString(R.string.update_error_incompatible)
+        PackageInstaller.STATUS_FAILURE_INVALID -> context.getString(R.string.update_error_damaged)
+        PackageInstaller.STATUS_FAILURE_STORAGE -> context.getString(R.string.update_error_storage)
+        else -> message?.let { context.getString(R.string.update_error_not_installed_because, it) } ?: context.getString(R.string.update_error_not_installed)
+    }
+
+    private fun InputStream.readAtMost(limit: Int): ByteArray {
+        val out = ByteArrayOutputStream()
+        val buf = ByteArray(8192)
+        while (true) {
+            val n = read(buf)
+            if (n < 0) break
+            out.write(buf, 0, n)
+            if (out.size() > limit) throw IOException(context.getString(R.string.update_problem_notice_too_large))
+        }
+        return out.toByteArray()
     }
 
     companion object {
@@ -436,17 +453,5 @@ class GitHubUpdater(private val context: Context, private val store: ProfileStor
         private fun digest(b: ByteArray): ByteArray = MessageDigest.getInstance("SHA-256").digest(b)
 
         private fun hex(b: ByteArray) = b.joinToString("") { "%02x".format(it) }
-
-        private fun InputStream.readAtMost(limit: Int): ByteArray {
-            val out = ByteArrayOutputStream()
-            val buf = ByteArray(8192)
-            while (true) {
-                val n = read(buf)
-                if (n < 0) break
-                out.write(buf, 0, n)
-                if (out.size() > limit) throw IOException("the update notice is too large")
-            }
-            return out.toByteArray()
-        }
     }
 }
