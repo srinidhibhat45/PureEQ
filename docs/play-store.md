@@ -2,6 +2,17 @@
 
 PureEQ goes to Play as the `play` flavour: the same app and package (`app.pureeq`) as the GitHub build, minus the self-updater. Positioning: a personal-sound app that tunes your headphones to your ears and taste, not a medical device. Nothing has been submitted yet.
 
+## Timeline for a November 2026 launch
+
+A personal developer account created after 13 November 2023 gets production access only after a closed test with at least 12 opted-in testers for 14 days (Play Console Help, checked 2026-10-31), so the dates hang on when that test starts:
+
+1. **First week of November:** the Play Console account and its identity verification, the signing decision (0) and the upload key, the privacy policy at a public URL, the listing and App content (3, 4) filled in, the first bundle on internal testing.
+2. **By about 7 November:** the closed test is live with at least 12 testers opted in. Later builds go to the same track during the 14 days; the clock doesn't restart.
+3. **About 21 November:** apply for production access, then wait for Google's review of the application.
+4. **Late November:** the production release, after Google's review of the app itself (new apps can take several days).
+
+Organization accounts, and personal accounts created before 13 November 2023, skip the closed test: internal test, then production, so November is easy.
+
 ## 0. Decide first: one signing key for both builds?
 
 Android only lets one build replace the other when both are signed with the same key (or a lineage from it). Choose before the first upload; changing Play's app signing key later goes through Play's key upgrade.
@@ -20,13 +31,14 @@ Android only lets one build replace the other when both are signed with the same
 
   Upload `app/build/outputs/bundle/playRelease/app-play-release.aab`.
 - [ ] Check what the Play build contains (`./gradlew :app:assemblePlayRelease`, then `"$ANDROID_HOME/build-tools/36.0.0/aapt2" dump permissions app/build/outputs/apk/play/release/app-play-release.apk`): MODIFY_AUDIO_SETTINGS, RECORD_AUDIO, FOREGROUND_SERVICE, FOREGROUND_SERVICE_SPECIAL_USE, POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, INTERNET, plus AndroidX's own DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION. No REQUEST_INSTALL_PACKAGES, UPDATE_PACKAGES_WITHOUT_USER_ACTION or ACCESS_NETWORK_STATE, no update receiver or job, no update checks, and Settings has no Updates section.
+- [x] Checked 2026-10-31 (1.5.3): `lintPlayRelease` passes; targetSdk 36 meets Play's level for new apps (from 31 August 2026); the only native code, AndroidX's `libandroidx.graphics.path.so`, is 16 KB aligned on all four ABIs (`llvm-readelf -lW`: LOAD align 0x4000), as Play requires for apps targeting Android 15+; the debug-only output hook isn't in the release dex.
 - [ ] Version: `versionCode` comes from `version.properties`, shared with the GitHub build. Upload each release to Play with the same versionCode as its GitHub twin, so phones can move between them without a downgrade.
 
 ## 2. Developer account and testing
 
 - [ ] Identity verification of the Play developer account. The same account registers the GitHub build for developer verification ([key-rotation.md](key-rotation.md#7-register-apppureeq-for-developer-verification)).
 - [ ] Personal developer accounts created after 13 November 2023 must run a closed test with at least 12 opted-in testers for 14 days before they can apply for production access.
-- [ ] Before submitting: the in-app wording should match the positioning, since reviewers see the app and its screenshots. Today the Home, setup and test screens say "hearing check"; the About screen mentions Apple's AirPods hearing test, hearing-aid fitting rules and hearing loss, and its Privacy text says PureEQ goes online to check for its own updates, which the Play build never does (`BuildConfig.SELF_UPDATER` tells the builds apart).
+- [x] The in-app wording matches the positioning, since reviewers see the app and its screenshots: since 1.5.0 the screens say "listening check" and "Ear tuning", hearing terms appear only in the disclaimers ("not a hearing test or an audiogram", "Not a medical device"), and the Play build's Privacy text leaves out the update checks (`BuildConfig.SELF_UPDATER`). Checked again for 1.5.3. Other brands appear only as compatibility notes (turn off Samsung's or Dolby's EQ, the Samsung 9-band export, Samsung Music in "Music apps").
 
 ## 3. App content declarations
 
@@ -34,11 +46,11 @@ Android only lets one build replace the other when both are signed with the same
 
 - [ ] Declare `FOREGROUND_SERVICE_SPECIAL_USE` for `EqService` (the manifest subtype says "Keeps the user's personal equalizer applied to system audio output"). Description:
 
-  > PureEQ applies the user's personal sound profile, an equalizer, to all audio the phone plays. When the user turns on "Apply to all audio" in the app or with PureEQ's Quick Settings tile, a foreground service attaches Android's DynamicsProcessing audio effect to the output mix (or, in "Music apps" mode, to the audio sessions music players open) and keeps it applied while the user listens in other apps. The effect is released as soon as the service stops. A persistent notification shows the active profile and has a Turn off button; the user can also turn it off in the app or from the tile. None of the predefined types fits: the service doesn't play, record or cast media, sync data or track location. It only keeps the system-wide effect alive.
+  > PureEQ applies the user's personal sound profile, an equalizer, to all audio the phone plays. When the user turns on "Apply to all audio" in the app or with PureEQ's Quick Settings tile, a foreground service attaches Android's DynamicsProcessing audio effect to the output mix (or, in "Music apps" mode, to the audio sessions music players open) and keeps it applied while the user listens in other apps. The user chooses on or off for each audio output (profiles are tuned for headphones, so the phone speaker starts off): when media moves to an output the user has it off for, the service releases the effect and waits, and when headphones it is on for come back it applies the effect again. The effect is released as soon as the service stops. A persistent notification shows the active profile or which outputs it is waiting for, with a Turn off button; the user can also turn it off in the app or from the tile. None of the predefined types fits: the service doesn't play, record or cast media, sync data or track location. It only keeps the system-wide effect alive and follows the audio output.
 
   Impact if the system stopped or deferred it:
 
-  > The equalizer would switch off shortly after the user left PureEQ, so music in other apps would play without their sound profile.
+  > The equalizer would switch off shortly after the user left PureEQ, so music in other apps would play without their sound profile, and it couldn't follow the user between their headphones and the phone speaker.
 
 - [ ] Video (screen recording with sound, about a minute, link that anyone can open, such as an unlisted YouTube video):
   1. PureEQ open with a saved profile; tap **Apply to all audio** (allow notifications when asked).
@@ -46,6 +58,8 @@ Android only lets one build replace the other when both are signed with the same
   3. Open a music app, play a song, go to the home screen: PureEQ is not on screen, the notification stays, and the song plays with the profile.
   4. Pull down Quick Settings and switch the PureEQ tile off and on: the sound changes back and forth.
   5. Tap **Turn off** in the notification: the notification disappears and the effect is gone.
+
+  The emulator can't connect headphones, so record this on a phone with the profile's headphones; unplugging them midway (the notification switches to "PureEQ is off for the phone speaker") shows the service following the output.
 
 ### Data safety
 
@@ -97,7 +111,7 @@ Category: Music & Audio. Contact email: the same address as the privacy policy.
 > Use your profile everywhere:
 > • Apply it to all audio on the phone, or only to music apps.
 > • Switch it on and off from a Quick Settings tile.
-> • Profiles follow your headphones: connect a pair and its profile takes over.
+> • Profiles follow your headphones: connect a pair and its profile takes over. PureEQ keeps on or off for each output, so the phone speaker plays untouched.
 > • Export it in AutoEq's formats for other equalizer apps on Android and on your computer.
 >
 > Private by design:

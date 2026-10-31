@@ -216,14 +216,17 @@ fun TasteScreen(vm: AppViewModel) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         // Each new pair slides in, so the change of round is hard to miss.
+        val round = t.comparison?.round ?: 0
         AnimatedContent(
-            targetState = t.comparison?.round ?: 0,
+            targetState = round,
             transitionSpec = { (slideInHorizontally { it / 2 } + fadeIn()) togetherWith (slideOutHorizontally { -it / 2 } + fadeOut()) },
             label = "pair",
-        ) { _ ->
+        ) { shown ->
+            // The pair sliding away stays idle and ignores taps; only the new one plays.
+            val current = shown == round
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                AbTile("A", t.listening == Choice.A && playing, heard = true, Modifier.weight(1f)) { vm.listen(Choice.A) }
-                AbTile("B", t.listening == Choice.B && playing, heard = t.heardB, Modifier.weight(1f)) { vm.listen(Choice.B) }
+                AbTile("A", current && t.listening == Choice.A && playing, heard = true, Modifier.weight(1f)) { if (current) vm.listen(Choice.A) }
+                AbTile("B", current && t.listening == Choice.B && playing, heard = !current || t.heardB, Modifier.weight(1f)) { if (current) vm.listen(Choice.B) }
             }
         }
         FilledTonalButton(onClick = { vm.setMusicPlaying(!playing) }, modifier = Modifier.fillMaxWidth()) {
