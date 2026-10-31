@@ -159,14 +159,6 @@
     <string name="msg_cant_play_file">Couldn\'t play that file (%1$s).</string>
     <!-- After picking a file to import. -->
     <string name="msg_not_a_profile">That file isn\'t a PureEQ profile.</string>
-    <!-- Dialogs when the listening check pauses: a title, then a text. -->
-    <string name="msg_paused">Paused</string>
-    <string name="msg_pause_user">Take a breath. Continue whenever you\'re ready.</string>
-    <string name="msg_pause_volume_title">Volume changed</string>
-    <string name="msg_pause_volume">The test needs the volume you set at the start. Restore it and carry on.</string>
-    <string name="msg_pause_headphones_title">Headphones disconnected</string>
-    <string name="msg_pause_headphones">Reconnect the same headphones to continue.</string>
-    <string name="msg_pause_background">The test paused while PureEQ was in the background.</string>
     <!-- Closes an error message. -->
     <string name="root_ok">OK</string>
 

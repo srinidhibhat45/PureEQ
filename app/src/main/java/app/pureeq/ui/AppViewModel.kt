@@ -81,13 +81,8 @@ sealed interface Screen {
     data object About : Screen
 }
 
-/** Why the listening check paused. [titleRes] and [textRes] are [title] and [text] in the phone's language. */
-enum class PauseReason(val title: String, val text: String, @StringRes val titleRes: Int, @StringRes val textRes: Int) {
-    USER("Paused", "Take a breath. Continue whenever you're ready.", R.string.msg_paused, R.string.msg_pause_user),
-    VOLUME("Volume changed", "The test needs the volume you set at the start. Restore it and carry on.", R.string.msg_pause_volume_title, R.string.msg_pause_volume),
-    HEADPHONES("Headphones disconnected", "Reconnect the same headphones to continue.", R.string.msg_pause_headphones_title, R.string.msg_pause_headphones),
-    BACKGROUND("Paused", "The test paused while PureEQ was in the background.", R.string.msg_paused, R.string.msg_pause_background),
-}
+/** Why the listening check paused; the screen shows each reason's own words. */
+enum class PauseReason { USER, VOLUME, HEADPHONES, BACKGROUND }
 
 /** Everything gathered while creating a new profile. */
 data class Draft(
