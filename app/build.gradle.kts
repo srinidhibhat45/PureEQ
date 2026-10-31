@@ -99,6 +99,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    androidResources {
+        // Lists PureEQ's languages (from the values-xx folders) for Android 13+'s per-app language
+        // setting; the default resources are English (res/resources.properties).
+        generateLocaleConfig = true
+        // Ship only the languages PureEQ itself speaks, not every language the libraries carry.
+        localeFilters += listOf("en", "es", "de", "fr", "pt", "hi")
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true

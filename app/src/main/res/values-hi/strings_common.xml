@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Words from the model, shared by several screens and the system-wide EQ's notification. -->
+<resources>
+    <!-- Names of outputs that report no product name of their own. -->
+    <string name="output_phone_speaker">फ़ोन स्पीकर</string>
+    <string name="output_wired_headphones">वायर्ड हेडफ़ोन</string>
+    <string name="output_usb_headphones">USB-C हेडफ़ोन</string>
+    <string name="output_headphones">हेडफ़ोन</string>
+    <string name="output_other">ऑडियो आउटपुट</string>
+    <string name="output_phone_speaker_in_text">फ़ोन स्पीकर</string>
+
+    <!-- The kind of output, after its name. -->
+    <string name="kind_wired">वायर्ड</string>
+    <string name="kind_usb">USB-C</string>
+    <string name="kind_bluetooth">Bluetooth</string>
+    <string name="kind_hearing_aid">कान की मशीन</string>
+    <string name="kind_speaker">फ़ोन स्पीकर</string>
+    <string name="kind_other">ऑडियो आउटपुट</string>
+
+    <!-- Lists of outputs. -->
+    <string name="list_two">%1$s और %2$s</string>
+    <plurals name="list_more">
+        <item quantity="one">%1$s और %2$d अन्य</item>
+        <item quantity="other">%1$s और %2$d अन्य</item>
+    </plurals>
+
+    <!-- How the system-wide EQ attaches (Settings). -->
+    <string name="mode_global">सभी ऑडियो</string>
+    <string name="mode_global_detail">Android के आउटपुट मिक्स से जुड़ता है, इसलिए हर ऐप कवर होता है। ज़्यादातर फ़ोन पर काम करता है।</string>
+    <string name="mode_per_app">म्यूज़िक ऐप</string>
+    <string name="mode_per_app_detail">उन प्लेयर से जुड़ता है जो अपनी मौजूदगी की जानकारी देते हैं (Spotify, YouTube Music, Samsung Music, Poweramp…)। अगर आपके फ़ोन पर \"सभी ऑडियो\" का कोई असर नहीं होता, तो इसका इस्तेमाल करें।</string>
+
+    <!-- The taste controls in Fine-tune. -->
+    <string name="band_bass">बेस</string>
+    <string name="band_bass_hint">किक ड्रम और बेस गिटार का भारीपन</string>
+    <string name="band_warmth">गर्माहट</string>
+    <string name="band_warmth_hint">आवाज़ों और वाद्यों का भरापन</string>
+    <string name="band_vocals">वोकल</string>
+    <string name="band_vocals_hint">आवाज़ों की स्पष्टता और मौजूदगी</string>
+    <string name="band_treble">ट्रेबल</string>
+    <string name="band_treble_hint">चमक: आवाज़ों की धार, सिंबल और बारीकियां</string>
+    <string name="band_air">एयर</string>
+    <string name="band_air_hint">सबसे ऊंची फ़्रीक्वेंसी पर चमक और खुलापन</string>
+
+    <!-- Kinds of headphones. -->
+    <string name="headphones_in_ear">इन-ईयर</string>
+    <string name="headphones_over_ear">ओवर-ईयर</string>
+
+    <!-- Lengths of the listening check. -->
+    <string name="length_quick">झटपट</string>
+    <string name="length_quick_detail">हर कान में 7 बैंड · लगभग 1½ मिनट</string>
+    <string name="length_standard">सामान्य</string>
+    <string name="length_standard_detail">हर कान में 7 बैंड · लगभग 2 मिनट</string>
+    <string name="length_thorough">विस्तृत</string>
+    <string name="length_thorough_detail">7 बैंड, ज़्यादा सटीक · लगभग 3 मिनट</string>
+
+    <!-- Graphic EQ layouts on the Export screen, and where each one is used. -->
+    <string name="bands_ten">10-बैंड</string>
+    <string name="bands_ten_where">Poweramp का ग्राफ़िक मोड, ज़्यादातर प्लेयर और फ़ोन के EQ</string>
+    <string name="bands_samsung">Samsung 9-बैंड</string>
+    <string name="bands_samsung_where">Galaxy सेटिंग › ध्वनि गुणवत्ता और प्रभाव › इक्वलाइज़र › कस्टम</string>
+    <string name="bands_android">5-बैंड</string>
+    <string name="bands_android_where">Android का बिल्ट-इन इक्वलाइज़र, Android पर Spotify, कई फ़ोन के EQ</string>
+    <string name="bands_james">JamesDSP 15-बैंड</string>
+    <string name="bands_james_where">JamesDSP / RootlessJamesDSP मल्टीमोडल इक्वलाइज़र</string>
+    <string name="bands_third_octave">31-बैंड</string>
+    <string name="bands_third_octave_where">1/3-ऑक्टेव ग्राफ़िक EQ</string>
+
+    <!-- What TalkBack reads for the charts. -->
+    <string name="chart_eq">EQ कर्व। %1$s</string>
+    <string name="chart_listening">साउंड चेक का नतीजा: हर बैंड को कितनी मदद मिलती है, dB में; बड़ी संख्या यानी ज़्यादा मदद। %1$s</string>
+    <string name="chart_point">%2$s पर %1$s dB</string>
+    <string name="chart_named">%1$s: %2$s</string>
+    <!-- Between the points of one curve, and between curves. Quoted to keep the spaces. -->
+    <string name="chart_separator">", "</string>
+    <string name="chart_curve_separator">"; "</string>
+    <string name="ear_left">बायां कान</string>
+    <string name="ear_right">दायां कान</string>
+
+    <!-- The system-wide EQ's notification. -->
+    <string name="notif_on">PureEQ चालू है</string>
+    <string name="notif_starting">शुरू हो रहा है…</string>
+    <string name="notif_all_audio">%1$s · सभी ऑडियो</string>
+    <plurals name="notif_music_apps">
+        <item quantity="one">%1$s · म्यूज़िक ऐप · %2$d चल रहा है</item>
+        <item quantity="other">%1$s · म्यूज़िक ऐप · %2$d चल रहे हैं</item>
+    </plurals>
+    <string name="notif_paused">%1$s · PureEQ में आवाज़ चलने तक रुका है</string>
+    <string name="notif_off_for">PureEQ %1$s के लिए बंद है</string>
+    <string name="notif_comes_back">%1$s कनेक्ट होने पर यह फिर से चालू हो जाएगा।</string>
+    <string name="notif_turn_off">बंद करें</string>
+    <string name="notif_turn_off_everywhere">हर जगह बंद करें</string>
+    <string name="notif_no_profile">अभी कोई प्रोफ़ाइल नहीं है। प्रोफ़ाइल बनाने के लिए PureEQ खोलें।</string>
+    <string name="notif_failed">इक्वलाइज़र शुरू नहीं हो सका</string>
+    <string name="status_no_profile">अभी कोई प्रोफ़ाइल नहीं</string>
+    <string name="status_refused">इस फ़ोन ने सिस्टम इक्वलाइज़र को मना कर दिया (%1$s)। सेटिंग में \"म्यूज़िक ऐप\" मोड आज़माएं।</string>
+</resources>

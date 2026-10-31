@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fine-tune, Export, the app's messages and dialogs, and the GitHub build's over-the-air updates. -->
+<resources>
+
+    <!-- ===== Fine-tune (EditorScreen) ===== -->
+    <string name="editor_title_draft">आपका साउंड</string>
+    <string name="editor_title">फ़ाइन-ट्यून</string>
+    <string name="editor_reset_done">PureEQ के सुझाव पर वापस</string>
+    <string name="editor_undo">पहले जैसा करें</string>
+    <string name="editor_save_profile">प्रोफ़ाइल सेव करें</string>
+    <string name="editor_export">एक्सपोर्ट करें</string>
+    <string name="editor_done">हो गया</string>
+    <string name="editor_profile_name">प्रोफ़ाइल का नाम</string>
+    <string name="editor_left">बायां</string>
+    <string name="editor_right">दायां</string>
+    <string name="editor_both_ears">दोनों कान</string>
+    <!-- %1$s: the preamp gain, such as "-6.1". -->
+    <string name="editor_preamp">प्रीऐम्प %1$s dB</string>
+
+    <!-- Card for hearing the profile with music. -->
+    <string name="editor_listen">सुनें</string>
+    <string name="editor_play">चलाएं</string>
+    <string name="editor_pause">रोकें</string>
+    <string name="editor_eq_on">EQ चालू</string>
+    <string name="editor_eq_off">बंद</string>
+    <string name="editor_loudness_matched">चालू और बंद की लाउडनेस बराबर रखी गई है, ताकि आपको सिर्फ़ वॉल्यूम का फ़र्क नहीं, बल्कि बैलेंस में हुआ बदलाव सुनाई दे।</string>
+
+    <!-- The Fine-tuning card. -->
+    <string name="editor_fine_tuning">फ़ाइन-ट्यूनिंग</string>
+    <!-- %1$s: editor_changed_* items joined with editor_changed_separator. -->
+    <string name="editor_changed">PureEQ के सुझाव से बदला गया: %1$s।</string>
+    <string name="editor_changed_separator">", "</string>
+    <string name="editor_changed_headphone_correction">हेडफ़ोन करेक्शन</string>
+    <string name="editor_changed_full_sub_bass">पूरा सब-बेस</string>
+    <string name="editor_changed_volume_bass">वॉल्यूम के हिसाब से बेस</string>
+    <string name="editor_changed_ear_tuning">कान की ट्यूनिंग</string>
+    <string name="editor_changed_bass">बेस</string>
+    <string name="editor_changed_warmth">गर्माहट</string>
+    <string name="editor_changed_vocals">वोकल</string>
+    <string name="editor_changed_treble">ट्रेबल</string>
+    <string name="editor_changed_air">एयर</string>
+    <string name="editor_changed_balance">बैलेंस</string>
+    <string name="editor_as_suggested_no_taste">कान की ट्यूनिंग और बैलेंस वैसे ही हैं जैसे PureEQ ने सुझाए थे।</string>
+    <string name="editor_as_suggested">सब कुछ वैसा ही है जैसा PureEQ ने आपके टेस्ट के आधार पर सुझाया था।</string>
+    <string name="editor_reset">रीसेट करें</string>
+    <string name="editor_legacy_profile">यह प्रोफ़ाइल PureEQ 1.0 से बनी थी, जिसने बेस, गर्माहट, वोकल और ट्रेबल के लिए अपना सुझाव सेव नहीं किया था, इसलिए रीसेट करके उन्हें वापस नहीं लाया जा सकता। पसंद टेस्ट दोबारा करें (लगभग 2 मिनट), फिर PureEQ आगे से अपना सुझाव याद रखेगा।</string>
+    <string name="editor_redo_taste_legacy">पसंद टेस्ट दोबारा करें</string>
+
+    <!-- The measured correction for the headphone model. -->
+    <string name="editor_headphone_correction">हेडफ़ोन करेक्शन</string>
+    <!-- %1$s: the headphone model, such as "Sony WH-1000XM4". %2$s: the target curve, such as "Harman over-ear 2018". -->
+    <string name="editor_corrected_to_target">%1$s, %2$s टारगेट के हिसाब से ठीक किया गया।</string>
+    <string name="editor_corrected_to_autoeq_target">%1$s, इसके लिए AutoEq के टारगेट के हिसाब से ठीक किया गया।</string>
+    <!-- %1$s: who measured the headphones, such as "oratory1990". -->
+    <string name="editor_headphone_data">हेडफ़ोन डेटा: %1$s, AutoEq के ज़रिए (Jaakko Pasanen, MIT)</string>
+    <string name="editor_update_correction">Harman करेक्शन पर अपडेट करें</string>
+    <string name="editor_change_model">मॉडल बदलें</string>
+    <string name="editor_add_correction">अपने हेडफ़ोन का मापा गया करेक्शन जोड़ें</string>
+
+    <!-- The adjustments: a title, then a hint under it. -->
+    <string name="editor_ear_tuning">कान की ट्यूनिंग</string>
+    <!-- Not a format string: the % is a literal percent sign. -->
+    <string name="editor_ear_tuning_hint" formatted="false">आपके साउंड चेक का कितना हिस्सा लागू करना है। 75% इसका ज़्यादातर हिस्सा लागू करता है और माप की गड़बड़ी के लिए गुंजाइश छोड़ता है; बड़े अंतरों पर हमेशा अनुपात में कम लागू होता है।</string>
+    <string name="editor_treble_legacy_hint">सिंबल और चमक: PureEQ का पुराना 8 kHz ट्रेबल। आज के ज़्यादा चौड़े ट्रेबल के लिए पसंद टेस्ट दोबारा करें।</string>
+    <string name="editor_full_sub_bass">पूरा सब-बेस</string>
+    <!-- %1$s: the volume it costs, such as "1.5". -->
+    <string name="editor_full_sub_bass_on">50 Hz से नीचे का बेस पूरी तरह आपकी सेटिंग के हिसाब से चलता है, लगभग %1$s dB कम वॉल्यूम पर।</string>
+    <string name="editor_full_sub_bass_off">50 Hz से नीचे का बेस 50 Hz के लेवल के आस-पास रखा जाता है, जहाँ बहुत कम संगीत होता है। इसे आपकी सेटिंग के हिसाब से चलने देने पर इन हेडफ़ोन पर लगभग %1$s dB वॉल्यूम कम होगा।</string>
+    <string name="editor_volume_bass">वॉल्यूम के हिसाब से बेस</string>
+    <string name="editor_volume_bass_on">जिस वॉल्यूम पर आपने ट्यून किया था, उससे कम पर यह वह बेस वापस जोड़ता है जो धीमी आवाज़ में कानों से छूट जाता है: हर 10 dB धीमा होने पर लगभग 1.5 dB, +6 dB तक, और थोड़ा-सा ट्रेबल। सिर्फ़ सिस्टम-वाइड EQ में।</string>
+    <string name="editor_volume_bass_off">बंद: हर वॉल्यूम पर बेस वैसा ही रहता है जैसा ट्यून किया गया था।</string>
+    <string name="editor_volume_bass_needs_taste">इसके लिए PureEQ 1.5 या उसके बाद के वर्शन के पसंद टेस्ट का वॉल्यूम चाहिए। इसे इस्तेमाल करने के लिए पसंद टेस्ट दोबारा करें।</string>
+    <!-- %1$s and %2$s: signed amounts such as "+3.0" and "+0.8". -->
+    <string name="editor_volume_bass_now">इस वॉल्यूम पर: बेस %1$s dB, ट्रेबल %2$s dB।</string>
+    <string name="editor_volume_bass_now_flat">इस वॉल्यूम पर यह कुछ नहीं जोड़ता।</string>
+    <string name="editor_balance">बैलेंस</string>
+    <string name="editor_balance_hint">सिर्फ़ तब ज़रूरी, जब एक तरफ़ अब भी ज़्यादा तेज़ सुनाई दे</string>
+    <!-- Balance values. %1$s: how much the other side is turned down, such as "1.5". -->
+    <string name="editor_balance_centre">बीच में</string>
+    <string name="editor_balance_left">बायां +%1$s dB</string>
+    <string name="editor_balance_right">दायां +%1$s dB</string>
+    <!-- %1$s: PureEQ's value, such as "+4.5 dB", "75%" or "बीच में". -->
+    <string name="editor_suggested">सुझाव: %1$s</string>
+    <string name="editor_redo_taste">पसंद टेस्ट दोबारा करें</string>
+
+    <!-- ===== Export (ExportScreen) ===== -->
+    <string name="export_title">एक्सपोर्ट</string>
+    <string name="export_copied">कॉपी किया गया</string>
+    <string name="export_saved">सेव किया गया</string>
+    <string name="export_save_failed">फ़ाइल सेव नहीं हो सकी</string>
+    <string name="export_intro">आपकी प्रोफ़ाइल, उन फ़ॉर्मैट में जिन्हें दूसरे ऐप समझते हैं। या यह सब छोड़ें और होम स्क्रीन पर \"सभी ऑडियो पर लागू करें\" चालू करें।</string>
+    <!-- %1$s: how much, such as "2.5". -->
+    <string name="export_balance_left">आपके बाएं कान को लगभग %1$s dB ज़्यादा चाहिए। जिन ऐप में हर कान के लिए अलग EQ नहीं है, उनमें Android का बैलेंस स्लाइडर (सेटिंग &gt; सुलभता &gt; ऑडियो अडजस्टमेंट) थोड़ा बाईं ओर करें।</string>
+    <string name="export_balance_right">आपके दाएं कान को लगभग %1$s dB ज़्यादा चाहिए। जिन ऐप में हर कान के लिए अलग EQ नहीं है, उनमें Android का बैलेंस स्लाइडर (सेटिंग &gt; सुलभता &gt; ऑडियो अडजस्टमेंट) थोड़ा दाईं ओर करें।</string>
+    <string name="export_save_file">फ़ाइल सेव करें</string>
+    <string name="export_share">शेयर करें</string>
+    <string name="export_copy">कॉपी करें</string>
+
+    <!-- One card per app or format; its title is the app's name. Other apps' menu names stay in English. -->
+    <string name="export_wavelet">फ़ाइल सेव करें, फिर Wavelet में AutoEq › Import खोलें और उसे चुनें। Wavelet को ठीक यही 127-पॉइंट GraphicEQ फ़ॉर्मैट चाहिए।</string>
+    <string name="export_poweramp">फ़ाइल सेव करें, फिर Poweramp Equalizer में Preset पर टैप करें, देर तक दबाएं, Import चुनें और फ़ाइल चुनें (या फ़ाइल को Poweramp Equalizer से खोलें)। फ़ॉर्मैट वही है जो AutoEq की ParametricEQ.txt का है।</string>
+    <string name="export_jamesdsp">Arbitrary response equalizer › Edit as string › पेस्ट करें।</string>
+    <string name="export_apo_title">Equalizer APO / Peace (PC)</string>
+    <string name="export_apo">बाएं और दाएं के लिए अलग फ़िल्टर। .txt के रूप में सेव करें और config.txt में इसे Include करें, या इसे Peace में पेस्ट करें।</string>
+    <string name="export_convolution_title">कनवोल्यूशन (JamesDSP, ViPER4Android, Equalizer APO)</string>
+    <string name="export_convolution">हर कान के लिए आपका सटीक कर्व, इंपल्स रिस्पॉन्स के रूप में: बाएं और दाएं कान वाली एक स्टीरियो WAV फ़ाइल, जिसमें बैलेंस और लेवल वैसे ही हैं जैसे PureEQ लागू करता है। इसे कनवॉल्वर में लोड करें; सैंपल रेट आपके संगीत जैसा होना चाहिए।</string>
+
+    <!-- Card listing the filters, for apps where they are typed in by hand. -->
+    <string name="export_parametric_title">पैरामीट्रिक वैल्यू</string>
+    <string name="export_parametric">उन ऐप के लिए जिनमें आप फ़िल्टर खुद टाइप करते हैं: Neutron, USB Audio Player Pro, Poweramp का पैरामीट्रिक मोड वगैरह। दोनों कानों का औसत।</string>
+    <string name="export_preamp">प्रीऐम्प %1$s dB</string>
+    <!-- One filter. %1$d: its number. %2$s: its type (export_filter_*). %3$s: its frequency, such as "105 Hz".
+         %4$s: its gain, such as "+6.4". %5$s: its Q, such as "0.70". -->
+    <string name="export_filter_row">%1$d. %2$s · %3$s · %4$s dB · Q %5$s</string>
+    <string name="export_filter_peak">पीक</string>
+    <string name="export_filter_low_shelf">लो शेल्फ़</string>
+    <string name="export_filter_high_shelf">हाई शेल्फ़</string>
+    <string name="export_per_ear">हर कान के लिए अलग (Poweramp हर बैंड को L या R पर सेट कर सकता है)</string>
+    <string name="export_left">बायां</string>
+    <string name="export_right">दायां</string>
+
+    <!-- Card for PureEQ's own backup file. -->
+    <string name="export_profile_title">PureEQ प्रोफ़ाइल</string>
+    <string name="export_profile">एक बैकअप, जिसे आप दूसरे फ़ोन पर इंपोर्ट कर सकते हैं (सेटिंग › PureEQ प्रोफ़ाइल इंपोर्ट करें)।</string>
+    <!-- Subject when sharing the backup. %1$s: the profile's name. -->
+    <string name="export_profile_subject">%1$s PureEQ प्रोफ़ाइल</string>
+
+    <!-- Card with the values for the sliders of graphic EQs. -->
+    <string name="export_graphic_title">ग्राफ़िक EQ स्लाइडर</string>
+    <!-- %1$d: the app's lowest gain, such as -12. %2$d: its highest, such as 12. -->
+    <string name="export_bands_limited">* ऐप की %1$d…+%2$d dB रेंज तक सीमित</string>
+    <string name="export_bands_centred">बीच में रखा गया है, ताकि कुल लाउडनेस वही रहे। स्लाइडर वाले EQ कर्व के बस करीब पहुंच सकते हैं; ऊपर की फ़ाइलें सटीक हैं।</string>
+
+    <!-- ===== Messages and dialogs (AppViewModel, PureEqRoot) ===== -->
+    <string name="msg_default_profile_name">मेरा साउंड</string>
+    <string name="msg_autoeq_unreachable">AutoEq के डेटाबेस से कनेक्ट नहीं हो सका। कनेक्शन देखें और फिर से कोशिश करें, या इसे छोड़ दें: साउंड चेक हर हाल में आपके हेडफ़ोन को ठीक करता है।</string>
+    <string name="msg_correction_failed">वह करेक्शन डाउनलोड नहीं हो सका। कनेक्शन देखें और फिर से कोशिश करें।</string>
+    <!-- %1$s: the error's technical message. -->
+    <string name="msg_cant_play_file">वह फ़ाइल नहीं चल सकी (%1$s)।</string>
+    <string name="msg_not_a_profile">वह फ़ाइल PureEQ प्रोफ़ाइल नहीं है।</string>
+    <string name="root_ok">ठीक है</string>
+
+    <!-- ===== Over-the-air updates (GitHub build only) ===== -->
+    <!-- %1$s: the version, such as "1.6.0". -->
+    <string name="update_ready_title">PureEQ %1$s तैयार है</string>
+    <string name="update_ready_text">इंस्टॉल करने के लिए टैप करें। अपडेट होते समय PureEQ कुछ पल के लिए बंद होता है।</string>
+    <string name="update_updated_title">PureEQ %1$s पर अपडेट हो गया</string>
+    <string name="update_updated_text">खोलने के लिए टैप करें।</string>
+
+    <!-- In Settings, why an update failed. -->
+    <string name="update_error_offline">इंटरनेट कनेक्शन नहीं है।</string>
+    <string name="update_error_timeout">अपडेट सर्वर ने समय पर जवाब नहीं दिया।</string>
+    <string name="update_error_insecure">अपडेट सर्वर से सुरक्षित तरीके से कनेक्ट नहीं हो सका।</string>
+    <!-- %1$s: one of update_problem_*, or the system's technical message. -->
+    <string name="update_error_unreachable">अपडेट सर्वर से कनेक्ट नहीं हो सका (%1$s)।</string>
+    <!-- Inside the brackets of update_error_unreachable. %1$d: the server's HTTP status code, such as 500. -->
+    <string name="update_problem_address_answered">अपडेट पते से जवाब मिला: %1$d</string>
+    <string name="update_problem_download_answered">डाउनलोड से जवाब मिला: %1$d</string>
+    <string name="update_problem_not_stored">डाउनलोड सेव नहीं हो सका</string>
+    <string name="update_problem_notice_too_large">अपडेट नोटिस बहुत बड़ा है</string>
+    <!-- The update notice (update.json, which says which version is newest) was refused. -->
+    <string name="update_error_notice_invalid">अपडेट नोटिस मान्य नहीं है।</string>
+    <string name="update_error_notice_unreadable">अपडेट नोटिस पढ़ा नहीं जा सका।</string>
+    <!-- %1$s: the app the notice names, such as "com.example.app". -->
+    <string name="update_error_notice_other_app">अपडेट नोटिस किसी दूसरे ऐप के लिए है (%1$s)।</string>
+    <string name="update_error_notice_no_version">अपडेट नोटिस में कोई वर्शन नहीं है।</string>
+    <string name="update_error_notice_no_checksum">अपडेट नोटिस में कोई मान्य चेकसम नहीं है।</string>
+    <string name="update_error_notice_bad_size">अपडेट नोटिस में दिया गया साइज़ मुमकिन नहीं है।</string>
+    <string name="update_error_notice_not_https">अपडेट सिर्फ़ HTTPS से डाउनलोड होने चाहिए।</string>
+    <!-- The download was refused. -->
+    <string name="update_error_too_big">डाउनलोड, अपडेट नोटिस में बताए गए साइज़ से बड़ा है, इसलिए उसे हटा दिया गया।</string>
+    <string name="update_error_incomplete">डाउनलोड बीच में ही रुक गया।</string>
+    <string name="update_error_checksum">डाउनलोड अपने चेकसम से मेल नहीं खाया, इसलिए उसे हटा दिया गया।</string>
+    <string name="update_error_not_an_app">डाउनलोड की गई फ़ाइल Android ऐप नहीं है।</string>
+    <!-- %1$s: the downloaded app's package name, such as "com.example.app". -->
+    <string name="update_error_other_app">डाउनलोड कोई दूसरा ऐप है (%1$s)।</string>
+    <string name="update_error_version">डाउनलोड का वर्शन अपडेट नोटिस से मेल नहीं खाता।</string>
+    <string name="update_error_key">यह अपडेट इस फ़ोन पर मौजूद PureEQ से अलग कुंजी से साइन किया गया है, इसलिए Android इसे उसके ऊपर इंस्टॉल नहीं कर सकता। शायद इसे किसी दूसरे कंप्यूटर पर बनाया गया था।</string>
+    <!-- %1$s: the error's technical message. -->
+    <string name="update_error_install_start">इंस्टॉल शुरू नहीं हो सका (%1$s)।</string>
+    <string name="update_error_blocked">इस फ़ोन ने इंस्टॉल को ब्लॉक कर दिया।</string>
+    <string name="update_error_conflict">Android ने अपडेट को मना कर दिया: यह इंस्टॉल की गई कॉपी से टकराता है, आम तौर पर इसलिए कि इसे अलग कुंजी से साइन किया गया था।</string>
+    <string name="update_error_incompatible">यह वर्शन इस फ़ोन पर नहीं चलता।</string>
+    <string name="update_error_damaged">Android को डाउनलोड किया गया अपडेट खराब मिला।</string>
+    <string name="update_error_storage">अपडेट इंस्टॉल करने के लिए काफ़ी खाली स्टोरेज नहीं है।</string>
+    <!-- %1$s: Android's technical message. -->
+    <string name="update_error_not_installed_because">अपडेट इंस्टॉल नहीं हुआ (%1$s)।</string>
+    <string name="update_error_not_installed">अपडेट इंस्टॉल नहीं हुआ।</string>
+</resources>

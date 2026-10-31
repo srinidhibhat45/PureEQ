@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="eq_channel_name">EQ personal</string>
+    <string name="eq_channel_description">Se muestra mientras tu perfil de sonido se aplica a todo el audio.</string>
+    <string name="update_channel_name">Actualizaciones de la app</string>
+    <string name="tile_off">Desactivado</string>
+    <string name="tile_set_up">Configurar</string>
+    <string name="update_channel_description">Hay una nueva versión de PureEQ lista para instalar o recién instalada.</string>
+</resources>

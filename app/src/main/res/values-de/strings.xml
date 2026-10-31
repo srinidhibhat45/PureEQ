@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="eq_channel_name">Persönlicher EQ</string>
+    <string name="eq_channel_description">Wird angezeigt, während dein Klangprofil auf alle Apps angewendet wird.</string>
+    <string name="update_channel_name">App-Updates</string>
+    <string name="tile_off">Aus</string>
+    <string name="tile_set_up">Einrichten</string>
+    <string name="update_channel_description">Eine neue Version von PureEQ ist bereit zur Installation oder wurde gerade installiert.</string>
+</resources>

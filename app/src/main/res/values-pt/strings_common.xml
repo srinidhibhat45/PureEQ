@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Palavras do modelo, compartilhadas por várias telas e pela notificação do EQ do sistema. -->
+<resources>
+    <!-- Nomes de saídas que não informam um nome de produto próprio. -->
+    <string name="output_phone_speaker">Alto-falante do telefone</string>
+    <string name="output_wired_headphones">Fones com fio</string>
+    <string name="output_usb_headphones">Fones USB-C</string>
+    <string name="output_headphones">Fones de ouvido</string>
+    <string name="output_other">Saída de áudio</string>
+    <!-- Dentro de uma frase: "Desativado para o alto-falante do telefone." -->
+    <string name="output_phone_speaker_in_text">o alto-falante do telefone</string>
+
+    <!-- O tipo de saída, depois do nome: "Galaxy Buds2 Pro · Bluetooth". -->
+    <string name="kind_wired">Com fio</string>
+    <string name="kind_usb">USB-C</string>
+    <string name="kind_bluetooth">Bluetooth</string>
+    <string name="kind_hearing_aid">Aparelho auditivo</string>
+    <string name="kind_speaker">Alto-falante do telefone</string>
+    <string name="kind_other">Saída de áudio</string>
+
+    <!-- Listas de saídas. -->
+    <string name="list_two">%1$s e %2$s</string>
+    <plurals name="list_more">
+        <item quantity="one">%1$s e mais %2$d</item>
+        <item quantity="many">%1$s e mais %2$d</item>
+        <item quantity="other">%1$s e mais %2$d</item>
+    </plurals>
+
+    <!-- Como o EQ do sistema se conecta (Configurações). -->
+    <string name="mode_global">Todo o áudio</string>
+    <string name="mode_global_detail">Atua na mixagem de saída do Android, então cobre todos os apps. Funciona na maioria dos telefones.</string>
+    <string name="mode_per_app">Apps de música</string>
+    <string name="mode_per_app_detail">Atua nos reprodutores que se identificam (Spotify, YouTube Music, Samsung Music, Poweramp…). Use esta opção se \"Todo o áudio\" não tiver efeito no seu telefone.</string>
+
+    <!-- Os controles de preferência em Ajuste fino. -->
+    <string name="band_bass">Graves</string>
+    <string name="band_bass_hint">Peso do bumbo e do baixo</string>
+    <string name="band_warmth">Calor</string>
+    <string name="band_warmth_hint">Corpo das vozes e dos instrumentos</string>
+    <string name="band_vocals">Vocais</string>
+    <string name="band_vocals_hint">Clareza e presença das vozes</string>
+    <string name="band_treble">Agudos</string>
+    <string name="band_treble_hint">Brilho: a definição das vozes, os pratos e os detalhes</string>
+    <string name="band_air">Ar</string>
+    <string name="band_air_hint">Cintilação e espaço no extremo agudo</string>
+
+    <!-- Tipos de fones. -->
+    <string name="headphones_in_ear">In-ear</string>
+    <string name="headphones_over_ear">Over-ear</string>
+
+    <!-- Durações do teste de escuta. -->
+    <string name="length_quick">Rápido</string>
+    <string name="length_quick_detail">7 bandas por ouvido · cerca de 1½ min</string>
+    <string name="length_standard">Padrão</string>
+    <string name="length_standard_detail">7 bandas por ouvido · cerca de 2 min</string>
+    <string name="length_thorough">Minucioso</string>
+    <string name="length_thorough_detail">7 bandas, precisão extra · cerca de 3 min</string>
+
+    <!-- Layouts de EQ gráfico na tela Exportar e onde cada um é usado. -->
+    <string name="bands_ten">10 bandas</string>
+    <string name="bands_ten_where">Modo gráfico do Poweramp, a maioria dos EQs de reprodutores e de telefones</string>
+    <string name="bands_samsung">Samsung de 9 bandas</string>
+    <string name="bands_samsung_where">Configurações do Galaxy › Qualidade de som e efeitos › Equalizador › Personalizado</string>
+    <string name="bands_android">5 bandas</string>
+    <string name="bands_android_where">Equalizador integrado do Android, Spotify no Android, muitos EQs de telefones</string>
+    <string name="bands_james">JamesDSP de 15 bandas</string>
+    <string name="bands_james_where">Equalizador multimodal do JamesDSP / RootlessJamesDSP</string>
+    <string name="bands_third_octave">31 bandas</string>
+    <string name="bands_third_octave_where">EQs gráficos de 1/3 de oitava</string>
+
+    <!-- O que o TalkBack lê nos gráficos. -->
+    <string name="chart_eq">Curva de EQ. %1$s</string>
+    <string name="chart_listening">Perfil de escuta: quanta ajuda cada banda recebe, em dB; um número maior recebe mais ajuda. %1$s</string>
+    <string name="chart_point">%1$s dB em %2$s</string>
+    <string name="chart_named">%1$s: %2$s</string>
+    <!-- Separadores entre os pontos de uma curva e entre curvas. Entre aspas para manter os espaços. -->
+    <string name="chart_separator">", "</string>
+    <string name="chart_curve_separator">"; "</string>
+    <string name="ear_left">Ouvido esquerdo</string>
+    <string name="ear_right">Ouvido direito</string>
+
+    <!-- A notificação do EQ do sistema. -->
+    <string name="notif_on">PureEQ ativado</string>
+    <string name="notif_starting">Iniciando…</string>
+    <string name="notif_all_audio">%1$s · Todo o áudio</string>
+    <plurals name="notif_music_apps">
+        <item quantity="one">%1$s · Apps de música · %2$d tocando</item>
+        <item quantity="many">%1$s · Apps de música · %2$d tocando</item>
+        <item quantity="other">%1$s · Apps de música · %2$d tocando</item>
+    </plurals>
+    <string name="notif_paused">%1$s · pausado enquanto o PureEQ reproduz som</string>
+    <string name="notif_off_for">PureEQ desativado para %1$s</string>
+    <string name="notif_comes_back">Volta a ser ativado com %1$s.</string>
+    <string name="notif_turn_off">Desativar</string>
+    <string name="notif_turn_off_everywhere">Desativar em todas as saídas</string>
+    <string name="notif_no_profile">Ainda não há perfil. Abra o PureEQ para criar um.</string>
+    <string name="notif_failed">Não foi possível iniciar o equalizador</string>
+    <string name="status_no_profile">Nenhum perfil ainda</string>
+    <string name="status_refused">Este telefone recusou o equalizador do sistema (%1$s). Tente o modo \"Apps de música\" nas Configurações.</string>
+</resources>

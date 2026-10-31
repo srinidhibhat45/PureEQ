@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Criação de um perfil: as etapas de configuração, o teste de escuta e o teste de preferência. -->
+<resources>
+
+    <!-- ===== Configuração: Novo perfil ===== -->
+    <string name="setup_intro_title">Novo perfil</string>
+    <string name="setup_intro_start">Começar</string>
+    <string name="setup_intro_headline">Vamos encontrar seu som</string>
+    <string name="setup_intro_subtitle">O PureEQ mede como cada ouvido ouve cada parte do espectro com estes fones e depois aprende do que você gosta. As duas coisas viram um único EQ.</string>
+    <string name="setup_intro_step_check">1 · Teste de escuta</string>
+    <string name="setup_intro_step_check_text">Bipes curtos no ouvido esquerdo e no direito. Toque em Sim sempre que ouvir um, mesmo bem fraco. O PureEQ escolhe cada bipe para aprender o máximo possível, então tudo termina em cerca de 2 minutos.</string>
+    <string name="setup_intro_step_taste">2 · Preferência</string>
+    <string name="setup_intro_step_taste_text">Ouça a música como A e B e escolha o que você prefere. Os dois têm o mesmo volume, então confie nos seus ouvidos. Normalmente de 5 a 7 rodadas.</string>
+    <string name="setup_intro_step_eq">3 · Seu EQ</string>
+    <string name="setup_intro_step_eq_text">Aplique-o a todo o áudio deste telefone ou exporte-o para Wavelet, Poweramp Equalizer, JamesDSP e outros.</string>
+    <string name="setup_intro_tips">Antes de começar</string>
+    <string name="setup_intro_tip_room">Encontre um ambiente silencioso e use os fones do jeito que você costuma usar.</string>
+    <string name="setup_intro_tip_effects">Desative outros efeitos de som: Dolby Atmos, Adapt Sound, outros apps de EQ e o EQ do app dos seus fones.</string>
+    <string name="setup_intro_tip_noise_cancelling">Ativar o cancelamento de ruído ajuda. O modo de transparência / ambiente deve estar desativado.</string>
+    <string name="setup_intro_check">Teste de escuta</string>
+    <string name="setup_intro_check_skipped">Pulado: só preferência</string>
+
+    <!-- ===== Configuração: Fones ===== -->
+    <string name="setup_headphones_title">Fones de ouvido</string>
+    <string name="setup_continue">Continuar</string>
+    <string name="setup_headphones_continue_without">Continuar sem fones</string>
+    <string name="setup_headphones_headline">Coloque seus fones</string>
+    <string name="setup_headphones_subtitle">Seu resultado vale para estes fones e seus ouvidos juntos, então use o par com o qual você vai ouvir.</string>
+    <string name="setup_headphones_none">Nenhum fone detectado. Um teste de escuta precisa de um som por ouvido, o que o alto-falante do telefone não consegue fazer.</string>
+    <string name="setup_headphones_type">Tipo</string>
+    <string name="setup_headphones_in_ear">In-ear / intra-auriculares</string>
+    <string name="setup_headphones_over_ear">Over-ear / supra-auriculares</string>
+    <string name="setup_headphones_type_note">Fones in-ear e over-ear chegam ao tímpano de formas diferentes, então cada tipo é medido em relação à sua própria referência.</string>
+    <string name="setup_headphones_bluetooth">O Bluetooth funciona, mas desative qualquer EQ ou som \"adaptativo\" ou \"espacial\" no app complementar dos fones durante o teste.</string>
+    <string name="setup_model_title">Modelo (opcional)</string>
+    <string name="setup_model_add">Adicione a correção medida do seu modelo a partir do banco de dados do AutoEq, com mais de 6.000 fones. Ela leva seus fones ao alvo Harman, e o teste de escuta faz o ajuste fino do resto.</string>
+    <string name="setup_model_find">Encontrar meus fones</string>
+    <string name="setup_model_change">Alterar</string>
+    <!-- %1$s: o nome da curva-alvo, como está, por exemplo "Harman in-ear 2019". -->
+    <string name="setup_model_corrected_to">Corrigido para o alvo %1$s.</string>
+    <string name="setup_model_corrected_autoeq">Corrigido para o alvo do AutoEq para este modelo.</string>
+    <string name="setup_model_remembered">Escolhido para estes fones da última vez.</string>
+    <string name="setup_model_attribution">Dados dos fones: %1$s via AutoEq (Jaakko Pasanen, MIT)</string>
+
+    <!-- ===== Configuração: Verificação do ambiente ===== -->
+    <string name="setup_quiet_title">Verificação do ambiente</string>
+    <string name="setup_quiet_skip">Pular verificação</string>
+    <string name="setup_quiet_headline">Está silencioso o bastante?</string>
+    <string name="setup_quiet_subtitle">O ruído de fundo encobre bipes baixos e distorce o resultado. O PureEQ pode escutar por 3 segundos para verificar. Nada é gravado nem salvo.</string>
+    <string name="setup_quiet_level">ruído aproximado do ambiente</string>
+    <string name="setup_quiet_failed">Não foi possível usar o microfone. Você pode pular esta verificação.</string>
+    <string name="setup_quiet_good">Silencioso. Bom para um teste preciso.</string>
+    <string name="setup_quiet_fair">Um pouco barulhento. Tudo bem com o cancelamento de ruído ativado; quanto mais silêncio, melhor.</string>
+    <string name="setup_quiet_noisy">Barulhento demais para um teste preciso. Procure um lugar mais silencioso ou ative o cancelamento de ruído.</string>
+    <string name="setup_quiet_check">Medir ruído</string>
+    <string name="setup_quiet_check_again">Medir de novo</string>
+
+    <!-- ===== Configuração: Volume ===== -->
+    <string name="setup_volume_title">Volume</string>
+    <string name="setup_volume_confirm">Está baixo, mas nítido</string>
+    <string name="setup_volume_headline">Ajuste o volume</string>
+    <string name="setup_volume_subtitle">Um bipe está se repetindo nos dois ouvidos. Ajuste o volume até que ele fique baixo, mas claramente audível, como o tique-taque de um relógio silencioso. Mantenha esse volume até o fim do teste.</string>
+    <string name="setup_volume_down">Mais baixo</string>
+    <string name="setup_volume_up">Mais alto</string>
+    <string name="setup_volume_name">Volume de mídia</string>
+    <string name="setup_volume_level">Volume %1$d de %2$d</string>
+    <string name="setup_volume_cant_hear">Não ouve nada nem no volume máximo? Verifique se os fones estão conectados e se não estão no mudo.</string>
+
+    <!-- ===== Configuração: Esquerdo e direito ===== -->
+    <string name="setup_channel_title">Esquerdo e direito</string>
+    <string name="setup_channel_volume_again">Ajustar o volume de novo</string>
+    <string name="setup_channel_try_again">Tentar novamente</string>
+    <string name="setup_channel_continue_anyway">Continuar mesmo assim</string>
+    <string name="setup_channel_headline">Onde você ouviu o bipe?</string>
+    <string name="setup_channel_subtitle">Um bipe tocou de um lado. Diga ao PureEQ onde você o ouviu; isso detecta fones trocados e áudio mono.</string>
+    <string name="setup_channel_left">Esquerda</string>
+    <string name="setup_channel_both">Ambos</string>
+    <string name="setup_channel_right">Direita</string>
+    <string name="setup_channel_play_again">Tocar de novo</string>
+    <string name="setup_channel_not_heard">Não ouvi</string>
+    <string name="setup_channel_ok">Correto. Iniciando o teste de escuta…</string>
+    <string name="setup_channel_swapped">Esse bipe estava do outro lado, então esquerdo e direito parecem trocados. Verifique se os fones estão nos ouvidos certos (marcas L/R) e tente novamente.</string>
+    <!-- "Configurações > Acessibilidade > Áudio" é o caminho no app Configurações do Android. -->
+    <string name="setup_channel_mono">O som veio dos dois lados, então o áudio mono pode estar ativado. Desative-o e centralize o balanço em Configurações > Acessibilidade > Áudio e tente novamente.</string>
+    <string name="setup_channel_missed">O bipe não foi ouvido. Verifique se os dois fones estão no lugar e conectados; o volume pode estar baixo demais.</string>
+
+    <!-- ===== Teste de escuta ===== -->
+    <string name="check_title">Teste de escuta</string>
+    <string name="check_pause">Pausar</string>
+    <string name="check_yes">Sim, ouvi</string>
+    <string name="check_no">Não</string>
+    <string name="check_replay">Tocar o bipe de novo</string>
+    <string name="check_progress">%1$d%%</string>
+    <string name="check_listen">Escute…</string>
+    <string name="check_question">Você ouviu um bipe?</string>
+    <string name="check_get_ready">Prepare-se</string>
+    <string name="check_instructions">Os bipes vêm em qualquer um dos ouvidos e ficam bem baixos. Toque em Sim assim que ouvir um, mesmo bem fraco. Perdeu um? Você pode tocá-lo de novo uma vez antes de responder.</string>
+    <string name="check_guessing">Alguns bipes são silenciosos de propósito, e você disse Sim para alguns deles. Só toque em Sim quando tiver certeza de que ouviu algo.</string>
+    <string name="check_got_it">Entendi</string>
+    <string name="check_paused">Pausado</string>
+    <string name="check_paused_text">Respire fundo. Continue quando quiser.</string>
+    <string name="check_paused_background">O teste foi pausado enquanto o PureEQ estava em segundo plano.</string>
+    <string name="check_volume_changed">Volume alterado</string>
+    <string name="check_volume_changed_text">O teste precisa do volume que você definiu no início. Restaure-o e continue.</string>
+    <string name="check_restore_volume">Restaurar volume e continuar</string>
+    <string name="check_headphones_disconnected">Fones desconectados</string>
+    <string name="check_headphones_disconnected_text">Reconecte os mesmos fones para continuar.</string>
+    <string name="check_continue">Continuar</string>
+    <string name="check_stop_test">Parar teste</string>
+    <string name="check_stop_title">Parar o teste de escuta?</string>
+    <string name="check_stop_text">Suas respostas até agora serão descartadas.</string>
+    <string name="check_stop">Parar</string>
+    <string name="check_keep_going">Continuar</string>
+
+    <!-- ===== Teste de escuta: o resultado ===== -->
+    <string name="check_done_continue">Ir para a preferência</string>
+    <string name="check_done_start_over">Recomeçar</string>
+    <string name="check_done_headline">Pronto. Este é seu perfil de escuta</string>
+    <!-- %1$s: check_done_reference_in_ear ou check_done_reference_over_ear. -->
+    <string name="check_done_explained">Cada ponto compara o bipe mais baixo que você ouviu naquela banda com estes fones ao de um ouvinte de referência com %1$s, usando seus médios-graves (500 Hz a 1,5 kHz) como linha zero. Mais baixo no gráfico significa que essa banda recebe mais ajuda. Isso inclui o som próprio dos seus fones, que é exatamente o que o EQ corrige. O EQ segue a tendência suave, não cada ponto.</string>
+    <string name="check_done_reference_in_ear">fones in-ear bem calibrados</string>
+    <string name="check_done_reference_over_ear">fones over-ear bem calibrados</string>
+    <string name="check_done_explained_corrected">Cada ponto compara o bipe mais baixo que você ouviu naquela banda ao de um ouvinte de referência, depois de descontada a resposta medida dos seus fones, usando seus médios-graves (500 Hz a 1,5 kHz) como linha zero. Mais baixo no gráfico significa que essa banda recebe mais ajuda. O que sobra são seus ouvidos e o encaixe dos fones neles. O EQ segue a tendência suave, não cada ponto.</string>
+    <string name="check_done_left">● Esquerdo</string>
+    <string name="check_done_right">■ Direito</string>
+    <string name="check_done_axis">dB, em relação à referência</string>
+    <string name="check_done_reliability">Confiabilidade</string>
+    <string name="check_reliability_good">Boa</string>
+    <string name="check_reliability_fair">Razoável</string>
+    <string name="check_reliability_low">Baixa</string>
+    <string name="check_done_false_alarms">Bipes silenciosos de controle respondidos com Sim: %1$d de %2$d.</string>
+    <string name="check_done_retest">A repetição em 1 kHz variou até %1$s dB.</string>
+    <string name="check_done_inconsistent">Respostas que não se encaixaram com o resto: %1$d de %2$d.</string>
+    <plurals name="check_done_answers">
+        <item quantity="one">%1$d respostas em %2$d min %3$d s.</item>
+        <item quantity="many">%1$d respostas em %2$d min %3$d s.</item>
+        <item quantity="other">%1$d respostas em %2$d min %3$d s.</item>
+    </plurals>
+    <plurals name="check_done_edge">
+        <item quantity="one">%1$d banda ficou no limite do intervalo do teste; o PureEQ limita a correção nela.</item>
+        <item quantity="many">%1$d bandas ficaram no limite do intervalo do teste; o PureEQ limita a correção nelas.</item>
+        <item quantity="other">%1$d bandas ficaram no limite do intervalo do teste; o PureEQ limita a correção nelas.</item>
+    </plurals>
+    <string name="check_done_poor">As respostas não foram muito consistentes. Um ambiente mais silencioso e responder Sim só quando tiver certeza costumam resolver isso; considere recomeçar.</string>
+    <string name="check_done_disclaimer">Este é um perfil de escuta relativo para ajustar o som, não um exame auditivo nem um audiograma. O PureEQ não é um dispositivo médico. Um profissional de saúde auditiva pode ajudar com qualquer dúvida sobre sua audição.</string>
+
+    <!-- ===== Teste de preferência ===== -->
+    <string name="taste_title">Preferência</string>
+    <string name="taste_music_preparing">Preparando a música…</string>
+    <string name="taste_music_loading">Carregando…</string>
+    <string name="taste_music_loops">Repete sem interrupção enquanto você compara</string>
+    <string name="taste_music_mine">Minha música</string>
+    <string name="taste_music_built_in">Faixa integrada</string>
+    <!-- "Iguais" é o botão de resposta sem preferência. -->
+    <string name="taste_intro_start">Começar a comparar</string>
+    <string name="taste_intro_skip">Pular, usar só o teste de escuta</string>
+    <string name="taste_intro_headline">Agora, do que você gosta?</string>
+    <string name="taste_intro_subtitle">Você vai ouvir a mesma música como A e B. Alterne entre eles quantas vezes quiser e escolha o seu preferido. Os dois têm o mesmo volume, então siga o que mais agrada a você. O PureEQ aprende com cada resposta, incluindo \"Iguais\", e para quando conhece seu gosto: normalmente de 5 a 7 rodadas.</string>
+    <!-- "Redefinir" é um botão em Ajuste fino. -->
+    <string name="taste_redo_headline">Refazer o teste de preferência</string>
+    <string name="taste_redo_subtitle">Você vai ouvir a mesma música como A e B e escolher o seu preferido, normalmente em 5 a 7 rodadas. Os dois têm o mesmo volume. Seu resultado de escuta continua como está; o novo resultado substitui seus graves e agudos (calor e vocais voltam a 0) e passa a ser o ponto para onde Redefinir volta.</string>
+    <string name="taste_music">Música</string>
+    <string name="taste_music_hint">Uma música sua funciona melhor: escolha algo que você conhece bem, com vocais, graves e pratos. Só arquivos do seu telefone (os apps de streaming protegem os deles).</string>
+    <string name="taste_volume">Volume de escuta</string>
+    <string name="taste_volume_text">Toque a música e ajuste o volume em que você costuma ouvir. O gosto depende do volume, então isso é importante.</string>
+    <string name="taste_pause">Pausar</string>
+    <string name="taste_play_music">Tocar música</string>
+    <string name="taste_wait">Novo par…</string>
+    <string name="taste_hear_b">Ouça o B também e depois escolha.</string>
+    <string name="taste_question">De qual você gosta mais?</string>
+    <string name="taste_a_better">A é melhor</string>
+    <string name="taste_same">Iguais</string>
+    <string name="taste_b_better">B é melhor</string>
+    <string name="taste_finish">Concluir agora</string>
+    <string name="taste_round">Rodada %1$d</string>
+    <string name="taste_rounds_usual">normalmente de 5 a 7</string>
+    <string name="taste_new_pair">Novo par: um A e um B diferentes. Ouça os dois de novo.</string>
+    <string name="taste_how">Toque em A e B para alternar na hora, quantas vezes quiser. Ouça o som como um todo: graves, vozes, pratos, clareza.</string>
+    <string name="taste_pause_music">Pausar música</string>
+    <string name="taste_a">A</string>
+    <string name="taste_b">B</string>
+    <string name="taste_tile_playing">Tocando</string>
+    <string name="taste_tile_heard">Ouvido · toque para alternar</string>
+    <string name="taste_tile_new">Toque para ouvir</string>
+</resources>

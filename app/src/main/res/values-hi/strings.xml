@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="eq_channel_name">पर्सनल EQ</string>
+    <string name="eq_channel_description">यह सूचना तब तक दिखती है, जब तक आपकी साउंड प्रोफ़ाइल सभी ऑडियो पर लागू है।</string>
+    <string name="update_channel_name">ऐप अपडेट</string>
+    <string name="tile_off">बंद</string>
+    <string name="tile_set_up">सेट अप करें</string>
+    <string name="update_channel_description">PureEQ का नया वर्शन इंस्टॉल के लिए तैयार है, या अभी-अभी इंस्टॉल हुआ है।</string>
+</resources>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Início, o menu do bloco de Configurações rápidas, Configurações, Como o PureEQ funciona, a busca
+     de modelo de fone, componentes compartilhados e a música do teste de preferência. -->
+<resources>
+
+    <!-- Tela inicial. -->
+    <string name="home_settings">Configurações</string>
+    <string name="home_other_profiles">Outros perfis</string>
+    <string name="home_new_profile">Novo perfil</string>
+
+    <string name="home_update_downloading">Baixando o PureEQ %1$s</string>
+    <string name="home_update_ready">O PureEQ %1$s está pronto</string>
+    <string name="home_update_install">Instalar agora</string>
+    <string name="home_update_note">O PureEQ fecha por um instante durante a atualização. Seus perfis são mantidos.</string>
+    <string name="home_update_installing">Instalando o PureEQ %1$s…</string>
+
+    <string name="home_allow_updates_title">Receber atualizações automaticamente</string>
+    <string name="home_allow_updates_text">Permita que o PureEQ instale as próprias atualizações. Assim, as novas versões são instaladas sozinhas enquanto o app está fechado.</string>
+    <string name="home_allow_updates_text_older">Permita que o PureEQ instale as próprias atualizações, para que cada nova versão fique a um toque de distância.</string>
+    <string name="home_allow">Permitir</string>
+    <string name="home_not_now">Agora não</string>
+
+    <string name="home_welcome_title">Encontre seu som</string>
+    <string name="home_welcome_text">Um rápido teste de escuta toca bipes em cada ouvido e pergunta se você os ouviu. Depois, algumas rodadas A/B com música aprendem do que você gosta. O PureEQ transforma as duas coisas em um EQ para seus fones, que você pode aplicar a todo o áudio ou exportar para seu app de EQ.</string>
+    <string name="home_start">Começar</string>
+
+    <string name="home_active">Ativo</string>
+    <string name="home_more">Mais</string>
+    <string name="home_use_profile">Usar este perfil</string>
+    <string name="home_fine_tune">Ajuste fino</string>
+    <string name="home_export">Exportar</string>
+    <string name="home_delete">Excluir</string>
+    <string name="home_cancel">Cancelar</string>
+    <string name="home_made_for">Feito para %1$s; você está ouvindo com %2$s.</string>
+    <string name="home_apply_all_audio">Aplicar a todo o áudio</string>
+    <string name="home_made_with_ears">Ouvidos + preferência</string>
+    <string name="home_made_with_taste">Só preferência</string>
+
+    <string name="home_delete_title">Excluir %1$s?</string>
+    <string name="home_delete_active_text">Este é o perfil que o PureEQ está usando agora. Os resultados de escuta e as escolhas de preferência dele serão removidos deste telefone. O PureEQ vai mudar para %1$s (%2$s).</string>
+    <string name="home_delete_only_text">Este é o perfil que o PureEQ está usando agora. Os resultados de escuta e as escolhas de preferência dele serão removidos deste telefone. Como é seu único perfil, o EQ do sistema fica desativado até você criar um novo.</string>
+    <string name="home_delete_text">Os resultados de escuta e as escolhas de preferência deste perfil serão removidos deste telefone.</string>
+
+    <string name="home_on_all_audio">Ativado para todo o áudio</string>
+    <plurals name="home_on_music_apps">
+        <item quantity="one">Ativado para apps de música · %1$d tocando</item>
+        <item quantity="many">Ativado para apps de música · %1$d tocando</item>
+        <item quantity="other">Ativado para apps de música · %1$d tocando</item>
+    </plurals>
+    <string name="home_paused">Pausado enquanto o PureEQ reproduz som</string>
+    <string name="home_starting">Iniciando…</string>
+    <string name="home_off_elsewhere">Desativado para %1$s. Ativado para %2$s.</string>
+    <string name="home_off_speaker">Desativado para o alto-falante do telefone. Conecte seus fones para ativar neles.</string>
+    <string name="home_off">Desativado. Ative para ouvir este perfil em todos os apps.</string>
+
+    <!-- O menu do bloco de Configurações rápidas (toque longo). -->
+    <string name="tile_menu_no_profile">Nenhum perfil ainda</string>
+    <string name="tile_menu_on_for">Ativado para %1$s</string>
+    <string name="tile_menu_no_profile_text">Primeiro, crie um perfil no PureEQ: um rápido teste de escuta e um teste de preferência para seus fones.</string>
+    <string name="tile_menu_profile">Perfil</string>
+    <string name="tile_menu_playing_now">Tocando agora</string>
+    <string name="tile_menu_open_app">Abrir o PureEQ</string>
+    <string name="tile_menu_fine_tune">Ajuste fino</string>
+
+    <!-- Configurações. -->
+    <string name="settings_title">Configurações</string>
+    <string name="settings_system_eq">Equalizador do sistema</string>
+    <string name="settings_other_eqs">Desative outros equalizadores (Wavelet, Dolby Atmos, o EQ/Adapt Sound da própria Samsung) enquanto o do PureEQ estiver ativado, ou os efeitos se somam.</string>
+
+    <string name="settings_where_on">Onde está ativado</string>
+    <string name="settings_where_on_text">O PureEQ lembra se está ativado ou desativado em cada saída e alterna sozinho quando você conecta ou desconecta. Os perfis são feitos para fones, então o alto-falante do telefone começa desativado.</string>
+    <string name="settings_playing_now">Tocando agora</string>
+    <string name="settings_off">Desativado</string>
+
+    <string name="settings_tile">Bloco de Configurações rápidas</string>
+    <string name="settings_tile_text">Ative e desative o equalizador do sistema no painel que se abre ao deslizar para baixo. O bloco mostra o perfil em uso.</string>
+    <string name="settings_tile_add">Adicionar ao painel</string>
+    <string name="settings_tile_added">Adicionado. Deslize para baixo para encontrar o PureEQ.</string>
+    <string name="settings_tile_not_added">Não adicionado. Você também pode deslizar para baixo duas vezes, tocar no lápis e arrastar o PureEQ para seus blocos.</string>
+    <string name="settings_tile_how_to_add">Para adicionar, deslize para baixo duas vezes, toque no lápis (Editar) e arraste o PureEQ para seus blocos.</string>
+
+    <string name="settings_auto_switch">Trocar perfil com os fones</string>
+    <string name="settings_auto_switch_detail">Ao conectar fones, usar o perfil que você usou por último com eles ou o que você criou com eles.</string>
+    <string name="settings_start_on_boot">Iniciar após reinício</string>
+    <string name="settings_start_on_boot_detail">Reativar o equalizador do sistema depois que o telefone reiniciar.</string>
+    <string name="settings_warble">Tons de teste modulados</string>
+    <string name="settings_warble_detail" formatted="false">Os bipes variam ±5% em torno de cada frequência, para que uma única ressonância estreita do fone não distorça uma banda. Desative para ouvir tons puros.</string>
+
+    <string name="settings_version">PureEQ %1$s</string>
+    <string name="settings_import">Importar um perfil do PureEQ</string>
+    <string name="settings_how_it_works">Como o PureEQ funciona</string>
+
+    <string name="settings_updates">Atualizações</string>
+    <string name="settings_check_now">Verificar agora</string>
+    <string name="settings_install_version">Instalar %1$s</string>
+    <string name="settings_auto_update">Instalar atualizações automaticamente</string>
+    <string name="settings_auto_update_detail">As novas versões são instaladas sozinhas enquanto o PureEQ está fechado e nada está tocando. Desativado: você recebe uma notificação. O PureEQ verifica quando você o abre, a cada 30 minutos enquanto o telefone carrega no Wi-Fi e, fora isso, uma vez por dia.</string>
+    <string name="settings_update_asks">O Android %1$s pede confirmação antes de cada atualização de app, então o PureEQ envia uma notificação quando houver uma pronta.</string>
+    <string name="settings_install_not_allowed">O PureEQ ainda não tem permissão para instalar atualizações, então o Android vai perguntar antes.</string>
+    <string name="settings_allow">Permitir</string>
+    <string name="settings_update_source">As atualizações vêm de %1$s.</string>
+
+    <string name="settings_update_disabled">Esta cópia não foi compilada com um endereço de atualização, então não consegue se atualizar.</string>
+    <!-- %1$s: "há 5 minutos" (texto do Android) ou "agora mesmo" (settings_just_now). -->
+    <string name="settings_update_checked">Verificado %1$s</string>
+    <string name="settings_update_not_checked">Ainda não verificado</string>
+    <string name="settings_update_checking">Verificando…</string>
+    <string name="settings_update_up_to_date">Atualizado · verificado %1$s</string>
+    <string name="settings_update_downloading">Baixando %1$s… %2$d%%</string>
+    <string name="settings_update_ready">%1$s pronto para instalar</string>
+    <string name="settings_update_installing">Instalando %1$s…</string>
+    <string name="settings_just_now">agora mesmo</string>
+
+    <!-- Como o PureEQ funciona. -->
+    <string name="about_title">Como o PureEQ funciona</string>
+    <string name="about_check_title">O teste de escuta</string>
+    <string name="about_check_text">Bipes pulsados (dois por apresentação, com bordas suaves de 25 ms) tocam em um ouvido de cada vez, de 500 Hz a 8 kHz. O PureEQ mantém um único modelo estatístico dos seus limiares em todas as bandas e nos dois ouvidos, interligado entre as frequências e entre os ouvidos. Cada bipe é tocado no nível que deve ensinar mais ao modelo, e uma banda termina assim que seu limiar é conhecido com precisão suficiente. Bipes silenciosos medem as respostas dadas por palpite, e o modelo tolera um deslize ocasional. Perdeu um bipe? Toque-o de novo uma vez; a resposta conta como ouvida se você o ouviu em qualquer uma das vezes. Cerca de 2 minutos em vez de 6.</string>
+    <string name="about_eq_title">Do teste de escuta ao EQ</string>
+    <string name="about_eq_text" formatted="false">Seus limiares são comparados aos de um ouvinte de referência com fones bem calibrados do seu tipo (limiares da ISO 389-7, alvo Harman). A diferença abrange seus ouvidos e seus fones juntos, que é o que um EQ consegue corrigir. O PureEQ corrige a tendência suave, não cada ponto, medida a partir dos seus médios-graves (500 Hz a 1,5 kHz), e só o que as respostas mostram com clareza: diferenças pequenas a 75% (normalmente o som próprio dos fones), as maiores a cerca de um terço, para que o som continue natural. Os graves abaixo de 400 Hz ficam a seu gosto, e os reforços de agudos param em +6 dB. Os dois ouvidos compartilham um mesmo conjunto de filtros, e uma diferença entre seus ouvidos só conta quando as respostas a mostram com clareza, para que as vozes fiquem centralizadas.</string>
+    <string name="about_measured_title">A resposta medida dos seus fones</string>
+    <string name="about_measured_text">Opcionalmente, escolha seu modelo no banco de dados do AutoEq (mais de 6.000 fones medidos por oratory1990, crinacle, Rtings e outros; AutoEq de Jaakko Pasanen, licença MIT). O PureEQ baixa a medição do modelo e a corrige como o AutoEq faz: comparada ao alvo Harman medido no mesmo equipamento, suavizada e invertida, com inclinações suaves, reforços limitados a +6 dB, vales estreitos deixados como estão e os graves do próprio alvo adicionados de volta. Acima de cerca de 5 kHz, onde os ouvidos das pessoas diferem de 5 a 30 dB, só metade dela é aplicada. crinacle publica apenas correções prontas, então, nesses casos, são usadas as do próprio AutoEq. A referência do teste de escuta leva a correção em conta, para que a resposta medida não seja corrigida duas vezes: o teste de escuta então só corrige seus ouvidos e o encaixe dos fones. O PureEQ lembra o modelo que você escolheu para cada par de fones.</string>
+    <string name="about_bass_title">Graves na medida certa</string>
+    <string name="about_bass_text">Os graves do EQ inteiro, somando a correção, o teste de escuta e seu gosto, ficam dentro do que vale a pena. Nos fones over-ear, os graves abaixo de 50 Hz ficam perto do nível de 50 Hz: há pouca música lá embaixo, e um reforço custa o mesmo tanto de volume. A opção Subgraves completos, em Ajustes finos, remove esse limite e mostra quanto ele custa nos seus fones. Fones in-ear bem vedados mantêm seus graves profundos. Nenhum fone recebe mais de +12 dB (over-ear) ou +15 dB (in-ear) de graves acima dos médios.</string>
+    <string name="about_taste_title">O teste de preferência</string>
+    <string name="about_taste_text">Os graves (um filtro shelf em 105 Hz, como na pesquisa de fones da Harman) e os agudos (um shelf amplo a partir de 2,5 kHz, o formato que os ouvintes da Harman ajustaram) são definidos por comparações A/B às cegas, cada par igualado em volume percebido pela ponderação ITU BS.1770, para que o som mais alto nunca vença só por isso. O PureEQ parte dos três grupos de ouvintes da Harman (a maioria gosta do alvo, alguns querem mais graves, outros menos graves e um pouco mais de agudos), aprende com cada resposta, incluindo \"Iguais\", e escolhe cada próximo par para aprender o máximo: normalmente de 5 a 7 rodadas. Cada novo par é sinalizado e espera até você ouvir os dois. Ar (acima de 10 kHz), calor e vocais ficam por sua conta, ajustados à mão.</string>
+    <string name="about_volume_bass_title">Graves que seguem o volume</string>
+    <string name="about_volume_bass_text">Os ouvidos perdem graves mais rápido que médios quando o som fica mais baixo (ISO 226: cerca de 0,3 dB em 100 Hz para cada dB que o nível cai), então um equilíbrio escolhido num volume soa magro abaixo dele. O PureEQ lembra o volume do seu teste de preferência e, abaixo dele, o EQ do sistema devolve metade do que os ouvidos perdem: um shelf de graves em 105 Hz de cerca de 1,5 dB a cada 10 dB mais baixo, até +6 dB, e um pouco de agudos em 10 kHz, até +2 dB. Metade, porque a compensação de loudness total exagera e só conta a mudança em relação ao volume em que você ajustou (Holman e Kampmann). Acima desse volume, os graves diminuem levemente. O ajuste acompanha as teclas de volume enquanto você as pressiona, só no tipo de saída em que o perfil foi ajustado, e a opção fica em Ajuste fino.</string>
+    <string name="about_applying_title">Como ele é aplicado</string>
+    <string name="about_applying_text">O PureEQ lembra se está ativado ou desativado em cada saída: o alto-falante do telefone, cada par de fones, um carro ou uma caixa de som. Um perfil é ajustado para fones, então o alto-falante do telefone começa desativado e toca sem alterações; ative-o lá e isso também fica salvo. De volta aos fones, ele é reativado com o perfil que você usou por último com eles. \"Todo o áudio\" usa o efeito DynamicsProcessing do Android na mixagem de saída, com uma curva separada para cada ouvido, em bandas finas (cada bin de FFT abaixo de 530 Hz, 1/16 de oitava acima). O nível é reduzido apenas o necessário para a música: reforços de agudos quase não elevam os picos de uma mixagem, então quase não custam volume; um reforço de graves custa mais ou menos o próprio tamanho. As exportações usam os formatos do AutoEq, então Wavelet, Poweramp Equalizer, JamesDSP e Equalizer APO os leem diretamente.</string>
+    <string name="about_privacy_title">Privacidade</string>
+    <string name="about_privacy_text_updates">Seus perfis e resultados ficam neste telefone e no backup criptografado da sua Conta do Google, se o backup do Android estiver ativado. A verificação do ambiente, que é opcional, escuta por 3 segundos para medir o nível de ruído e não armazena nada. O PureEQ só se conecta à internet para verificar as próprias atualizações (um pequeno aviso de atualização e, depois, a nova versão, quando houver uma) e, se você procurar seus fones, para baixar a lista pública do AutoEq e a correção desse modelo dos servidores do jsDelivr ou do GitHub. Nada sobre você ou seus resultados é enviado.</string>
+    <string name="about_privacy_text">Seus perfis e resultados ficam neste telefone e no backup criptografado da sua Conta do Google, se o backup do Android estiver ativado. A verificação do ambiente, que é opcional, escuta por 3 segundos para medir o nível de ruído e não armazena nada. O PureEQ só se conecta à internet se você procurar seus fones, para baixar a lista pública do AutoEq e a correção desse modelo dos servidores do jsDelivr ou do GitHub. Nada sobre você ou seus resultados é enviado.</string>
+    <string name="about_medical_title">Não é um dispositivo médico</string>
+    <string name="about_medical_text">O PureEQ ajusta o som aos seus ouvidos e ao seu gosto. Ele não é um dispositivo médico e não diagnostica, não trata, não cura nem previne nenhuma condição médica. Um profissional de saúde auditiva pode ajudar com qualquer dúvida sobre sua audição.</string>
+    <string name="about_licences_title">Licenças de código aberto</string>
+    <!-- Apresenta a licença do AutoEq, que vem a seguir em inglês. -->
+    <string name="about_licences_intro">A correção de fones do PureEQ adapta o código de equalização do AutoEq (github.com/jaakkopasanen/AutoEq), sob a licença MIT:</string>
+
+    <!-- Busca de modelo de fone (banco de dados do AutoEq). -->
+    <string name="picker_title">Seus fones</string>
+    <string name="picker_remove">Remover %1$s</string>
+    <string name="picker_skip">Pular, o meu não está na lista</string>
+    <string name="picker_headline">Encontre seu modelo</string>
+    <string name="picker_headline_text">O PureEQ corrige seu modelo, a partir da medição de laboratório, para o alvo Harman que a maioria dos ouvintes prefere. Seu teste de escuta então só corrige o que sobra: seus ouvidos e o encaixe dos fones neles.</string>
+    <string name="picker_search_label">Marca e modelo</string>
+    <string name="picker_loading">Carregando o banco de dados do AutoEq, com mais de 6.000 fones (cerca de 850 KB, só na primeira vez)…</string>
+    <string name="picker_try_again">Tentar novamente</string>
+    <string name="picker_no_match">Nenhum resultado. Tente só o nome do modelo, por exemplo \"Buds2 Pro\" ou \"HD 650\".</string>
+    <string name="picker_in_ear">in-ear</string>
+    <string name="picker_over_ear">over-ear</string>
+    <string name="picker_data_note">Dados de fones via AutoEq (Jaakko Pasanen, licença MIT), medidos por oratory1990, Rtings, crinacle e outros. O PureEQ calcula a correção a partir da medição com o método do AutoEq; crinacle publica apenas correções prontas, então essas são as do próprio AutoEq, para o alvo do AutoEq. O mesmo modelo pode aparecer listado por vários medidores; o primeiro costuma ser o mais confiável. Escolha uma variante (ANC ativado, passivo…) se ela corresponder ao seu jeito de ouvir.</string>
+
+    <!-- Componentes compartilhados. -->
+    <string name="common_back">Voltar</string>
+
+    <!-- Música para o teste de preferência. -->
+    <string name="music_library_demo_track">Faixa de demonstração do PureEQ</string>
+    <string name="music_library_your_song">Sua música</string>
+    <string name="music_library_no_audio">Nenhum áudio encontrado neste arquivo</string>
+    <string name="music_library_too_slow">A decodificação demorou demais</string>
+    <string name="music_library_too_short">Este arquivo é curto demais para usar</string>
+</resources>

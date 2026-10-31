@@ -70,7 +70,7 @@
 
     <!-- What TalkBack reads for the charts. %1$s: each curve's levels, built from the strings below. -->
     <string name="chart_eq">EQ curve. %1$s</string>
-    <string name="chart_listening">Listening profile: how much help each band gets, higher is more. %1$s</string>
+    <string name="chart_listening">Listening profile: how much help each band gets, in dB; a larger number gets more help. %1$s</string>
     <!-- One point of a curve. %1$s: a signed level such as "+4.5"; %2$s: a frequency such as "1 kHz". -->
     <string name="chart_point">%1$s dB at %2$s</string>
     <!-- %1$s: the curve's name, such as "Left ear"; %2$s: its points. -->

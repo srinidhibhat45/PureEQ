@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Making a profile: the setup steps, the listening check (साउंड चेक) and the taste test (पसंद टेस्ट). -->
+<resources>
+
+    <!-- ===== Setup: New profile ===== -->
+    <string name="setup_intro_title">नई प्रोफ़ाइल</string>
+    <string name="setup_intro_start">शुरू करें</string>
+    <string name="setup_intro_headline">चलिए, आपका साउंड खोजते हैं</string>
+    <string name="setup_intro_subtitle">PureEQ मापता है कि इन हेडफ़ोन से आपका हर कान स्पेक्ट्रम के हर हिस्से को कितनी अच्छी तरह सुनता है, फिर सीखता है कि आपको क्या पसंद है। दोनों मिलकर एक EQ बनते हैं।</string>
+    <!-- "हाँ" is the listening check's answer button, "A" and "B" the taste test's two options. -->
+    <string name="setup_intro_step_check">1 · साउंड चेक</string>
+    <string name="setup_intro_step_check_text">आपके बाएं और दाएं कान में छोटी-छोटी बीप। जब भी कोई बीप सुनाई दे, चाहे हल्की-सी ही, हाँ पर टैप करें। PureEQ हर बीप ऐसे चुनता है कि ज़्यादा से ज़्यादा जानकारी मिले, इसलिए यह लगभग 2 मिनट में पूरा हो जाता है।</string>
+    <string name="setup_intro_step_taste">2 · पसंद</string>
+    <string name="setup_intro_step_taste_text">संगीत को A और B के रूप में सुनें, और जो पसंद आए उसे चुनें। दोनों की आवाज़ बराबर है, इसलिए अपने कानों पर भरोसा करें। आम तौर पर 5 से 7 राउंड।</string>
+    <string name="setup_intro_step_eq">3 · आपका EQ</string>
+    <string name="setup_intro_step_eq_text">इसे इस फ़ोन के सभी ऑडियो पर लागू करें, या Wavelet, Poweramp Equalizer, JamesDSP वगैरह में एक्सपोर्ट करें।</string>
+    <string name="setup_intro_tips">शुरू करने से पहले</string>
+    <string name="setup_intro_tip_room">कोई शांत कमरा चुनें और हेडफ़ोन वैसे ही पहनें जैसे आप आम तौर पर पहनते हैं।</string>
+    <string name="setup_intro_tip_effects">दूसरे साउंड इफ़ेक्ट बंद करें: Dolby Atmos, Adapt Sound, दूसरे EQ ऐप, और आपके ईयरबड के ऐप का EQ।</string>
+    <string name="setup_intro_tip_noise_cancelling">नॉइज़ कैंसलिंग चालू रखने से मदद मिलती है। ट्रांसपेरेंसी / ऐंबियंट मोड बंद होना चाहिए।</string>
+    <string name="setup_intro_check">साउंड चेक</string>
+    <string name="setup_intro_check_skipped">छोड़ा गया: सिर्फ़ पसंद</string>
+
+    <!-- ===== Setup: Headphones ===== -->
+    <string name="setup_headphones_title">हेडफ़ोन</string>
+    <string name="setup_continue">जारी रखें</string>
+    <string name="setup_headphones_continue_without">हेडफ़ोन के बिना जारी रखें</string>
+    <string name="setup_headphones_headline">अपने हेडफ़ोन पहनें</string>
+    <string name="setup_headphones_subtitle">आपका नतीजा इन हेडफ़ोन और आपके कानों, दोनों से जुड़ा है, इसलिए वही हेडफ़ोन इस्तेमाल करें जिनसे आप सुनेंगे।</string>
+    <string name="setup_headphones_none">कोई हेडफ़ोन नहीं मिला। साउंड चेक के लिए हर कान में अलग आवाज़ चाहिए, जो फ़ोन स्पीकर नहीं कर सकता।</string>
+    <string name="setup_headphones_type">टाइप</string>
+    <string name="setup_headphones_in_ear">इन-ईयर / ईयरबड</string>
+    <string name="setup_headphones_over_ear">ओवर-ईयर / ऑन-ईयर</string>
+    <string name="setup_headphones_type_note">इन-ईयर और ओवर-ईयर हेडफ़ोन कान के पर्दे तक अलग-अलग तरीके से आवाज़ पहुंचाते हैं, इसलिए हर एक को उसके अपने रेफ़रेंस से मापा जाता है।</string>
+    <string name="setup_headphones_bluetooth">Bluetooth काम करता है, लेकिन टेस्ट के लिए ईयरबड के साथी ऐप में कोई भी EQ, \"अडैप्टिव\" या \"स्पेशियल\" साउंड बंद कर दें।</string>
+    <string name="setup_model_title">मॉडल (वैकल्पिक)</string>
+    <string name="setup_model_add">AutoEq के 6,000 से ज़्यादा हेडफ़ोन वाले डेटाबेस से अपने मॉडल का मापा गया करेक्शन जोड़ें। यह उन्हें Harman टारगेट तक लाता है, और बाकी को साउंड चेक फ़ाइन-ट्यून करता है।</string>
+    <string name="setup_model_find">मेरे हेडफ़ोन खोजें</string>
+    <string name="setup_model_change">बदलें</string>
+    <!-- %1$s: the target curve's name, shown as it is, such as "Harman in-ear 2019". -->
+    <string name="setup_model_corrected_to">%1$s टारगेट के हिसाब से ठीक किया गया।</string>
+    <string name="setup_model_corrected_autoeq">इसके लिए AutoEq के टारगेट के हिसाब से ठीक किया गया।</string>
+    <string name="setup_model_remembered">पिछली बार इन हेडफ़ोन के लिए चुना गया था।</string>
+    <!-- %1$s: who measured the headphones, such as "oratory1990". -->
+    <string name="setup_model_attribution">हेडफ़ोन डेटा: %1$s, AutoEq के ज़रिए (Jaakko Pasanen, MIT)</string>
+
+    <!-- ===== Setup: Room check ===== -->
+    <string name="setup_quiet_title">कमरे की जाँच</string>
+    <string name="setup_quiet_skip">जाँच छोड़ें</string>
+    <string name="setup_quiet_headline">क्या यहाँ काफ़ी शांति है?</string>
+    <string name="setup_quiet_subtitle">बैकग्राउंड का शोर धीमी बीप को दबा देता है और नतीजे को बिगाड़ देता है। जाँचने के लिए PureEQ 3 सेकंड तक सुन सकता है। कुछ भी रिकॉर्ड या सेव नहीं किया जाता।</string>
+    <!-- Under the measured level, such as "38 dB(A)". -->
+    <string name="setup_quiet_level">कमरे का अनुमानित शोर</string>
+    <string name="setup_quiet_failed">माइक्रोफ़ोन का इस्तेमाल नहीं हो सका। आप यह जाँच छोड़ सकते हैं।</string>
+    <string name="setup_quiet_good">शांत है। सटीक टेस्ट के लिए अच्छा है।</string>
+    <string name="setup_quiet_fair">थोड़ा शोर है। नॉइज़ कैंसलिंग चालू हो तो ठीक है; और शांति हो तो बेहतर।</string>
+    <string name="setup_quiet_noisy">सटीक टेस्ट के लिए बहुत ज़्यादा शोर है। कोई शांत जगह ढूंढें या नॉइज़ कैंसलिंग चालू करें।</string>
+    <string name="setup_quiet_check">शोर जाँचें</string>
+    <string name="setup_quiet_check_again">फिर से जाँचें</string>
+
+    <!-- ===== Setup: Volume ===== -->
+    <string name="setup_volume_title">वॉल्यूम</string>
+    <string name="setup_volume_confirm">धीमी है, पर साफ़ है</string>
+    <string name="setup_volume_headline">वॉल्यूम सेट करें</string>
+    <string name="setup_volume_subtitle">दोनों कानों में एक बीप बार-बार बज रही है। वॉल्यूम तब तक एडजस्ट करें जब तक वह धीमी लेकिन साफ़ सुनाई न दे, जैसे किसी घड़ी की हल्की टिक-टिक। टेस्ट खत्म होने तक यही वॉल्यूम रखें।</string>
+    <string name="setup_volume_down">धीमा करें</string>
+    <string name="setup_volume_up">तेज़ करें</string>
+    <string name="setup_volume_name">मीडिया वॉल्यूम</string>
+    <!-- %1$d: the phone's media volume step; %2$d: the highest step. -->
+    <string name="setup_volume_level">वॉल्यूम %2$d में से %1$d</string>
+    <string name="setup_volume_cant_hear">पूरे वॉल्यूम पर भी कुछ सुनाई नहीं दे रहा? देखें कि हेडफ़ोन कनेक्ट हैं और म्यूट नहीं हैं।</string>
+
+    <!-- ===== Setup: Left and right (one beep on one side) ===== -->
+    <string name="setup_channel_title">बायां और दायां</string>
+    <string name="setup_channel_volume_again">वॉल्यूम फिर से सेट करें</string>
+    <string name="setup_channel_try_again">फिर से कोशिश करें</string>
+    <string name="setup_channel_continue_anyway">फिर भी जारी रखें</string>
+    <string name="setup_channel_headline">बीप कहाँ थी?</string>
+    <string name="setup_channel_subtitle">एक तरफ़ एक बीप बजी। PureEQ को बताएं कि आपने उसे कहाँ सुना; इससे आपस में बदले हुए ईयरबड और मोनो ऑडियो का पता चलता है।</string>
+    <string name="setup_channel_left">बायां</string>
+    <string name="setup_channel_both">दोनों</string>
+    <string name="setup_channel_right">दायां</string>
+    <string name="setup_channel_play_again">फिर से चलाएं</string>
+    <string name="setup_channel_not_heard">मुझे सुनाई नहीं दी</string>
+    <string name="setup_channel_ok">सही। साउंड चेक शुरू हो रहा है…</string>
+    <string name="setup_channel_swapped">वह बीप दूसरी तरफ़ थी, इसलिए लगता है कि बायां और दायां आपस में बदल गए हैं। देखें कि ईयरबड सही कानों में हैं (L/R निशान), फिर दोबारा कोशिश करें।</string>
+    <!-- "सेटिंग > सुलभता > ऑडियो" is the path to the setting in Android's Settings app. -->
+    <string name="setup_channel_mono">आवाज़ दोनों तरफ़ सुनाई दी, इसलिए शायद मोनो ऑडियो चालू है। सेटिंग > सुलभता > ऑडियो में इसे बंद करें और बैलेंस बीच में करें, फिर दोबारा कोशिश करें।</string>
+    <string name="setup_channel_missed">बीप छूट गई। देखें कि दोनों ईयरबड कान में लगे हैं और कनेक्ट हैं; हो सकता है वॉल्यूम बहुत कम हो।</string>
+
+    <!-- ===== Listening check ===== -->
+    <string name="check_title">साउंड चेक</string>
+    <string name="check_pause">रोकें</string>
+    <string name="check_yes">हाँ, मैंने सुना</string>
+    <string name="check_no">नहीं</string>
+    <string name="check_replay">वह बीप फिर से चलाएं</string>
+    <string name="check_progress">%1$d%%</string>
+    <string name="check_listen">सुनें…</string>
+    <string name="check_question">क्या आपको बीप सुनाई दी?</string>
+    <string name="check_get_ready">तैयार हो जाएं</string>
+    <string name="check_instructions">बीप किसी भी कान में आ सकती हैं और बहुत धीमी हो जाती हैं। कोई बीप सुनाई देते ही, चाहे हल्की-सी ही, हाँ पर टैप करें। कोई छूट गई? जवाब देने से पहले आप उसे एक बार फिर से चला सकते हैं।</string>
+    <string name="check_guessing">कुछ बीप जान-बूझकर खामोश होती हैं, और आपने उनमें से कुछ पर हाँ कहा। हाँ पर तभी टैप करें जब आपको पक्का हो कि कुछ सुनाई दिया।</string>
+    <string name="check_got_it">ठीक है</string>
+    <string name="check_paused">रोका गया</string>
+    <string name="check_paused_text">थोड़ा आराम कर लें। जब तैयार हों, जारी रखें।</string>
+    <string name="check_paused_background">PureEQ बैकग्राउंड में था, इसलिए टेस्ट रुक गया।</string>
+    <string name="check_volume_changed">वॉल्यूम बदल गया</string>
+    <string name="check_volume_changed_text">टेस्ट के लिए वही वॉल्यूम चाहिए जो आपने शुरू में सेट किया था। उसे वापस सेट करें और जारी रखें।</string>
+    <string name="check_restore_volume">वॉल्यूम वापस करें और जारी रखें</string>
+    <string name="check_headphones_disconnected">हेडफ़ोन डिसकनेक्ट हो गए</string>
+    <string name="check_headphones_disconnected_text">जारी रखने के लिए वही हेडफ़ोन फिर से कनेक्ट करें।</string>
+    <string name="check_continue">जारी रखें</string>
+    <string name="check_stop_test">टेस्ट बंद करें</string>
+    <string name="check_stop_title">साउंड चेक बंद करें?</string>
+    <string name="check_stop_text">अब तक के आपके जवाब हटा दिए जाएंगे।</string>
+    <string name="check_stop">बंद करें</string>
+    <string name="check_keep_going">जारी रखें</string>
+
+    <!-- ===== Listening check: the result ===== -->
+    <string name="check_done_continue">पसंद टेस्ट पर जाएं</string>
+    <string name="check_done_start_over">फिर से शुरू करें</string>
+    <string name="check_done_headline">हो गया। यह रहा आपके साउंड चेक का नतीजा</string>
+    <!-- %1$s: the reference headphones, check_done_reference_in_ear or check_done_reference_over_ear. -->
+    <string name="check_done_explained">हर पॉइंट उस बैंड में इन हेडफ़ोन से सुनी गई आपकी सबसे धीमी बीप की तुलना %1$s पर एक रेफ़रेंस श्रोता से करता है, और आपके लो-मिड (500 Hz से 1.5 kHz) ज़ीरो लाइन हैं। चार्ट पर जितना नीचे, उस बैंड को उतनी ज़्यादा मदद मिलती है। इसमें आपके हेडफ़ोन का अपना साउंड भी शामिल है, और EQ असल में इसी को ठीक करता है। EQ हर पॉइंट को नहीं, बल्कि सहज ट्रेंड को फ़ॉलो करता है।</string>
+    <string name="check_done_reference_in_ear">अच्छी तरह ट्यून किए गए इन-ईयर हेडफ़ोन</string>
+    <string name="check_done_reference_over_ear">अच्छी तरह ट्यून किए गए ओवर-ईयर हेडफ़ोन</string>
+    <string name="check_done_explained_corrected">आपके हेडफ़ोन का मापा गया रिस्पॉन्स हटाने के बाद, हर पॉइंट उस बैंड में सुनी गई आपकी सबसे धीमी बीप की तुलना एक रेफ़रेंस श्रोता से करता है, और आपके लो-मिड (500 Hz से 1.5 kHz) ज़ीरो लाइन हैं। चार्ट पर जितना नीचे, उस बैंड को उतनी ज़्यादा मदद मिलती है। जो बचता है, वह आपके कान हैं और यह कि हेडफ़ोन उन पर कैसे बैठते हैं। EQ हर पॉइंट को नहीं, बल्कि सहज ट्रेंड को फ़ॉलो करता है।</string>
+    <!-- ● and ■ are the shapes of each ear's points on the chart. -->
+    <string name="check_done_left">● बायां</string>
+    <string name="check_done_right">■ दायां</string>
+    <string name="check_done_axis">dB, रेफ़रेंस के मुकाबले</string>
+    <string name="check_done_reliability">विश्वसनीयता</string>
+    <string name="check_reliability_good">अच्छी</string>
+    <string name="check_reliability_fair">ठीक-ठाक</string>
+    <string name="check_reliability_low">कम</string>
+    <!-- %1$d: silent beeps answered Yes; %2$d: silent beeps played. -->
+    <string name="check_done_false_alarms">जिन खामोश बीप पर हाँ कहा गया: %2$d में से %1$d।</string>
+    <!-- %1$s: the largest difference, a whole number such as "4". -->
+    <string name="check_done_retest">1 kHz की दोबारा जाँच में %1$s dB तक का अंतर था।</string>
+    <!-- %1$d: answers far off the result; %2$d: all answers to beeps that played. -->
+    <string name="check_done_inconsistent">बाकी से मेल न खाने वाले जवाब: %2$d में से %1$d।</string>
+    <!-- %1$d: all answers; %2$d min %3$d s: how long the check took. -->
+    <plurals name="check_done_answers">
+        <item quantity="one">%2$d मिनट %3$d सेकंड में %1$d जवाब।</item>
+        <item quantity="other">%2$d मिनट %3$d सेकंड में %1$d जवाब।</item>
+    </plurals>
+    <!-- %1$d: bands where even the loudest beep was missed, or even the quietest was heard. -->
+    <plurals name="check_done_edge">
+        <item quantity="one">%1$d बैंड टेस्ट रेंज के किनारे पर था; PureEQ वहाँ करेक्शन सीमित रखता है।</item>
+        <item quantity="other">%1$d बैंड टेस्ट रेंज के किनारे पर थे; PureEQ वहाँ करेक्शन सीमित रखता है।</item>
+    </plurals>
+    <string name="check_done_poor">जवाबों में ज़्यादा तालमेल नहीं था। आम तौर पर शांत कमरे में टेस्ट करने और सिर्फ़ पक्का होने पर ही हाँ कहने से यह ठीक हो जाता है; फिर से शुरू करने के बारे में सोचें।</string>
+    <string name="check_done_disclaimer">यह नतीजा साउंड ट्यून करने के लिए एक तुलनात्मक प्रोफ़ाइल है, सुनने की क्षमता की जाँच या ऑडियोग्राम नहीं। PureEQ चिकित्सा उपकरण नहीं है। अपनी सुनने की क्षमता से जुड़े किसी भी सवाल में कोई श्रवण विशेषज्ञ आपकी मदद कर सकता है।</string>
+
+    <!-- ===== Taste test ===== -->
+    <string name="taste_title">पसंद</string>
+    <string name="taste_music_preparing">संगीत तैयार हो रहा है…</string>
+    <string name="taste_music_loading">लोड हो रहा है…</string>
+    <string name="taste_music_loops">तुलना करते समय बिना रुके लूप में चलता है</string>
+    <string name="taste_music_mine">मेरा गाना</string>
+    <string name="taste_music_built_in">बिल्ट-इन ट्रैक</string>
+    <!-- "एक जैसे" is the answer button for no preference. -->
+    <string name="taste_intro_start">तुलना शुरू करें</string>
+    <string name="taste_intro_skip">छोड़ें, सिर्फ़ साउंड चेक इस्तेमाल करें</string>
+    <string name="taste_intro_headline">अब बताइए, आपको क्या पसंद है?</string>
+    <string name="taste_intro_subtitle">आप एक ही संगीत को A और B के रूप में सुनेंगे। जितनी बार चाहें उनके बीच स्विच करें और जो ज़्यादा अच्छा लगे उसे चुनें। दोनों की आवाज़ बराबर है, इसलिए वही चुनें जो आपको अच्छा लगे। PureEQ \"एक जैसे\" समेत हर जवाब से सीखता है, और आपकी पसंद समझ आते ही रुक जाता है: आम तौर पर 5 से 7 राउंड।</string>
+    <!-- "रीसेट करें" is a button in Fine-tune. -->
+    <string name="taste_redo_headline">पसंद टेस्ट दोबारा करें</string>
+    <string name="taste_redo_subtitle">आप एक ही संगीत को A और B के रूप में सुनेंगे और जो ज़्यादा अच्छा लगे उसे चुनेंगे, आम तौर पर 5 से 7 राउंड। दोनों की आवाज़ बराबर है। आपके साउंड चेक का नतीजा जैसा है वैसा ही रहेगा; नया नतीजा आपके बेस और ट्रेबल की जगह लेगा (गर्माहट और वोकल 0 पर लौट जाएंगे) और \"रीसेट करें\" दबाने पर यही वापस आएगा।</string>
+    <string name="taste_music">संगीत</string>
+    <string name="taste_music_hint">आपका अपना गाना सबसे अच्छा रहता है: कोई ऐसा गाना चुनें जिसे आप अच्छी तरह जानते हों, जिसमें वोकल, बेस और सिंबल हों। सिर्फ़ आपके फ़ोन पर मौजूद फ़ाइलें (स्ट्रीमिंग ऐप अपनी फ़ाइलें सुरक्षित रखते हैं)।</string>
+    <string name="taste_volume">सुनने का वॉल्यूम</string>
+    <string name="taste_volume_text">संगीत चलाएं और वह वॉल्यूम सेट करें जिस पर आप आम तौर पर सुनते हैं। पसंद वॉल्यूम पर निर्भर करती है, इसलिए यह ज़रूरी है।</string>
+    <string name="taste_pause">रोकें</string>
+    <string name="taste_play_music">संगीत चलाएं</string>
+    <string name="taste_wait">नई जोड़ी…</string>
+    <string name="taste_hear_b">B भी सुनें, फिर चुनें।</string>
+    <string name="taste_question">आपको कौन-सा ज़्यादा अच्छा लगा?</string>
+    <string name="taste_a_better">A बेहतर है</string>
+    <string name="taste_same">एक जैसे</string>
+    <string name="taste_b_better">B बेहतर है</string>
+    <string name="taste_finish">अभी खत्म करें</string>
+    <string name="taste_round">राउंड %1$d</string>
+    <string name="taste_rounds_usual">आम तौर पर 5 से 7</string>
+    <string name="taste_new_pair">नई जोड़ी: अलग A और B। दोनों को फिर से सुनें।</string>
+    <string name="taste_how">तुरंत स्विच करने के लिए A और B पर टैप करें, जितनी बार चाहें। पूरे साउंड को सुनें: बेस, आवाज़ें, सिंबल, स्पष्टता।</string>
+    <string name="taste_pause_music">संगीत रोकें</string>
+    <string name="taste_a">A</string>
+    <string name="taste_b">B</string>
+    <string name="taste_tile_playing">चल रहा है</string>
+    <string name="taste_tile_heard">सुन लिया · स्विच करने के लिए टैप करें</string>
+    <string name="taste_tile_new">सुनने के लिए टैप करें</string>
+</resources>

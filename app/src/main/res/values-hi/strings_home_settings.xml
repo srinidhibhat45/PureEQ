@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home, the Quick Settings tile's menu, Settings, How PureEQ works, the headphone model search,
+     shared components and the taste test's music. -->
+<resources>
+
+    <!-- Home screen. -->
+    <string name="home_settings">सेटिंग</string>
+    <string name="home_other_profiles">दूसरी प्रोफ़ाइल</string>
+    <string name="home_new_profile">नई प्रोफ़ाइल</string>
+
+    <!-- Home: a new version downloading, ready or installing (GitHub build only). -->
+    <string name="home_update_downloading">PureEQ %1$s डाउनलोड हो रहा है</string>
+    <string name="home_update_ready">PureEQ %1$s तैयार है</string>
+    <string name="home_update_install">अभी इंस्टॉल करें</string>
+    <string name="home_update_note">अपडेट होते समय PureEQ कुछ पल के लिए बंद होता है। आपकी प्रोफ़ाइल बनी रहती हैं।</string>
+    <string name="home_update_installing">PureEQ %1$s इंस्टॉल हो रहा है…</string>
+
+    <!-- Home: asks once for Android's "Install unknown apps" switch (GitHub build only). -->
+    <string name="home_allow_updates_title">अपडेट अपने-आप पाएं</string>
+    <string name="home_allow_updates_text">PureEQ को अपने अपडेट खुद इंस्टॉल करने की अनुमति दें। इसके बाद, ऐप बंद होने पर नए वर्शन अपने-आप इंस्टॉल हो जाएंगे।</string>
+    <string name="home_allow_updates_text_older">PureEQ को अपने अपडेट खुद इंस्टॉल करने की अनुमति दें, ताकि हर नया वर्शन बस एक टैप दूर रहे।</string>
+    <string name="home_allow">अनुमति दें</string>
+    <string name="home_not_now">अभी नहीं</string>
+
+    <!-- Home: the welcome card, before the first profile. -->
+    <string name="home_welcome_title">अपना साउंड खोजें</string>
+    <string name="home_welcome_text">छोटे-से साउंड चेक के दौरान हर कान में बीप बजती हैं और आपसे पूछा जाता है कि क्या आपने उन्हें सुना। फिर संगीत पर A/B के कुछ राउंड से पता चलता है कि आपको क्या पसंद है। PureEQ इन दोनों से आपके हेडफ़ोन के लिए एक EQ बनाता है, जिसे आप सभी ऑडियो पर लागू कर सकते हैं या अपने EQ ऐप में एक्सपोर्ट कर सकते हैं।</string>
+    <string name="home_start">शुरू करें</string>
+
+    <!-- Home: the profile in use and the other profiles. -->
+    <string name="home_active">सक्रिय</string>
+    <string name="home_more">ज़्यादा विकल्प</string>
+    <string name="home_use_profile">यह प्रोफ़ाइल इस्तेमाल करें</string>
+    <string name="home_fine_tune">फ़ाइन-ट्यून</string>
+    <string name="home_export">एक्सपोर्ट करें</string>
+    <string name="home_delete">मिटाएं</string>
+    <string name="home_cancel">रद्द करें</string>
+    <!-- %1$s: the headphones the profile was made with; %2$s: the headphones playing now. -->
+    <string name="home_made_for">%1$s के लिए बनी है; आप %2$s पर सुन रहे हैं।</string>
+    <string name="home_apply_all_audio">सभी ऑडियो पर लागू करें</string>
+    <string name="home_made_with_ears">कान + पसंद</string>
+    <string name="home_made_with_taste">सिर्फ़ पसंद</string>
+
+    <!-- Home: deleting a profile. -->
+    <string name="home_delete_title">%1$s मिटाएं?</string>
+    <string name="home_delete_active_text">PureEQ अभी इसी प्रोफ़ाइल का इस्तेमाल कर रहा है। इसके साउंड चेक के नतीजे और पसंद टेस्ट के चुनाव इस फ़ोन से हटा दिए जाएंगे। PureEQ %1$s (%2$s) पर स्विच हो जाएगा।</string>
+    <string name="home_delete_only_text">PureEQ अभी इसी प्रोफ़ाइल का इस्तेमाल कर रहा है। इसके साउंड चेक के नतीजे और पसंद टेस्ट के चुनाव इस फ़ोन से हटा दिए जाएंगे। यह आपकी इकलौती प्रोफ़ाइल है, इसलिए नई प्रोफ़ाइल बनाने तक सिस्टम-वाइड EQ बंद रहेगा।</string>
+    <string name="home_delete_text">इस प्रोफ़ाइल के साउंड चेक के नतीजे और पसंद टेस्ट के चुनाव इस फ़ोन से हटा दिए जाएंगे।</string>
+
+    <!-- Home: under "Apply to all audio" while it's on. -->
+    <string name="home_on_all_audio">सभी ऑडियो के लिए चालू</string>
+    <plurals name="home_on_music_apps">
+        <item quantity="one">म्यूज़िक ऐप के लिए चालू · %1$d चल रहा है</item>
+        <item quantity="other">म्यूज़िक ऐप के लिए चालू · %1$d चल रहे हैं</item>
+    </plurals>
+    <string name="home_paused">PureEQ में आवाज़ चलने तक रुका है</string>
+    <string name="home_starting">शुरू हो रहा है…</string>
+    <!-- %1$s: the output playing now, such as "फ़ोन स्पीकर"; %2$s: the outputs it's on for. -->
+    <string name="home_off_elsewhere">%1$s के लिए बंद। %2$s के लिए चालू।</string>
+    <string name="home_off_speaker">फ़ोन स्पीकर के लिए बंद। हेडफ़ोन पर चालू करने के लिए उन्हें कनेक्ट करें।</string>
+    <string name="home_off">बंद। हर ऐप में यह प्रोफ़ाइल सुनने के लिए चालू करें।</string>
+
+    <!-- The Quick Settings tile's long-press menu. -->
+    <string name="tile_menu_no_profile">अभी कोई प्रोफ़ाइल नहीं</string>
+    <string name="tile_menu_on_for">%1$s के लिए चालू</string>
+    <string name="tile_menu_no_profile_text">पहले PureEQ में एक प्रोफ़ाइल बनाएं: आपके हेडफ़ोन के लिए एक छोटा साउंड चेक और पसंद टेस्ट।</string>
+    <string name="tile_menu_profile">प्रोफ़ाइल</string>
+    <string name="tile_menu_playing_now">अभी चल रहा है</string>
+    <string name="tile_menu_open_app">PureEQ खोलें</string>
+    <string name="tile_menu_fine_tune">फ़ाइन-ट्यून</string>
+
+    <!-- Settings. -->
+    <string name="settings_title">सेटिंग</string>
+    <string name="settings_system_eq">सिस्टम-वाइड इक्वलाइज़र</string>
+    <string name="settings_other_eqs">PureEQ का EQ चालू होने पर दूसरे इक्वलाइज़र (Wavelet, Dolby Atmos, Samsung का अपना EQ/Adapt Sound) बंद कर दें, वरना इफ़ेक्ट एक के ऊपर एक जुड़ जाएंगे।</string>
+
+    <!-- Settings: on or off for each output. -->
+    <string name="settings_where_on">कहाँ चालू है</string>
+    <string name="settings_where_on_text">PureEQ हर आउटपुट के लिए चालू या बंद की सेटिंग याद रखता है और कनेक्ट या डिसकनेक्ट करने पर अपने-आप स्विच करता है। प्रोफ़ाइल हेडफ़ोन के लिए बनाई जाती हैं, इसलिए फ़ोन स्पीकर पर यह शुरू में बंद रहता है।</string>
+    <string name="settings_playing_now">अभी चल रहा है</string>
+    <string name="settings_off">बंद</string>
+
+    <!-- Settings: the Quick Settings tile. -->
+    <string name="settings_tile">फटाफट सेटिंग टाइल</string>
+    <string name="settings_tile_text">ऊपर से नीचे स्वाइप करने पर खुलने वाले पैनल से सिस्टम-वाइड इक्वलाइज़र चालू और बंद करें। टाइल पर इस्तेमाल हो रही प्रोफ़ाइल दिखती है।</string>
+    <string name="settings_tile_add">पैनल में जोड़ें</string>
+    <string name="settings_tile_added">जोड़ दिया गया। PureEQ ढूंढने के लिए नीचे स्वाइप करें।</string>
+    <string name="settings_tile_not_added">नहीं जोड़ा गया। आप दो बार नीचे स्वाइप करके, पेंसिल पर टैप करके भी PureEQ को अपनी टाइल में खींच सकते हैं।</string>
+    <string name="settings_tile_how_to_add">इसे जोड़ने के लिए दो बार नीचे स्वाइप करें, पेंसिल (बदलाव करें) पर टैप करें और PureEQ को अपनी टाइल में खींचें।</string>
+
+    <!-- Settings: switches, each with a line under it. -->
+    <string name="settings_auto_switch">हेडफ़ोन के साथ प्रोफ़ाइल बदलें</string>
+    <string name="settings_auto_switch_detail">हेडफ़ोन कनेक्ट होने पर वह प्रोफ़ाइल इस्तेमाल करें जो आपने पिछली बार उनके साथ इस्तेमाल की थी, या जो उनके साथ बनाई थी।</string>
+    <string name="settings_start_on_boot">रीस्टार्ट के बाद शुरू करें</string>
+    <string name="settings_start_on_boot_detail">फ़ोन रीस्टार्ट होने के बाद सिस्टम इक्वलाइज़र फिर से चालू करें।</string>
+    <string name="settings_warble">वॉर्बल टेस्ट टोन</string>
+    <!-- "±5 %" is a literal percent (formatted="false": no placeholders). -->
+    <string name="settings_warble_detail" formatted="false">बीप हर फ़्रीक्वेंसी के आस-पास ±5 % ऊपर-नीचे होती हैं, ताकि ईयरबड का कोई एक संकरा रेज़ोनेंस किसी बैंड को बिगाड़ न सके। शुद्ध टोन के लिए बंद करें।</string>
+
+    <!-- Settings: the app's name and version. -->
+    <string name="settings_version">PureEQ %1$s</string>
+    <string name="settings_import">PureEQ प्रोफ़ाइल इंपोर्ट करें</string>
+    <string name="settings_how_it_works">PureEQ कैसे काम करता है</string>
+
+    <!-- Settings: updates (GitHub build only). -->
+    <string name="settings_updates">अपडेट</string>
+    <string name="settings_check_now">अभी जाँचें</string>
+    <string name="settings_install_version">%1$s इंस्टॉल करें</string>
+    <string name="settings_auto_update">अपडेट अपने-आप इंस्टॉल करें</string>
+    <string name="settings_auto_update_detail">PureEQ बंद होने और कुछ न चलने पर नए वर्शन अपने-आप इंस्टॉल हो जाते हैं। यह सेटिंग बंद हो, तो इसके बजाय आपको एक सूचना मिलती है। PureEQ अपडेट तब जाँचता है जब आप इसे खोलते हैं, फ़ोन के चार्ज होने और वाई-फ़ाई से जुड़े होने पर हर 30 मिनट में, और बाकी समय दिन में एक बार।</string>
+    <string name="settings_update_asks">Android %1$s हर ऐप अपडेट से पहले पूछता है, इसलिए अपडेट तैयार होने पर PureEQ एक सूचना भेजता है।</string>
+    <string name="settings_install_not_allowed">PureEQ को अभी अपडेट इंस्टॉल करने की अनुमति नहीं है, इसलिए Android पहले पूछेगा।</string>
+    <string name="settings_allow">अनुमति दें</string>
+    <string name="settings_update_source">अपडेट %1$s से आते हैं।</string>
+
+    <!-- Settings: update status, under the version. -->
+    <string name="settings_update_disabled">यह कॉपी अपडेट पते के बिना बनाई गई थी, इसलिए यह खुद को अपडेट नहीं कर सकती।</string>
+    <!-- %1$s: when, such as "5 मिनट पहले" (worded by Android) or "अभी-अभी" (settings_just_now). -->
+    <string name="settings_update_checked">%1$s जाँचा गया</string>
+    <string name="settings_update_not_checked">अभी तक नहीं जाँचा गया</string>
+    <string name="settings_update_checking">जाँच हो रही है…</string>
+    <string name="settings_update_up_to_date">अप टू डेट · %1$s जाँचा गया</string>
+    <string name="settings_update_downloading">%1$s डाउनलोड हो रहा है… %2$d%%</string>
+    <string name="settings_update_ready">%1$s इंस्टॉल के लिए तैयार है</string>
+    <string name="settings_update_installing">%1$s इंस्टॉल हो रहा है…</string>
+    <string name="settings_just_now">अभी-अभी</string>
+
+    <!-- How PureEQ works (About, opened from Settings): a title and one paragraph per section. -->
+    <string name="about_title">PureEQ कैसे काम करता है</string>
+    <string name="about_check_title">साउंड चेक</string>
+    <string name="about_check_text">पल्स वाली बीप (हर बार दो, 25 ms के नरम किनारों के साथ) एक बार में एक कान में बजती हैं, 500 Hz से 8 kHz तक। PureEQ हर बैंड और दोनों कानों में आपकी थ्रेशोल्ड (सबसे धीमी आवाज़ जो आपको सुनाई देती है) का एक सांख्यिकीय मॉडल रखता है, जिसमें अलग-अलग फ़्रीक्वेंसी और दोनों कान आपस में जुड़े होते हैं। हर बीप उस लेवल पर बजाई जाती है जिससे मॉडल को सबसे ज़्यादा जानकारी मिलने की उम्मीद हो, और किसी बैंड की थ्रेशोल्ड काफ़ी अच्छी तरह पता चलते ही वह बैंड पूरा हो जाता है। खामोश बीप से अंदाज़े से दिए गए जवाबों का पता चलता है, और मॉडल कभी-कभार की चूक को ध्यान में रखता है। कोई बीप छूट गई? उसे एक बार फिर से चलाएं; तब दोनों में से किसी भी बार सुनाई देने पर जवाब \"सुना\" माना जाता है। 6 के बजाय लगभग 2 मिनट।</string>
+    <string name="about_eq_title">साउंड चेक से EQ तक</string>
+    <!-- "75 %" is a literal percent (formatted="false": no placeholders). -->
+    <string name="about_eq_text" formatted="false">आपकी थ्रेशोल्ड की तुलना आपके टाइप के अच्छी तरह ट्यून किए गए हेडफ़ोन पर एक रेफ़रेंस श्रोता की थ्रेशोल्ड से की जाती है (ISO 389-7 थ्रेशोल्ड, Harman टारगेट)। यह अंतर आपके कानों और आपके हेडफ़ोन, दोनों को साथ में दिखाता है, और EQ इसी को ठीक कर सकता है। PureEQ हर पॉइंट को नहीं, बल्कि सहज ट्रेंड को ठीक करता है, जिसे आपके लो-मिड (500 Hz से 1.5 kHz) को आधार मानकर मापा जाता है, और सिर्फ़ उतना ही जितना जवाबों से साफ़ दिखता है: छोटे अंतरों का 75 % (आम तौर पर हेडफ़ोन का अपना साउंड) और बड़े अंतरों का लगभग एक-तिहाई, ताकि साउंड नैचुरल बना रहे। 400 Hz से नीचे का बेस आपकी पसंद पर छोड़ दिया जाता है और ट्रेबल बूस्ट +6 dB पर रुक जाते हैं। दोनों कान फ़िल्टर का एक ही सेट शेयर करते हैं, और कानों के बीच का अंतर तभी गिना जाता है जब जवाबों से वह साफ़ दिखे, ताकि आवाज़ें बीच में बनी रहें।</string>
+    <string name="about_measured_title">आपके हेडफ़ोन का मापा गया रिस्पॉन्स</string>
+    <string name="about_measured_text">चाहें तो AutoEq के डेटाबेस से अपना मॉडल चुनें (oratory1990, crinacle, Rtings और दूसरों के मापे गए 6,000 से ज़्यादा हेडफ़ोन; AutoEq: Jaakko Pasanen, MIT लाइसेंस)। PureEQ मॉडल का माप डाउनलोड करता है और उसे AutoEq के तरीके से ही ठीक करता है: उसी रिग पर मापे गए Harman टारगेट से तुलना करके, स्मूद और उल्टा करके, हल्की ढलानों के साथ, बूस्ट +6 dB तक सीमित रखकर, संकरे नॉच जस के तस छोड़कर, और टारगेट का अपना बेस वापस जोड़कर। लगभग 5 kHz से ऊपर, जहाँ लोगों के कानों में 5 से 30 dB का फ़र्क होता है, इसका सिर्फ़ आधा हिस्सा लागू होता है। crinacle सिर्फ़ तैयार करेक्शन पब्लिश करते हैं, इसलिए उनके लिए AutoEq का अपना करेक्शन इस्तेमाल होता है। साउंड चेक का रेफ़रेंस इस करेक्शन को ध्यान में रखता है, ताकि मापा गया रिस्पॉन्स दो बार ठीक न हो: तब साउंड चेक सिर्फ़ आपके कानों को और हेडफ़ोन के बैठने के तरीके को ठीक करता है। PureEQ हर हेडफ़ोन के लिए आपका चुना गया मॉडल याद रखता है।</string>
+    <string name="about_bass_title">बेस, सीमा के अंदर</string>
+    <string name="about_bass_text">करेक्शन, साउंड चेक और आपकी पसंद, तीनों से मिलकर बने पूरे EQ का बेस उतना ही रखा जाता है जितना उसका फ़ायदा है। ओवर-ईयर हेडफ़ोन में 50 Hz से नीचे का बेस 50 Hz के लेवल के आस-पास रखा जाता है: वहाँ बहुत कम संगीत होता है, और बूस्ट जितना होता है, उतना ही वॉल्यूम घटता है। फ़ाइन-ट्यूनिंग में \"पूरा सब-बेस\" यह सीमा हटा देता है और बताता है कि आपके हेडफ़ोन पर इसकी क्या कीमत है। सील होने वाले ईयरबड का गहरा बेस बना रहता है। किसी भी हेडफ़ोन को मिड के ऊपर +12 dB (ओवर-ईयर) या +15 dB (इन-ईयर) से ज़्यादा बेस नहीं मिलता।</string>
+    <string name="about_taste_title">पसंद टेस्ट</string>
+    <!-- "एक जैसे" is the taste test's answer button of that name. -->
+    <string name="about_taste_text">बेस (105 Hz शेल्फ़, जैसा Harman की हेडफ़ोन रिसर्च में है) और ट्रेबल (2.5 kHz से एक चौड़ा शेल्फ़, वही आकार जिसे Harman के श्रोताओं ने एडजस्ट किया था) ब्लाइंड A/B तुलना से ट्यून किए जाते हैं। हर जोड़ी की लाउडनेस ITU BS.1770 वेटिंग से बराबर की जाती है, ताकि ज़्यादा तेज़ विकल्प सिर्फ़ तेज़ होने की वजह से न जीते। PureEQ, Harman के श्रोताओं के तीन समूहों से शुरू करता है (ज़्यादातर को टारगेट पसंद है, कुछ को ज़्यादा बेस चाहिए, कुछ को कम बेस और थोड़ा ज़्यादा ट्रेबल), \"एक जैसे\" समेत हर जवाब से सीखता है, और अगली जोड़ी ऐसी चुनता है जिससे सबसे ज़्यादा पता चले: आम तौर पर 5 से 7 राउंड। हर नई जोड़ी पर निशान लगता है और वह तब तक इंतज़ार करती है जब तक आप दोनों को सुन न लें। एयर (10 kHz से ऊपर), गर्माहट और वोकल आप खुद सेट करते हैं।</string>
+    <string name="about_volume_bass_title">वॉल्यूम के हिसाब से बेस</string>
+    <string name="about_volume_bass_text">आवाज़ धीमी होने पर कान मिड के मुकाबले बेस को जल्दी खोते हैं (ISO 226: लेवल के हर dB गिरने पर 100 Hz पर लगभग 0.3 dB), इसलिए एक वॉल्यूम पर चुना गया बैलेंस उससे कम वॉल्यूम पर पतला लगता है। PureEQ आपके पसंद टेस्ट का वॉल्यूम याद रखता है, और उससे कम वॉल्यूम पर सिस्टम-वाइड EQ कानों से छूटे हिस्से का आधा वापस जोड़ता है: 105 Hz पर बेस शेल्फ़, हर 10 dB धीमे होने पर लगभग 1.5 dB, +6 dB तक, और 10 kHz पर थोड़ा ट्रेबल, +2 dB तक। आधा इसलिए, क्योंकि पूरा लाउडनेस कंपेंसेशन ज़रूरत से ज़्यादा हो जाता है और सिर्फ़ उस वॉल्यूम से हुआ बदलाव मायने रखता है जिस पर आपने ट्यून किया था (Holman और Kampmann)। उस वॉल्यूम से ऊपर बेस थोड़ा कम हो जाता है। यह वॉल्यूम बटन दबाते ही साथ-साथ बदलता है, सिर्फ़ उसी तरह के आउटपुट पर जिस पर प्रोफ़ाइल ट्यून की गई थी, और इसका स्विच फ़ाइन-ट्यून में है।</string>
+    <string name="about_applying_title">लागू करना</string>
+    <!-- "सभी ऑडियो" is the Settings choice of that name (mode_global). -->
+    <string name="about_applying_text">PureEQ हर आउटपुट के लिए चालू या बंद की सेटिंग याद रखता है: फ़ोन स्पीकर, हर हेडफ़ोन, कार या स्पीकर। प्रोफ़ाइल हेडफ़ोन के लिए ट्यून की जाती है, इसलिए फ़ोन स्पीकर पर यह शुरू में बंद रहता है और आवाज़ बिना बदलाव के चलती है; वहाँ चालू करेंगे, तो वह भी याद रखा जाएगा। हेडफ़ोन पर लौटते ही यह फिर से चालू हो जाता है, उसी प्रोफ़ाइल के साथ जो आपने पिछली बार उनके साथ इस्तेमाल की थी। \"सभी ऑडियो\" आउटपुट मिक्स पर Android का DynamicsProcessing इफ़ेक्ट इस्तेमाल करता है, हर कान के लिए अलग कर्व के साथ, बारीक बैंड में (530 Hz से नीचे हर FFT बिन, उसके ऊपर 1/16 ऑक्टेव)। लेवल सिर्फ़ उतना ही कम किया जाता है जितनी संगीत को ज़रूरत हो: ट्रेबल बूस्ट से मिक्स की पीक मुश्किल से बढ़ती हैं, इसलिए लाउडनेस लगभग कम नहीं होती; बेस बूस्ट से लाउडनेस लगभग उतनी ही कम होती है जितना बूस्ट है। एक्सपोर्ट AutoEq के फ़ॉर्मैट इस्तेमाल करते हैं, इसलिए Wavelet, Poweramp Equalizer, JamesDSP और Equalizer APO उन्हें सीधे पढ़ लेते हैं।</string>
+    <string name="about_privacy_title">निजता</string>
+    <!-- GitHub build, which checks for its own updates. -->
+    <string name="about_privacy_text_updates">आपकी प्रोफ़ाइल और नतीजे इसी फ़ोन पर रहते हैं, और Android बैकअप चालू होने पर आपके Google खाते के एन्क्रिप्ट किए गए बैकअप में। वैकल्पिक कमरे की जाँच शोर का लेवल मापने के लिए 3 सेकंड तक सुनती है और कुछ भी सेव नहीं करती। PureEQ सिर्फ़ अपने अपडेट जाँचने के लिए ऑनलाइन जाता है (एक छोटा अपडेट नोटिस, फिर नया वर्शन होने पर वह), और अगर आप अपने हेडफ़ोन खोजते हैं, तो jsDelivr या GitHub सर्वर से AutoEq की सार्वजनिक सूची और उस मॉडल का करेक्शन डाउनलोड करने के लिए। आपके या आपके नतीजों के बारे में कुछ भी नहीं भेजा जाता।</string>
+    <!-- Google Play build, which Play updates. -->
+    <string name="about_privacy_text">आपकी प्रोफ़ाइल और नतीजे इसी फ़ोन पर रहते हैं, और Android बैकअप चालू होने पर आपके Google खाते के एन्क्रिप्ट किए गए बैकअप में। वैकल्पिक कमरे की जाँच शोर का लेवल मापने के लिए 3 सेकंड तक सुनती है और कुछ भी सेव नहीं करती। PureEQ सिर्फ़ तब ऑनलाइन जाता है जब आप अपने हेडफ़ोन खोजते हैं, ताकि jsDelivr या GitHub सर्वर से AutoEq की सार्वजनिक सूची और उस मॉडल का करेक्शन डाउनलोड कर सके। आपके या आपके नतीजों के बारे में कुछ भी नहीं भेजा जाता।</string>
+    <string name="about_medical_title">चिकित्सा उपकरण नहीं</string>
+    <string name="about_medical_text">PureEQ आपके कानों और पसंद के हिसाब से साउंड ट्यून करता है। यह चिकित्सा उपकरण नहीं है और किसी भी चिकित्सीय स्थिति का निदान, उपचार, इलाज या रोकथाम नहीं करता। अपनी सुनने की क्षमता से जुड़े किसी भी सवाल में कोई श्रवण विशेषज्ञ आपकी मदद कर सकता है।</string>
+    <string name="about_licences_title">ओपन-सोर्स लाइसेंस</string>
+    <!-- Introduces AutoEq's licence (about_licence_mit), which follows in English. -->
+    <string name="about_licences_intro">PureEQ का हेडफ़ोन करेक्शन, MIT लाइसेंस के तहत AutoEq के इक्वलाइज़ेशन कोड (github.com/jaakkopasanen/AutoEq) को पोर्ट करता है:</string>
+
+    <!-- Headphone model search (AutoEq's database). -->
+    <string name="picker_title">आपके हेडफ़ोन</string>
+    <string name="picker_remove">%1$s हटाएं</string>
+    <string name="picker_skip">छोड़ें, मेरा मॉडल सूची में नहीं है</string>
+    <string name="picker_headline">अपना मॉडल खोजें</string>
+    <string name="picker_headline_text">PureEQ आपके मॉडल को उसकी लैब माप के आधार पर उस Harman टारगेट तक ठीक करता है जो ज़्यादातर श्रोताओं को पसंद है। फिर आपका साउंड चेक सिर्फ़ बाकी चीज़ें ठीक करता है: आपके कान और यह कि हेडफ़ोन उन पर कैसे बैठते हैं।</string>
+    <string name="picker_search_label">ब्रैंड और मॉडल</string>
+    <string name="picker_loading">AutoEq का 6,000 से ज़्यादा हेडफ़ोन वाला डेटाबेस लोड हो रहा है (लगभग 850 KB, सिर्फ़ पहली बार)…</string>
+    <string name="picker_try_again">फिर से कोशिश करें</string>
+    <!-- "Buds2 Pro" and "HD 650" are model names. -->
+    <string name="picker_no_match">कोई मिलान नहीं मिला। सिर्फ़ मॉडल का नाम आज़माएं, जैसे \"Buds2 Pro\" या \"HD 650\"।</string>
+    <string name="picker_in_ear">इन-ईयर</string>
+    <string name="picker_over_ear">ओवर-ईयर</string>
+    <string name="picker_data_note">हेडफ़ोन डेटा AutoEq (Jaakko Pasanen, MIT लाइसेंस) से, जिसे oratory1990, Rtings, crinacle और दूसरों ने मापा है। PureEQ, AutoEq के तरीके से माप से करेक्शन तैयार करता है; crinacle सिर्फ़ तैयार करेक्शन पब्लिश करते हैं, इसलिए वे AutoEq के अपने हैं, AutoEq के टारगेट के हिसाब से। एक ही मॉडल कई मापने वालों की सूची में हो सकता है; आम तौर पर पहला वाला सबसे भरोसेमंद होता है। अगर कोई वैरिएंट (ANC चालू, पैसिव…) आपके सुनने के तरीके से मेल खाता है, तो उसे चुनें।</string>
+
+    <!-- Shared components. -->
+    <string name="common_back">वापस जाएं</string>
+
+    <!-- Music for the taste test. -->
+    <string name="music_library_demo_track">PureEQ डेमो ट्रैक</string>
+    <string name="music_library_your_song">आपका गाना</string>
+    <!-- Why a picked song can't be used; shown in brackets after msg_cant_play_file. -->
+    <string name="music_library_no_audio">इस फ़ाइल में कोई ऑडियो नहीं मिला</string>
+    <string name="music_library_too_slow">डिकोड करने में बहुत ज़्यादा समय लगा</string>
+    <string name="music_library_too_short">यह फ़ाइल इस्तेमाल करने के लिए बहुत छोटी है</string>
+</resources>

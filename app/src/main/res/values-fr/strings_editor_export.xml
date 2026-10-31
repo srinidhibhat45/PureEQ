@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ===== Réglage fin (EditorScreen) ===== -->
+    <string name="editor_title_draft">Votre son</string>
+    <string name="editor_title">Réglage fin</string>
+    <string name="editor_reset_done">Retour à la suggestion de PureEQ</string>
+    <string name="editor_undo">Annuler</string>
+    <string name="editor_save_profile">Enregistrer le profil</string>
+    <string name="editor_export">Exporter</string>
+    <string name="editor_done">Terminé</string>
+    <string name="editor_profile_name">Nom du profil</string>
+    <string name="editor_left">Gauche</string>
+    <string name="editor_right">Droite</string>
+    <string name="editor_both_ears">Les deux oreilles</string>
+    <string name="editor_preamp">Préampli %1$s dB</string>
+
+    <string name="editor_listen">Écouter</string>
+    <string name="editor_play">Lire</string>
+    <string name="editor_pause">Pause</string>
+    <string name="editor_eq_on">EQ activé</string>
+    <string name="editor_eq_off">Désactivé</string>
+    <string name="editor_loudness_matched">Les modes activé et désactivé ont le même volume perçu : vous entendez le changement d’équilibre, pas un simple saut de volume.</string>
+
+    <string name="editor_fine_tuning">Ajustements</string>
+    <string name="editor_changed">Modifié par rapport à la suggestion de PureEQ : %1$s.</string>
+    <string name="editor_changed_separator">", "</string>
+    <string name="editor_changed_headphone_correction">correction des écouteurs</string>
+    <string name="editor_changed_full_sub_bass">sub-basses complètes</string>
+    <string name="editor_changed_volume_bass">basses qui suivent le volume</string>
+    <string name="editor_changed_ear_tuning">adaptation aux oreilles</string>
+    <string name="editor_changed_bass">basses</string>
+    <string name="editor_changed_warmth">chaleur</string>
+    <string name="editor_changed_vocals">voix</string>
+    <string name="editor_changed_treble">aigus</string>
+    <string name="editor_changed_air">air</string>
+    <string name="editor_changed_balance">balance</string>
+    <string name="editor_as_suggested_no_taste">L’adaptation aux oreilles et la balance sont telles que PureEQ les a suggérées.</string>
+    <string name="editor_as_suggested">Tout est tel que PureEQ l’a suggéré d’après vos tests.</string>
+    <string name="editor_reset">Réinitialiser</string>
+    <string name="editor_legacy_profile">Ce profil a été créé avec PureEQ 1.0, qui n’enregistrait pas sa suggestion pour les basses, la chaleur, les voix et les aigus : Réinitialiser ne peut donc pas les rétablir. Refaites le test de préférences (2 minutes environ) et PureEQ retiendra désormais sa suggestion.</string>
+    <string name="editor_redo_taste_legacy">Refaire le test de préférences</string>
+
+    <string name="editor_headphone_correction">Correction des écouteurs</string>
+    <string name="editor_corrected_to_target">%1$s, corrigé selon la cible %2$s.</string>
+    <string name="editor_corrected_to_autoeq_target">%1$s, corrigé selon la cible d’AutoEq pour ce modèle.</string>
+    <string name="editor_headphone_data">Données des écouteurs : %1$s via AutoEq (Jaakko Pasanen, MIT)</string>
+    <string name="editor_update_correction">Passer à la correction Harman</string>
+    <string name="editor_change_model">Changer de modèle</string>
+    <string name="editor_add_correction">Ajouter la correction mesurée de vos écouteurs</string>
+
+    <string name="editor_ear_tuning">Adaptation aux oreilles</string>
+    <string name="editor_ear_tuning_hint" formatted="false">Part de votre test d’écoute à appliquer. 75 % en applique l’essentiel tout en laissant une marge pour le bruit de mesure ; les grands écarts reçoivent toujours proportionnellement moins.</string>
+    <string name="editor_treble_legacy_hint">Cymbales et éclat : l’ancien réglage des aigus à 8 kHz de PureEQ. Refaites le test de préférences pour le réglage actuel, plus large.</string>
+    <string name="editor_full_sub_bass">Sub-basses complètes</string>
+    <string name="editor_full_sub_bass_on">Les basses sous 50 Hz suivent vos réglages jusqu’en bas, pour environ %1$s dB de volume en moins.</string>
+    <string name="editor_full_sub_bass_off">Les basses sous 50 Hz sont maintenues près du niveau à 50 Hz, où il y a peu de musique. Les laisser suivre vos réglages coûterait environ %1$s dB de volume sur ces écouteurs.</string>
+    <string name="editor_volume_bass">Basses qui suivent le volume</string>
+    <string name="editor_volume_bass_on">En dessous du volume de réglage, rajoute les basses que vos oreilles perdent à bas niveau : environ 1,5 dB par tranche de 10 dB en moins, jusqu’à +6 dB, et une touche d’aigus. Dans l’égaliseur système uniquement.</string>
+    <string name="editor_volume_bass_off">Désactivé : les basses restent telles que réglées, à tous les volumes.</string>
+    <string name="editor_volume_bass_needs_taste">Nécessite le volume d’un test de préférences fait avec PureEQ 1.5 ou une version ultérieure. Refaites le test de préférences pour l’utiliser.</string>
+    <string name="editor_volume_bass_now">À ce volume : basses %1$s dB, aigus %2$s dB.</string>
+    <string name="editor_volume_bass_now_flat">À ce volume, rien n’est ajouté.</string>
+    <string name="editor_balance">Balance</string>
+    <string name="editor_balance_hint">Seulement si un côté semble encore plus fort</string>
+    <string name="editor_balance_centre">Centre</string>
+    <string name="editor_balance_left">Gauche +%1$s dB</string>
+    <string name="editor_balance_right">Droite +%1$s dB</string>
+    <string name="editor_suggested">Suggestion : %1$s</string>
+    <string name="editor_redo_taste">Refaire le test de préférences</string>
+
+    <!-- ===== Exporter (ExportScreen) ===== -->
+    <string name="export_title">Exporter</string>
+    <string name="export_copied">Copié</string>
+    <string name="export_saved">Enregistré</string>
+    <string name="export_save_failed">Impossible d’enregistrer le fichier</string>
+    <string name="export_intro">Votre profil dans les formats que comprennent les autres applis. Ou laissez tout cela de côté et activez « Appliquer à tout l’audio » sur l’écran d’accueil.</string>
+    <string name="export_balance_left">Votre oreille gauche a besoin d’environ %1$s dB de plus. Dans les applis sans EQ par oreille, déplacez légèrement le curseur de balance d’Android (Paramètres &gt; Accessibilité &gt; Réglage audio) vers la gauche.</string>
+    <string name="export_balance_right">Votre oreille droite a besoin d’environ %1$s dB de plus. Dans les applis sans EQ par oreille, déplacez légèrement le curseur de balance d’Android (Paramètres &gt; Accessibilité &gt; Réglage audio) vers la droite.</string>
+    <string name="export_save_file">Enregistrer le fichier</string>
+    <string name="export_share">Partager</string>
+    <string name="export_copy">Copier</string>
+
+    <string name="export_wavelet">Enregistrez le fichier, puis dans Wavelet ouvrez AutoEq › Importer et sélectionnez-le. Wavelet a besoin exactement de ce format GraphicEQ à 127 points.</string>
+    <string name="export_poweramp">Enregistrez le fichier, puis dans Poweramp Equalizer appuyez sur Préréglage, appuyez de manière prolongée, choisissez Importer et sélectionnez-le (ou ouvrez le fichier avec Poweramp Equalizer). Même format que le ParametricEQ.txt d’AutoEq.</string>
+    <string name="export_jamesdsp">Égaliseur à réponse arbitraire › Modifier en tant que chaîne › coller.</string>
+    <string name="export_apo_title">Equalizer APO / Peace (PC)</string>
+    <string name="export_apo">Filtres gauche et droit séparés. Enregistrez-les dans un .txt et incluez-le depuis config.txt, ou collez-les dans Peace.</string>
+    <string name="export_convolution_title">Convolution (JamesDSP, ViPER4Android, Equalizer APO)</string>
+    <string name="export_convolution">Votre courbe exacte pour chaque oreille sous forme de réponse impulsionnelle : un WAV stéréo avec l’oreille gauche et la droite, la balance et le niveau tels que PureEQ les applique. Chargez-le dans le convolveur, à la fréquence d’échantillonnage de votre musique.</string>
+
+    <string name="export_parametric_title">Valeurs paramétriques</string>
+    <string name="export_parametric">Pour les applis où vous saisissez les filtres : Neutron, USB Audio Player Pro, le mode paramétrique de Poweramp et d’autres. Moyenne des deux oreilles.</string>
+    <string name="export_preamp">Préampli %1$s dB</string>
+    <string name="export_filter_row">%1$d. %2$s · %3$s · %4$s dB · Q %5$s</string>
+    <string name="export_filter_peak">Cloche</string>
+    <string name="export_filter_low_shelf">Plateau bas</string>
+    <string name="export_filter_high_shelf">Plateau haut</string>
+    <string name="export_per_ear">Par oreille (Poweramp peut régler chaque bande sur L ou R)</string>
+    <string name="export_left">Gauche</string>
+    <string name="export_right">Droite</string>
+
+    <string name="export_profile_title">Profil PureEQ</string>
+    <string name="export_profile">Une sauvegarde que vous pouvez importer sur un autre téléphone (Paramètres › Importer un profil PureEQ).</string>
+    <string name="export_profile_subject">Profil PureEQ « %1$s »</string>
+
+    <string name="export_graphic_title">Curseurs d’EQ graphique</string>
+    <string name="export_bands_limited">* limité à la plage %1$d…+%2$d dB de l’appli</string>
+    <string name="export_bands_centred">Centré pour que le volume global reste le même. Les EQ à curseurs ne peuvent qu’approcher la courbe ; les fichiers ci-dessus sont exacts.</string>
+
+    <!-- ===== Messages et boîtes de dialogue ===== -->
+    <string name="msg_default_profile_name">Mon son</string>
+    <string name="msg_autoeq_unreachable">Impossible d’accéder à la base de données d’AutoEq. Vérifiez la connexion et réessayez, ou passez cette étape : le test d’écoute corrige vos écouteurs dans tous les cas.</string>
+    <string name="msg_correction_failed">Impossible de télécharger cette correction. Vérifiez la connexion et réessayez.</string>
+    <string name="msg_cant_play_file">Impossible de lire ce fichier (%1$s).</string>
+    <string name="msg_not_a_profile">Ce fichier n’est pas un profil PureEQ.</string>
+    <string name="root_ok">OK</string>
+
+    <!-- ===== Mises à jour (version GitHub uniquement) ===== -->
+    <string name="update_ready_title">PureEQ %1$s est prêt</string>
+    <string name="update_ready_text">Appuyez pour installer. PureEQ se ferme un instant pendant la mise à jour.</string>
+    <string name="update_updated_title">PureEQ mis à jour en version %1$s</string>
+    <string name="update_updated_text">Appuyez pour ouvrir.</string>
+
+    <string name="update_error_offline">Aucune connexion Internet.</string>
+    <string name="update_error_timeout">Le serveur de mise à jour n’a pas répondu à temps.</string>
+    <string name="update_error_insecure">Impossible de se connecter de façon sécurisée au serveur de mise à jour.</string>
+    <string name="update_error_unreachable">Impossible d’accéder au serveur de mise à jour (%1$s).</string>
+    <string name="update_problem_address_answered">l’adresse de mise à jour a répondu %1$d</string>
+    <string name="update_problem_download_answered">le téléchargement a répondu %1$d</string>
+    <string name="update_problem_not_stored">impossible d’enregistrer le téléchargement</string>
+    <string name="update_problem_notice_too_large">l’annonce de mise à jour est trop volumineuse</string>
+    <string name="update_error_notice_invalid">L’annonce de mise à jour n’est pas valide.</string>
+    <string name="update_error_notice_unreadable">L’annonce de mise à jour n’a pas pu être lue.</string>
+    <string name="update_error_notice_other_app">L’annonce de mise à jour concerne une autre appli (%1$s).</string>
+    <string name="update_error_notice_no_version">L’annonce de mise à jour n’indique aucune version.</string>
+    <string name="update_error_notice_no_checksum">L’annonce de mise à jour ne contient pas de somme de contrôle valide.</string>
+    <string name="update_error_notice_bad_size">L’annonce de mise à jour indique une taille impossible.</string>
+    <string name="update_error_notice_not_https">Les mises à jour doivent être téléchargées en HTTPS.</string>
+    <string name="update_error_too_big">Le téléchargement est plus volumineux que ce qu’indique l’annonce de mise à jour : il a donc été supprimé.</string>
+    <string name="update_error_incomplete">Le téléchargement s’est arrêté prématurément.</string>
+    <string name="update_error_checksum">Le téléchargement ne correspond pas à sa somme de contrôle : il a donc été supprimé.</string>
+    <string name="update_error_not_an_app">Le téléchargement n’est pas une appli Android.</string>
+    <string name="update_error_other_app">Le téléchargement est une autre appli (%1$s).</string>
+    <string name="update_error_version">La version du téléchargement ne correspond pas à l’annonce de mise à jour.</string>
+    <string name="update_error_key">Cette mise à jour est signée avec une autre clé que le PureEQ de ce téléphone : Android ne peut donc pas l’installer par-dessus. Elle a probablement été compilée sur un autre ordinateur.</string>
+    <string name="update_error_install_start">Impossible de lancer l’installation (%1$s).</string>
+    <string name="update_error_blocked">Ce téléphone a bloqué l’installation.</string>
+    <string name="update_error_conflict">Android a refusé la mise à jour : elle entre en conflit avec la version installée, généralement parce qu’elle a été signée avec une autre clé.</string>
+    <string name="update_error_incompatible">Cette version ne fonctionne pas sur ce téléphone.</string>
+    <string name="update_error_damaged">Android a détecté que la mise à jour téléchargée est endommagée.</string>
+    <string name="update_error_storage">Espace de stockage insuffisant pour installer la mise à jour.</string>
+    <string name="update_error_not_installed_because">La mise à jour ne s’est pas installée (%1$s).</string>
+    <string name="update_error_not_installed">La mise à jour ne s’est pas installée.</string>
+</resources>

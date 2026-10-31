@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Words from the model, shared by several screens and the system-wide EQ's notification. -->
+<resources>
+    <!-- Names of outputs that report no product name of their own. -->
+    <string name="output_phone_speaker">Altavoz del teléfono</string>
+    <string name="output_wired_headphones">Auriculares con cable</string>
+    <string name="output_usb_headphones">Auriculares USB-C</string>
+    <string name="output_headphones">Auriculares</string>
+    <string name="output_other">Salida de audio</string>
+    <!-- The phone speaker inside a sentence: "Desactivado en el altavoz del teléfono." -->
+    <string name="output_phone_speaker_in_text">el altavoz del teléfono</string>
+
+    <!-- The kind of output, after its name: "Galaxy Buds2 Pro · Bluetooth". -->
+    <string name="kind_wired">Con cable</string>
+    <string name="kind_usb">USB-C</string>
+    <string name="kind_bluetooth">Bluetooth</string>
+    <string name="kind_hearing_aid">Dispositivo auditivo</string>
+    <string name="kind_speaker">Altavoz del teléfono</string>
+    <string name="kind_other">Salida de audio</string>
+
+    <!-- Lists of outputs. -->
+    <string name="list_two">%1$s y %2$s</string>
+    <plurals name="list_more">
+        <item quantity="one">%1$s y %2$d más</item>
+        <item quantity="many">%1$s y %2$d más</item>
+        <item quantity="other">%1$s y %2$d más</item>
+    </plurals>
+
+    <!-- How the system-wide EQ attaches (Settings). -->
+    <string name="mode_global">Todo el audio</string>
+    <string name="mode_global_detail">Se aplica a la mezcla de salida de Android, así que cubre todas las apps. Funciona en la mayoría de los teléfonos.</string>
+    <string name="mode_per_app">Apps de música</string>
+    <string name="mode_per_app_detail">Se aplica a los reproductores que se anuncian al sistema (Spotify, YouTube Music, Samsung Music, Poweramp…). Úsalo si \"Todo el audio\" no tiene efecto en tu teléfono.</string>
+
+    <!-- The taste controls in Fine-tune. -->
+    <string name="band_bass">Graves</string>
+    <string name="band_bass_hint">Peso del bombo y del bajo</string>
+    <string name="band_warmth">Calidez</string>
+    <string name="band_warmth_hint">Cuerpo de las voces y los instrumentos</string>
+    <string name="band_vocals">Voces</string>
+    <string name="band_vocals_hint">Claridad y presencia de las voces</string>
+    <string name="band_treble">Agudos</string>
+    <string name="band_treble_hint">Brillo: el filo de las voces, los platillos y el detalle</string>
+    <string name="band_air">Aire</string>
+    <string name="band_air_hint">Chispa y amplitud en lo más agudo</string>
+
+    <!-- Kinds of headphones. -->
+    <string name="headphones_in_ear">Intraurales</string>
+    <string name="headphones_over_ear">Circumaurales</string>
+
+    <!-- Lengths of the listening check. -->
+    <string name="length_quick">Rápida</string>
+    <string name="length_quick_detail">7 bandas por oído · unos 1½ min</string>
+    <string name="length_standard">Estándar</string>
+    <string name="length_standard_detail">7 bandas por oído · unos 2 min</string>
+    <string name="length_thorough">Minuciosa</string>
+    <string name="length_thorough_detail">7 bandas, más precisa · unos 3 min</string>
+
+    <!-- Graphic EQ layouts on the Export screen, and where each one is used. -->
+    <string name="bands_ten">10 bandas</string>
+    <string name="bands_ten_where">Modo gráfico de Poweramp, la mayoría de los EQ de reproductores y teléfonos</string>
+    <string name="bands_samsung">Samsung de 9 bandas</string>
+    <string name="bands_samsung_where">Ajustes del Galaxy › Calidad de sonido y efectos › Ecualizador › Personalizado</string>
+    <string name="bands_android">5 bandas</string>
+    <string name="bands_android_where">Ecualizador integrado de Android, Spotify en Android, muchos EQ de teléfonos</string>
+    <string name="bands_james">JamesDSP de 15 bandas</string>
+    <string name="bands_james_where">Ecualizador multimodal de JamesDSP / RootlessJamesDSP</string>
+    <string name="bands_third_octave">31 bandas</string>
+    <string name="bands_third_octave_where">EQ gráficos de 1/3 de octava</string>
+
+    <!-- What TalkBack reads for the charts. -->
+    <string name="chart_eq">Curva de EQ. %1$s</string>
+    <string name="chart_listening">Perfil de escucha: cuánta ayuda recibe cada banda, en dB; un número mayor recibe más ayuda. %1$s</string>
+    <!-- One point of a curve. %1$s: a signed level such as "+4.5"; %2$s: a frequency such as "1 kHz". -->
+    <string name="chart_point">%1$s dB a %2$s</string>
+    <string name="chart_named">%1$s: %2$s</string>
+    <!-- Between the points of one curve, and between curves. Quoted (as &quot;) to keep the spaces. -->
+    <string name="chart_separator">", "</string>
+    <string name="chart_curve_separator">"; "</string>
+    <string name="ear_left">Oído izquierdo</string>
+    <string name="ear_right">Oído derecho</string>
+
+    <!-- The system-wide EQ's notification. -->
+    <string name="notif_on">PureEQ está activado</string>
+    <string name="notif_starting">Iniciando…</string>
+    <string name="notif_all_audio">%1$s · Todo el audio</string>
+    <plurals name="notif_music_apps">
+        <item quantity="one">%1$s · Apps de música · %2$d sonando</item>
+        <item quantity="many">%1$s · Apps de música · %2$d sonando</item>
+        <item quantity="other">%1$s · Apps de música · %2$d sonando</item>
+    </plurals>
+    <string name="notif_paused">%1$s · en pausa mientras PureEQ reproduce sonido</string>
+    <!-- %1$s: an output in a sentence, such as "el altavoz del teléfono". -->
+    <string name="notif_off_for">PureEQ está desactivado en %1$s</string>
+    <string name="notif_comes_back">Se vuelve a activar con %1$s.</string>
+    <string name="notif_turn_off">Desactivar</string>
+    <string name="notif_turn_off_everywhere">Desactivar del todo</string>
+    <string name="notif_no_profile">Aún no hay ningún perfil. Abre PureEQ para crear uno.</string>
+    <string name="notif_failed">No se pudo iniciar el ecualizador</string>
+    <string name="status_no_profile">Aún no hay ningún perfil</string>
+    <string name="status_refused">Este teléfono rechazó el ecualizador del sistema (%1$s). Prueba el modo \"Apps de música\" en Ajustes.</string>
+</resources>

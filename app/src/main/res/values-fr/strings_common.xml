@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="output_phone_speaker">Haut-parleur du téléphone</string>
+    <string name="output_wired_headphones">Écouteurs filaires</string>
+    <string name="output_usb_headphones">Écouteurs USB-C</string>
+    <string name="output_headphones">Écouteurs</string>
+    <string name="output_other">Sortie audio</string>
+    <string name="output_phone_speaker_in_text">le haut-parleur du téléphone</string>
+
+    <string name="kind_wired">Filaire</string>
+    <string name="kind_usb">USB-C</string>
+    <string name="kind_bluetooth">Bluetooth</string>
+    <string name="kind_hearing_aid">Appareil auditif</string>
+    <string name="kind_speaker">Haut-parleur du téléphone</string>
+    <string name="kind_other">Sortie audio</string>
+
+    <string name="list_two">%1$s et %2$s</string>
+    <plurals name="list_more">
+        <item quantity="one">%1$s et %2$d autre</item>
+        <item quantity="many">%1$s et %2$d autres</item>
+        <item quantity="other">%1$s et %2$d autres</item>
+    </plurals>
+
+    <string name="mode_global">Tout l’audio</string>
+    <string name="mode_global_detail">Se branche sur le mixage de sortie d’Android, pour couvrir toutes les applis. Fonctionne sur la plupart des téléphones.</string>
+    <string name="mode_per_app">Applis de musique</string>
+    <string name="mode_per_app_detail">Se branche sur les lecteurs qui se signalent (Spotify, YouTube Music, Samsung Music, Poweramp…). Utilisez ce mode si « Tout l’audio » est sans effet sur votre téléphone.</string>
+
+    <string name="band_bass">Basses</string>
+    <string name="band_bass_hint">Poids de la grosse caisse et de la guitare basse</string>
+    <string name="band_warmth">Chaleur</string>
+    <string name="band_warmth_hint">Corps des voix et des instruments</string>
+    <string name="band_vocals">Voix</string>
+    <string name="band_vocals_hint">Clarté et présence des voix</string>
+    <string name="band_treble">Aigus</string>
+    <string name="band_treble_hint">Brillance : le mordant des voix, les cymbales et les détails</string>
+    <string name="band_air">Air</string>
+    <string name="band_air_hint">Éclat et espace tout en haut du spectre</string>
+
+    <string name="headphones_in_ear">Intra-auriculaire</string>
+    <string name="headphones_over_ear">Circum-auriculaire</string>
+
+    <string name="length_quick">Rapide</string>
+    <string name="length_quick_detail">7 bandes par oreille · env. 1 min 30</string>
+    <string name="length_standard">Standard</string>
+    <string name="length_standard_detail">7 bandes par oreille · env. 2 min</string>
+    <string name="length_thorough">Approfondi</string>
+    <string name="length_thorough_detail">7 bandes, précision accrue · env. 3 min</string>
+
+    <string name="bands_ten">10 bandes</string>
+    <string name="bands_ten_where">Mode graphique de Poweramp, la plupart des EQ de lecteurs et de téléphones</string>
+    <string name="bands_samsung">Samsung 9 bandes</string>
+    <string name="bands_samsung_where">Paramètres du Galaxy › Qualité et effets sonores › Égaliseur › Personnalisé</string>
+    <string name="bands_android">5 bandes</string>
+    <string name="bands_android_where">Égaliseur intégré d’Android, Spotify sur Android, de nombreux EQ de téléphones</string>
+    <string name="bands_james">JamesDSP 15 bandes</string>
+    <string name="bands_james_where">Égaliseur multimodal de JamesDSP / RootlessJamesDSP</string>
+    <string name="bands_third_octave">31 bandes</string>
+    <string name="bands_third_octave_where">EQ graphiques au tiers d’octave</string>
+
+    <string name="chart_eq">Courbe d’EQ. %1$s</string>
+    <string name="chart_listening">Profil d’écoute : l’aide reçue par chaque bande, en dB ; un nombre plus grand reçoit plus d’aide. %1$s</string>
+    <string name="chart_point">%1$s dB à %2$s</string>
+    <string name="chart_named">%1$s : %2$s</string>
+    <string name="chart_separator">", "</string>
+    <string name="chart_curve_separator">" ; "</string>
+    <string name="ear_left">Oreille gauche</string>
+    <string name="ear_right">Oreille droite</string>
+
+    <string name="notif_on">PureEQ est activé</string>
+    <string name="notif_starting">Démarrage…</string>
+    <string name="notif_all_audio">%1$s · Tout l’audio</string>
+    <plurals name="notif_music_apps">
+        <item quantity="one">%1$s · Applis de musique · %2$d en lecture</item>
+        <item quantity="many">%1$s · Applis de musique · %2$d en lecture</item>
+        <item quantity="other">%1$s · Applis de musique · %2$d en lecture</item>
+    </plurals>
+    <string name="notif_paused">%1$s · en pause pendant que PureEQ diffuse un son</string>
+    <string name="notif_off_for">PureEQ est désactivé pour %1$s</string>
+    <string name="notif_comes_back">Il se réactivera avec %1$s.</string>
+    <string name="notif_turn_off">Désactiver</string>
+    <string name="notif_turn_off_everywhere">Désactiver partout</string>
+    <string name="notif_no_profile">Aucun profil pour l’instant. Ouvrez PureEQ pour en créer un.</string>
+    <string name="notif_failed">Impossible de démarrer l’égaliseur</string>
+    <string name="status_no_profile">Aucun profil pour l’instant</string>
+    <string name="status_refused">Ce téléphone a refusé l’égaliseur système (%1$s). Essayez le mode « Applis de musique » dans les paramètres.</string>
+</resources>
