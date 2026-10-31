@@ -26,10 +26,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.PureEqApp
+import app.pureeq.R
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.system.EqService
@@ -64,8 +66,8 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
                     Text("PureEQ", style = MaterialTheme.typography.titleLarge)
                     Text(
                         when {
-                            current == null -> "No profile yet"
-                            on -> "On for ${outputInText(OutputStates.keyOf(playingOn))}"
+                            current == null -> stringResource(R.string.tile_menu_no_profile)
+                            on -> stringResource(R.string.tile_menu_on_for, outputInText(OutputStates.keyOf(playingOn)))
                             else -> offText(playingOn, settings.outputs, profiles)
                         },
                         style = MaterialTheme.typography.bodyMedium,
@@ -83,12 +85,12 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
             }
             if (profiles.isEmpty()) {
                 Text(
-                    "Make a profile in PureEQ first: a short listening check and taste test for your headphones.",
+                    stringResource(R.string.tile_menu_no_profile_text),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
-                Text("Profile", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.tile_menu_profile), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Column {
                     profiles.forEach { p ->
                         ProfileChoice(p, selected = p.id == current?.id, playingNow = p.deviceName != null && p.deviceName == playingOn.name) { store.setActive(p.id) }
@@ -96,8 +98,8 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onOpenApp, modifier = Modifier.weight(1f)) { Text("Open PureEQ") }
-                Button(onClick = { current?.let { onFineTune(it.id) } }, enabled = current != null, modifier = Modifier.weight(1f)) { Text("Fine-tune") }
+                OutlinedButton(onClick = onOpenApp, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.tile_menu_open_app)) }
+                Button(onClick = { current?.let { onFineTune(it.id) } }, enabled = current != null, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.tile_menu_fine_tune)) }
             }
         }
     }
@@ -114,6 +116,6 @@ private fun ProfileChoice(p: Profile, selected: Boolean, playingNow: Boolean, on
             Text(p.name, style = MaterialTheme.typography.bodyLarge)
             Text(profileSubtitle(p), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        if (playingNow) Pill("Playing now", StatusColors.Good)
+        if (playingNow) Pill(stringResource(R.string.tile_menu_playing_now), StatusColors.Good)
     }
 }

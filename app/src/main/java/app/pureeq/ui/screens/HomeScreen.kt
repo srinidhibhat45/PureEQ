@@ -65,10 +65,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.BuildConfig
+import app.pureeq.R
 import app.pureeq.audio.OutputDevice
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
@@ -144,7 +147,7 @@ fun HomeScreen(vm: AppViewModel) {
                         )
                     }
                 }
-                IconButton(onClick = { vm.go(Screen.Settings) }) { Icon(Icons.Rounded.Settings, "Settings") }
+                IconButton(onClick = { vm.go(Screen.Settings) }) { Icon(Icons.Rounded.Settings, stringResource(R.string.home_settings)) }
             }
         }
         if (updateBusy) {
@@ -172,7 +175,7 @@ fun HomeScreen(vm: AppViewModel) {
             val others = profiles.filter { it.id != active.id }
             if (others.isNotEmpty()) {
                 item {
-                    Text("Other profiles", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 6.dp))
+                    Text(stringResource(R.string.home_other_profiles), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 6.dp))
                 }
                 items(others, key = { it.id }) { p ->
                     ProfileRow(
@@ -192,7 +195,7 @@ fun HomeScreen(vm: AppViewModel) {
                 ) {
                     Icon(Icons.Rounded.Add, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("New profile")
+                    Text(stringResource(R.string.home_new_profile))
                 }
             }
         }
@@ -205,11 +208,11 @@ private fun UpdateCard(state: UpdateState, onInstall: () -> Unit) {
     SectionCard {
         when (state) {
             is UpdateState.Downloading -> {
-                UpdateTitle("Downloading PureEQ ${state.manifest.versionName}")
+                UpdateTitle(stringResource(R.string.home_update_downloading, state.manifest.versionName))
                 LinearProgressIndicator(progress = { state.fraction }, modifier = Modifier.fillMaxWidth())
             }
             is UpdateState.Ready -> {
-                UpdateTitle("PureEQ ${state.manifest.versionName} is ready")
+                UpdateTitle(stringResource(R.string.home_update_ready, state.manifest.versionName))
                 if (state.manifest.notes.isNotBlank()) {
                     Text(
                         state.manifest.notes,
@@ -219,15 +222,15 @@ private fun UpdateCard(state: UpdateState, onInstall: () -> Unit) {
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                FilledTonalButton(onClick = onInstall, modifier = Modifier.fillMaxWidth()) { Text("Install now") }
+                FilledTonalButton(onClick = onInstall, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.home_update_install)) }
                 Text(
-                    "PureEQ closes for a moment while it updates. Your profiles stay.",
+                    stringResource(R.string.home_update_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             is UpdateState.Installing -> {
-                UpdateTitle("Installing PureEQ ${state.manifest.versionName}…")
+                UpdateTitle(stringResource(R.string.home_update_installing, state.manifest.versionName))
                 LinearProgressIndicator(Modifier.fillMaxWidth())
             }
             else -> Unit
@@ -239,19 +242,15 @@ private fun UpdateCard(state: UpdateState, onInstall: () -> Unit) {
 @Composable
 private fun AllowUpdatesCard(onAllow: () -> Unit, onDismiss: () -> Unit) {
     SectionCard {
-        UpdateTitle("Get updates automatically")
+        UpdateTitle(stringResource(R.string.home_allow_updates_title))
         Text(
-            if (Build.VERSION.SDK_INT >= 31) {
-                "Allow PureEQ to install its own updates. New versions then install by themselves while the app is closed."
-            } else {
-                "Allow PureEQ to install its own updates, so each new version is one tap away."
-            },
+            stringResource(if (Build.VERSION.SDK_INT >= 31) R.string.home_allow_updates_text else R.string.home_allow_updates_text_older),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            FilledTonalButton(onClick = onAllow) { Text("Allow") }
-            TextButton(onClick = onDismiss) { Text("Not now") }
+            FilledTonalButton(onClick = onAllow) { Text(stringResource(R.string.home_allow)) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.home_not_now)) }
         }
     }
 }
@@ -275,15 +274,14 @@ fun openInstallSettings(context: Context) {
 private fun WelcomeCard(onStart: () -> Unit) {
     SectionCard(padding = 22.dp) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { ListeningOrb(active = true, size = 150.dp) }
-        Text("Find your sound", style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.home_welcome_title), style = MaterialTheme.typography.headlineSmall)
         Text(
-            "A short listening check plays beeps in each ear and asks if you heard them. Then a few A/B rounds on music learn what you like. " +
-                "PureEQ turns both into an EQ for your headphones that you can apply to all audio or export to your EQ app.",
+            stringResource(R.string.home_welcome_text),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(4.dp))
-        PrimaryButton("Start", onStart)
+        PrimaryButton(stringResource(R.string.home_start), onStart)
     }
 }
 
@@ -311,11 +309,11 @@ private fun ActiveProfileCard(
                 Text(profile.name, style = MaterialTheme.typography.titleLarge)
                 Text(profileSubtitle(profile), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Pill("Active", MaterialTheme.colorScheme.secondary)
+            Pill(stringResource(R.string.home_active), MaterialTheme.colorScheme.secondary)
             Box {
-                IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, "More") }
+                IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.home_more)) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Delete") }, leadingIcon = { Icon(Icons.Rounded.Delete, null) }, onClick = { menu = false; confirmDelete = true })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.home_delete)) }, leadingIcon = { Icon(Icons.Rounded.Delete, null) }, onClick = { menu = false; confirmDelete = true })
                 }
             }
         }
@@ -324,7 +322,7 @@ private fun ActiveProfileCard(
         } ?: Spacer(Modifier.height(130.dp))
         if (profile.deviceName != null && output.isHeadphones && output.name != profile.deviceName) {
             Text(
-                "Made for ${profile.deviceName}; you're listening on ${output.name}.",
+                stringResource(R.string.home_made_for, outputName(profile.deviceName), outputName(output.name)),
                 style = MaterialTheme.typography.bodySmall,
                 color = StatusColors.Warn,
             )
@@ -332,7 +330,7 @@ private fun ActiveProfileCard(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Apply to all audio", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.home_apply_all_audio), style = MaterialTheme.typography.titleSmall)
                 Text(if (enabled) statusText(status) else offText, style = MaterialTheme.typography.bodySmall, color = statusColor(enabled, status))
             }
             Switch(checked = enabled, onCheckedChange = onToggle)
@@ -341,33 +339,32 @@ private fun ActiveProfileCard(
             FilledTonalButton(onClick = onEdit, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Fine-tune")
+                Text(stringResource(R.string.home_fine_tune))
             }
             FilledTonalButton(onClick = onExport, modifier = Modifier.weight(1f)) {
                 Icon(Icons.Rounded.IosShare, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Export")
+                Text(stringResource(R.string.home_export))
             }
         }
     }
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Delete ${profile.name}?") },
+            title = { Text(stringResource(R.string.home_delete_title, profile.name)) },
             text = {
                 Text(
-                    "This is the profile PureEQ is using right now. Its listening results and taste choices will be removed from this phone. " +
-                        if (successor != null) {
-                            "PureEQ will switch to ${successor.name} (${profileSubtitle(successor)})."
-                        } else {
-                            "It's your only profile, so the system-wide EQ turns off until you make a new one."
-                        },
+                    if (successor != null) {
+                        stringResource(R.string.home_delete_active_text, successor.name, profileSubtitle(successor))
+                    } else {
+                        stringResource(R.string.home_delete_only_text)
+                    },
                 )
             },
             confirmButton = {
-                TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                TextButton(onClick = { confirmDelete = false; onDelete() }) { Text(stringResource(R.string.home_delete), color = MaterialTheme.colorScheme.error) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.home_cancel)) } },
         )
     }
 }
@@ -389,12 +386,12 @@ private fun ProfileRow(p: Profile, onActivate: () -> Unit, onEdit: () -> Unit, o
                 Text(profileSubtitle(p), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Box {
-                IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, "More") }
+                IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.home_more)) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Use this profile") }, onClick = { menu = false; onActivate() })
-                    DropdownMenuItem(text = { Text("Fine-tune") }, leadingIcon = { Icon(Icons.Rounded.Edit, null) }, onClick = { menu = false; onEdit() })
-                    DropdownMenuItem(text = { Text("Export") }, leadingIcon = { Icon(Icons.Rounded.IosShare, null) }, onClick = { menu = false; onExport() })
-                    DropdownMenuItem(text = { Text("Delete") }, leadingIcon = { Icon(Icons.Rounded.Delete, null) }, onClick = { menu = false; confirmDelete = true })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.home_use_profile)) }, onClick = { menu = false; onActivate() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.home_fine_tune)) }, leadingIcon = { Icon(Icons.Rounded.Edit, null) }, onClick = { menu = false; onEdit() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.home_export)) }, leadingIcon = { Icon(Icons.Rounded.IosShare, null) }, onClick = { menu = false; onExport() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.home_delete)) }, leadingIcon = { Icon(Icons.Rounded.Delete, null) }, onClick = { menu = false; confirmDelete = true })
                 }
             }
         }
@@ -402,10 +399,10 @@ private fun ProfileRow(p: Profile, onActivate: () -> Unit, onEdit: () -> Unit, o
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Delete ${p.name}?") },
-            text = { Text("The listening results and taste choices in this profile will be removed from this phone.") },
-            confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text("Delete") } },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
+            title = { Text(stringResource(R.string.home_delete_title, p.name)) },
+            text = { Text(stringResource(R.string.home_delete_text)) },
+            confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text(stringResource(R.string.home_delete)) } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.home_cancel)) } },
         )
     }
 }
@@ -421,20 +418,23 @@ fun curvesFor(eq: ProfileEq, combined: Color): List<ChartCurve> {
 }
 
 /** "Galaxy Buds2 Pro · Ears + taste · 30 Oct 2026": the profile's headphones, what made it, and when. */
+@Composable
 internal fun profileSubtitle(p: Profile): String {
     val date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(p.createdAt))
     val kind = when {
-        p.hearing != null -> "Ears + taste"
-        else -> "Taste only"
+        p.hearing != null -> stringResource(R.string.home_made_with_ears)
+        else -> stringResource(R.string.home_made_with_taste)
     }
-    return listOfNotNull(p.deviceName, kind, date).joinToString(" · ")
+    return listOfNotNull(p.deviceName?.let { outputName(it) }, kind, date).joinToString(" · ")
 }
 
+@Composable
 private fun statusText(s: SystemEqStatus): String = when (s) {
-    is SystemEqStatus.Active -> if (s.global) "On for all audio" else "On for music apps · ${s.sessions} playing"
-    is SystemEqStatus.Paused -> "Paused while PureEQ plays sound"
+    is SystemEqStatus.Active ->
+        if (s.global) stringResource(R.string.home_on_all_audio) else pluralStringResource(R.plurals.home_on_music_apps, s.sessions, s.sessions)
+    is SystemEqStatus.Paused -> stringResource(R.string.home_paused)
     is SystemEqStatus.Failed -> s.message
-    else -> "Starting…"
+    else -> stringResource(R.string.home_starting)
 }
 
 /**
@@ -445,9 +445,9 @@ private fun statusText(s: SystemEqStatus): String = when (s) {
 internal fun offText(output: OutputDevice, outputs: OutputStates, profiles: List<Profile>): String {
     val onFor = outputs.onElsewhere(output, profiles)
     return when {
-        onFor.isNotEmpty() -> "Off for ${outputInText(OutputStates.keyOf(output))}. On for ${outputList(onFor)}."
-        output.kind == OutputDevice.Kind.SPEAKER -> "Off for the phone speaker. Connect your headphones to turn it on for them."
-        else -> "Off. Turn on to hear this profile in every app."
+        onFor.isNotEmpty() -> stringResource(R.string.home_off_elsewhere, outputInText(OutputStates.keyOf(output)), outputList(onFor))
+        output.kind == OutputDevice.Kind.SPEAKER -> stringResource(R.string.home_off_speaker)
+        else -> stringResource(R.string.home_off)
     }
 }
 

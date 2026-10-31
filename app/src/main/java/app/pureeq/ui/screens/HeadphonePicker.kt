@@ -25,8 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pureeq.R
 import app.pureeq.headphones.AutoEqEntry
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.ui.AppViewModel
@@ -42,26 +44,26 @@ fun HeadphonePickerScreen(vm: AppViewModel, forEditor: Boolean) {
     val editor by vm.editor.collectAsStateWithLifecycle()
     val current = if (forEditor) editor?.profile?.headphoneModel else draft.headphoneModel
     StepScaffold(
-        title = "Your headphones",
+        title = stringResource(R.string.picker_title),
         onBack = { vm.back() },
         bottom = {
             if (current != null) {
                 TextButton(onClick = { vm.setHeadphoneModel(null, forEditor); vm.back() }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Remove ${current.name}")
+                    Text(stringResource(R.string.picker_remove, current.name))
                 }
             } else {
-                TextButton(onClick = { vm.back() }, modifier = Modifier.fillMaxWidth()) { Text("Skip, mine isn't listed") }
+                TextButton(onClick = { vm.back() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.picker_skip)) }
             }
         },
     ) {
         Headline(
-            "Find your model",
-            "PureEQ corrects your model from its lab measurement to the Harman target most listeners prefer. Your listening check then only fixes what's left: your ears and how the headphones sit on them.",
+            stringResource(R.string.picker_headline),
+            stringResource(R.string.picker_headline_text),
         )
         OutlinedTextField(
             value = ui.query,
             onValueChange = vm::searchHeadphones,
-            label = { Text("Brand and model") },
+            label = { Text(stringResource(R.string.picker_search_label)) },
             leadingIcon = { Icon(Icons.Rounded.Search, null) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -71,17 +73,17 @@ fun HeadphonePickerScreen(vm: AppViewModel, forEditor: Boolean) {
             ui.loading -> {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
                 Text(
-                    "Loading AutoEq's database of over 6,000 headphones (about 850 KB, only the first time)…",
+                    stringResource(R.string.picker_loading),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             ui.error != null -> {
                 Text(ui.error.orEmpty(), style = MaterialTheme.typography.bodyMedium, color = StatusColors.Warn)
-                OutlinedButton(onClick = vm::loadAutoEq) { Text("Try again") }
+                OutlinedButton(onClick = vm::loadAutoEq) { Text(stringResource(R.string.picker_try_again)) }
             }
             ui.query.isNotBlank() && ui.searched == ui.query && ui.results.isEmpty() -> Text(
-                "No match. Try just the model name, for example \"Buds2 Pro\" or \"HD 650\".",
+                stringResource(R.string.picker_no_match),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -92,9 +94,7 @@ fun HeadphonePickerScreen(vm: AppViewModel, forEditor: Boolean) {
             }
         }
         Text(
-            "Headphone data via AutoEq (Jaakko Pasanen, MIT licence), measured by oratory1990, Rtings, crinacle and others. PureEQ computes the correction " +
-                "from the measurement with AutoEq's method; crinacle publishes only finished corrections, so those are AutoEq's own, to AutoEq's target. " +
-                "The same model can be listed by several measurers; the first is usually the most trusted. Pick a variant (ANC on, passive…) if it matches how you listen.",
+            stringResource(R.string.picker_data_note),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -113,8 +113,9 @@ private fun ResultRow(entry: AutoEqEntry, fetching: Boolean, selected: Boolean, 
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(entry.name, style = MaterialTheme.typography.titleSmall)
+                val form = stringResource(if (entry.type == HeadphoneType.IN_EAR) R.string.picker_in_ear else R.string.picker_over_ear)
                 Text(
-                    listOfNotNull(entry.source, entry.rig, if (entry.type == HeadphoneType.IN_EAR) "in-ear" else "over-ear").joinToString(" · "),
+                    listOfNotNull(entry.source, entry.rig, form).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
