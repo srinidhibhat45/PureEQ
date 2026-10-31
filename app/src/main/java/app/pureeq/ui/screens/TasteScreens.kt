@@ -179,9 +179,9 @@ fun TasteScreen(vm: AppViewModel) {
                 modifier = Modifier.fillMaxWidth(),
             )
             AdaptiveButtons(spacing = 8.dp) {
-                ChoiceButton(stringResource(R.string.taste_a_better), Modifier.share(), enabled = canAnswer) { vm.choose(Choice.A) }
-                ChoiceButton(stringResource(R.string.taste_same), Modifier.share(0.8f), outlined = true, enabled = canAnswer) { vm.choose(Choice.SAME) }
-                ChoiceButton(stringResource(R.string.taste_b_better), Modifier.share(), enabled = canAnswer) { vm.choose(Choice.B) }
+                ChoiceButton(stringResource(R.string.taste_a_better), Modifier, enabled = canAnswer) { vm.choose(Choice.A) }
+                ChoiceButton(stringResource(R.string.taste_same), Modifier, outlined = true, enabled = canAnswer) { vm.choose(Choice.SAME) }
+                ChoiceButton(stringResource(R.string.taste_b_better), Modifier, enabled = canAnswer) { vm.choose(Choice.B) }
             }
             TextButton(onClick = vm::skipTaste, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.taste_finish)) }
         },

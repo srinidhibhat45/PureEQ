@@ -54,13 +54,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.pureeq.R
@@ -133,35 +134,37 @@ fun StepScaffold(
 fun Modifier.switchRow(checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit): Modifier =
     toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
 
-/** Lets each button in [AdaptiveButtons] take its share of the width. */
-interface AdaptiveButtonsScope {
-    fun Modifier.share(weight: Float = 1f): Modifier
-}
-
 /**
- * Buttons side by side, or one under another when the phone's text is set large, so a label
- * never breaks inside a word.
+ * Buttons side by side in equal shares, or one under another, full width, when any label wouldn't
+ * fit its share on one line (large text, or a long word in another language), so a label never
+ * breaks inside a word.
  */
 @Composable
-fun AdaptiveButtons(spacing: Dp = 10.dp, content: @Composable AdaptiveButtonsScope.() -> Unit) {
-    if (LocalDensity.current.fontScale > LARGE_TEXT) {
-        Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
-            object : AdaptiveButtonsScope {
-                override fun Modifier.share(weight: Float) = fillMaxWidth()
-            }.content()
-        }
-    } else {
-        Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
-            val row = this
-            object : AdaptiveButtonsScope {
-                override fun Modifier.share(weight: Float) = with(row) { weight(weight) }
-            }.content()
+fun AdaptiveButtons(spacing: Dp = 10.dp, content: @Composable () -> Unit) {
+    Layout(content) { measurables, constraints ->
+        val gap = spacing.roundToPx()
+        val n = measurables.size.coerceAtLeast(1)
+        val share = ((constraints.maxWidth - gap * (n - 1)) / n).coerceAtLeast(0)
+        val sideBySide = measurables.all { it.maxIntrinsicWidth(constraints.maxHeight) <= share }
+        if (sideBySide) {
+            val placeables = measurables.map { it.measure(Constraints.fixedWidth(share)) }
+            val height = placeables.maxOfOrNull { it.height } ?: 0
+            layout(constraints.maxWidth, height) {
+                placeables.forEachIndexed { i, pl -> pl.placeRelative(i * (share + gap), (height - pl.height) / 2) }
+            }
+        } else {
+            val placeables = measurables.map { it.measure(Constraints.fixedWidth(constraints.maxWidth)) }
+            val height = placeables.sumOf { it.height } + gap * (placeables.size - 1).coerceAtLeast(0)
+            layout(constraints.maxWidth, height) {
+                var y = 0
+                placeables.forEach { pl ->
+                    pl.placeRelative(0, y)
+                    y += pl.height + gap
+                }
+            }
         }
     }
 }
-
-/** Font scale above which side-by-side buttons stack. */
-private const val LARGE_TEXT = 1.3f
 
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, icon: ImageVector? = null) {

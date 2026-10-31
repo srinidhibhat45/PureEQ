@@ -340,12 +340,12 @@ private fun ActiveProfileCard(
             Switch(checked = enabled, onCheckedChange = null)
         }
         AdaptiveButtons {
-            FilledTonalButton(onClick = onEdit, modifier = Modifier.share()) {
+            FilledTonalButton(onClick = onEdit, modifier = Modifier) {
                 Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.home_fine_tune))
             }
-            FilledTonalButton(onClick = onExport, modifier = Modifier.share()) {
+            FilledTonalButton(onClick = onExport, modifier = Modifier) {
                 Icon(Icons.Rounded.IosShare, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.home_export))

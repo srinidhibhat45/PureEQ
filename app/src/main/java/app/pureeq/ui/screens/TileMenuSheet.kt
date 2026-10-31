@@ -97,8 +97,8 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
                 }
             }
             AdaptiveButtons(spacing = 8.dp) {
-                OutlinedButton(onClick = onOpenApp, modifier = Modifier.share()) { Text(stringResource(R.string.tile_menu_open_app)) }
-                Button(onClick = { current?.let { onFineTune(it.id) } }, enabled = current != null, modifier = Modifier.share()) { Text(stringResource(R.string.tile_menu_fine_tune)) }
+                OutlinedButton(onClick = onOpenApp, modifier = Modifier) { Text(stringResource(R.string.tile_menu_open_app)) }
+                Button(onClick = { current?.let { onFineTune(it.id) } }, enabled = current != null, modifier = Modifier) { Text(stringResource(R.string.tile_menu_fine_tune)) }
             }
         }
     }
