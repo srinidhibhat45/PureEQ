@@ -360,7 +360,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _channel.value = ChannelUi()
             startVolumeTone()
         }
-        if (store.settings.value.systemEqEnabled) EqService.start(getApplication())
+        if (store.settings.value.outputs.armed) EqService.start(getApplication())
     }
 
     // ---- Headphone model (AutoEq) ------------------------------------------------------------
@@ -1004,15 +1004,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setActive(id: String) = store.setActive(id)
 
-    /** Any profile can be deleted, the active one too; with none left the system EQ turns off. */
+    /** Any profile can be deleted, the active one too; with none left the system EQ turns off everywhere. */
     fun deleteProfile(id: String) {
         store.delete(id)
-        if (store.profiles.value.isEmpty() && store.settings.value.systemEqEnabled) setSystemEq(false)
+        if (store.profiles.value.isEmpty()) store.updateSettings { it.copy(outputs = it.outputs.allOff()) }
     }
 
-    fun setSystemEq(enabled: Boolean) {
-        store.updateSettings { it.copy(systemEqEnabled = enabled) }
-        if (enabled) EqService.start(getApplication())
+    /** The system-wide EQ on or off for the output playing now. */
+    fun setSystemEq(enabled: Boolean) = setOutputOn(output.value, enabled)
+
+    /** The system-wide EQ on or off for [out]; PureEQ keeps it for that output. */
+    fun setOutputOn(out: OutputDevice, on: Boolean) {
+        store.updateSettings { it.copy(outputs = it.outputs.turned(out, on)) }
+        if (store.settings.value.outputs.armed) EqService.start(getApplication())
     }
 
     fun importProfile(uri: Uri) {

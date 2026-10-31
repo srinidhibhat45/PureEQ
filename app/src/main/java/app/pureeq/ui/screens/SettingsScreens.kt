@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.BuildConfig
 import app.pureeq.profile.AppSettings
+import app.pureeq.profile.OutputStates
 import app.pureeq.profile.SystemEqMode
 import app.pureeq.system.EqTileService
 import app.pureeq.system.SystemEqStatus
@@ -71,9 +73,10 @@ fun SettingsScreen(vm: AppViewModel) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        OutputsSection(vm, s)
         QuickTileSection()
         SectionCard {
-            ToggleRow("Switch profile with headphones", "When headphones you made a profile with connect, use that profile.", s.autoSwitch) { v ->
+            ToggleRow("Switch profile with headphones", "When headphones connect, use the profile you last used with them, or the one you made with them.", s.autoSwitch) { v ->
                 update { it.copy(autoSwitch = v) }
             }
             ToggleRow("Start after restart", "Turn the system equalizer back on after the phone restarts.", s.startOnBoot) { v ->
@@ -101,6 +104,43 @@ fun SettingsScreen(vm: AppViewModel) {
                 Icon(Icons.Rounded.Info, null)
                 Spacer(Modifier.width(8.dp))
                 Text("How PureEQ works")
+            }
+        }
+    }
+}
+
+/**
+ * On or off for each output PureEQ knows, the one playing now first, with the profile each one
+ * plays. A switch here works without that output connected.
+ */
+@Composable
+private fun OutputsSection(vm: AppViewModel, s: AppSettings) {
+    val profiles by vm.store.profiles.collectAsStateWithLifecycle()
+    val activeId by vm.store.activeId.collectAsStateWithLifecycle()
+    val output by vm.output.collectAsStateWithLifecycle()
+    val active = profiles.firstOrNull { it.id == activeId } ?: profiles.firstOrNull()
+    SectionCard {
+        Text("Where it's on", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "PureEQ keeps on or off for each output and switches by itself when you connect or disconnect. " +
+                "Profiles are made for headphones, so the phone speaker starts off.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        s.outputs.known(profiles, output).forEachIndexed { i, d ->
+            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            val playing = OutputStates.keyOf(d) == OutputStates.keyOf(output)
+            val on = s.outputs.isOn(d, profiles)
+            // What it plays when it comes back: the profile last used there, or the one in use.
+            val uses = if (playing || !s.autoSwitch) active else s.outputs.profileFor(d, profiles, activeId) ?: active
+            val detail = listOfNotNull("Playing now".takeIf { playing }, if (on) uses?.name else "Off").joinToString(" · ")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(deviceIcon(d), null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
+                    Text(d.name, style = MaterialTheme.typography.bodyLarge)
+                    Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = on, enabled = active != null, onCheckedChange = { vm.setOutputOn(d, it) })
             }
         }
     }
@@ -275,7 +315,9 @@ fun AboutScreen(vm: AppViewModel) {
         )
         AboutSection(
             "Applying it",
-            "\"All audio\" uses Android's DynamicsProcessing effect on the output mix with a separate curve for each ear, in fine bands " +
+            "PureEQ keeps on or off for each output: the phone speaker, each pair of headphones, a car or speaker. A profile is tuned for headphones, " +
+                "so the phone speaker starts off and plays untouched; switch it on there and that's kept too. Back on headphones it comes back on, with the profile you last used with them. " +
+                "\"All audio\" uses Android's DynamicsProcessing effect on the output mix with a separate curve for each ear, in fine bands " +
                 "(each FFT bin below 530 Hz, 1/16 octave above). The level is lowered only as much as music needs: treble boosts barely raise a mix's peaks, " +
                 "so they cost almost no loudness; a bass boost costs about its own size. Exports use AutoEq's formats, so Wavelet, Poweramp Equalizer, JamesDSP and Equalizer APO read them directly.",
         )

@@ -20,6 +20,7 @@ import app.pureeq.PureEqApp
 import app.pureeq.R
 import app.pureeq.audio.OutputDevice
 import app.pureeq.profile.AppSettings
+import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
 import app.pureeq.profile.SystemEqMode
@@ -34,6 +35,9 @@ import kotlinx.coroutines.withContext
  * effect only lives as long as this process. It follows the active profile, settings and output
  * device, and rebuilds the effect whenever the output changes: the effect fixes its sample rate
  * when created, so a Bluetooth/USB switch would otherwise mis-map frequencies.
+ *
+ * It runs while the EQ is on for any output ([OutputStates]). On an output it's off for (the phone
+ * speaker, unless turned on there) it holds no effect at all and waits for one it's on for.
  */
 class EqService : LifecycleService() {
 
@@ -48,6 +52,8 @@ class EqService : LifecycleService() {
     /** The profile the effects currently carry; null forces a rebuild. */
     private var appliedProfile: Profile? = null
     private var paused = false
+    /** Off for the output playing now: no effects, and players that open meanwhile get none. */
+    private var standby = false
     /** Set when the output changes; cleared only once the effects really are rebuilt for it. */
     private var needsRecreate = false
 
@@ -92,8 +98,12 @@ class EqService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        if (intent?.action == ACTION_TURN_OFF) {
-            app.store.updateSettings { it.copy(systemEqEnabled = false) }
+        when (intent?.action) {
+            ACTION_TURN_OFF -> {
+                val out = app.route.currentOutput()
+                app.store.updateSettings { it.copy(outputs = it.outputs.turned(out, false)) }
+            }
+            ACTION_TURN_OFF_ALL -> app.store.updateSettings { it.copy(outputs = it.outputs.allOff()) }
         }
         return START_STICKY
     }
@@ -106,7 +116,8 @@ class EqService : LifecycleService() {
     }
 
     private suspend fun apply(s: State) {
-        if (!s.settings.systemEqEnabled) {
+        val outputs = s.settings.outputs
+        if (!outputs.armed) {
             releaseAll()
             EqRuntime.status.value = SystemEqStatus.Off
             stopSelf()
@@ -116,12 +127,11 @@ class EqService : LifecycleService() {
         if (outputChanged) needsRecreate = true
         lastOutput = s.output
 
-        // Headphones you made a profile with just connected: switch to it, unless the profile
-        // in use was already made with them (you may keep several for one pair).
+        // Another output started playing: switch to the profile last used there, or to the one made
+        // with these headphones unless the profile in use already was (you may keep several for one pair).
         if (outputChanged && s.settings.autoSwitch) {
-            val active = s.profiles.firstOrNull { it.id == s.activeId }
-            val match = s.profiles.firstOrNull { it.deviceName != null && it.deviceName == s.output.name }
-            if (match != null && active?.deviceName != s.output.name) {
+            val match = outputs.profileFor(s.output, s.profiles, s.activeId)
+            if (match != null && match.id != s.activeId) {
                 app.store.setActive(match.id)
                 return
             }
@@ -133,6 +143,22 @@ class EqService : LifecycleService() {
             updateNotification("No profile yet. Open PureEQ to create one.")
             return
         }
+        if (!outputs.isOn(s.output, s.profiles)) {
+            // Off for this output: no effect at all, so what plays here is untouched. Rebuilt from
+            // scratch when an output it's on for comes back.
+            releaseAll()
+            needsRecreate = true
+            standby = true
+            val onFor = outputs.onElsewhere(s.output, s.profiles)
+            EqRuntime.status.value = SystemEqStatus.Standby(s.output, onFor)
+            updateNotification(
+                "It comes back on with ${OutputStates.names(onFor)}.",
+                title = "PureEQ is off for ${OutputStates.label(s.output)}",
+                standby = true,
+            )
+            return
+        }
+        standby = false
         val modeChanged = appliedMode != s.settings.mode
         val effectsLive = s.settings.mode == SystemEqMode.PER_APP || global != null
         // When only the pause state changed (PureEQ started or stopped its own sound), the effects
@@ -180,6 +206,9 @@ class EqService : LifecycleService() {
         global?.setEnabled(!paused)
         sessions.values.forEach { it.setEnabled(!paused) }
         publishStatus(profile)
+        // What this output comes back to next time: on, with this profile.
+        val used = outputs.used(s.output, profile.id)
+        if (used != outputs) app.store.updateSettings { it.copy(outputs = it.outputs.used(s.output, profile.id)) }
     }
 
     private fun publishStatus(profile: Profile) {
@@ -195,7 +224,7 @@ class EqService : LifecycleService() {
 
     private fun openSession(session: Int) {
         knownSessions += session
-        if (appliedMode != SystemEqMode.PER_APP) return
+        if (appliedMode != SystemEqMode.PER_APP || standby) return
         val c = curves ?: return
         sessions.remove(session)?.release()
         runCatching { DpEffect(session, c) }.onSuccess {
@@ -208,7 +237,7 @@ class EqService : LifecycleService() {
     private fun closeSession(session: Int) {
         knownSessions -= session
         sessions.remove(session)?.release()
-        app.store.profile(appliedProfileId)?.let { if (appliedMode == SystemEqMode.PER_APP) publishStatus(it) }
+        app.store.profile(appliedProfileId)?.let { if (appliedMode == SystemEqMode.PER_APP && !standby) publishStatus(it) }
     }
 
     private fun releaseSessions() {
@@ -231,11 +260,12 @@ class EqService : LifecycleService() {
         }
     }
 
-    private fun updateNotification(text: String) {
-        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(text))
+    private fun updateNotification(text: String, title: String = "PureEQ is on", standby: Boolean = false) {
+        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(text, title, standby))
     }
 
-    private fun buildNotification(text: String): Notification {
+    /** [standby]: off for this output; its button then turns PureEQ off for every output. */
+    private fun buildNotification(text: String, title: String = "PureEQ is on", standby: Boolean = false): Notification {
         val nm = getSystemService(NotificationManager::class.java)
         if (nm.getNotificationChannel(CHANNEL_ID) == null) {
             nm.createNotificationChannel(
@@ -250,17 +280,17 @@ class EqService : LifecycleService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val off = PendingIntent.getService(
-            this, 1, Intent(this, EqService::class.java).setAction(ACTION_TURN_OFF),
+            this, if (standby) 2 else 1, Intent(this, EqService::class.java).setAction(if (standby) ACTION_TURN_OFF_ALL else ACTION_TURN_OFF),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_eq)
-            .setContentTitle("PureEQ is on")
+            .setContentTitle(title)
             .setContentText(text)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setContentIntent(open)
-            .addAction(0, "Turn off", off)
+            .addAction(0, if (standby) "Turn off everywhere" else "Turn off", off)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
     }
@@ -268,7 +298,11 @@ class EqService : LifecycleService() {
     companion object {
         private const val CHANNEL_ID = "eq"
         private const val NOTIFICATION_ID = 1
+        /** Off for the output playing now. */
         private const val ACTION_TURN_OFF = "app.pureeq.TURN_OFF"
+
+        /** Off for every output: the service stops. */
+        private const val ACTION_TURN_OFF_ALL = "app.pureeq.TURN_OFF_ALL"
 
         fun start(context: Context) {
             runCatching { ContextCompat.startForegroundService(context, Intent(context, EqService::class.java)) }
@@ -282,7 +316,7 @@ class BootReceiver : BroadcastReceiver() {
         val app = context.applicationContext as PureEqApp
         val s = app.store.settings.value
         val updated = intent.action == Intent.ACTION_MY_PACKAGE_REPLACED
-        if (s.systemEqEnabled && (s.startOnBoot || updated)) EqService.start(context)
+        if (s.outputs.armed && (s.startOnBoot || updated)) EqService.start(context)
         if (updated) app.updater.onPackageReplaced()
     }
 }

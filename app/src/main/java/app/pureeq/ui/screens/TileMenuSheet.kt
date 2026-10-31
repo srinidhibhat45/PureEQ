@@ -30,15 +30,17 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.PureEqApp
+import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.system.EqService
 import app.pureeq.ui.components.Pill
 import app.pureeq.ui.theme.StatusColors
 
 /**
- * The Quick Settings tile's long-press menu: the system-wide EQ switch, the profiles to choose
- * from (one per pair of headphones; the pair playing now is marked), and the way to Fine-tune for
- * the one in use or to the app. Choosing a profile applies at once and leaves the sheet open.
+ * The Quick Settings tile's long-press menu: the system-wide EQ switch for the output playing now,
+ * the profiles to choose from (one per pair of headphones; the pair playing now is marked), and the
+ * way to Fine-tune for the one in use or to the app. Choosing a profile applies at once and leaves
+ * the sheet open.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,8 +50,9 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
     val profiles by store.profiles.collectAsStateWithLifecycle()
     val activeId by store.activeId.collectAsStateWithLifecycle()
     val settings by store.settings.collectAsStateWithLifecycle()
-    val playingOn = remember { app.route.currentOutput() }
+    val playingOn by remember { app.route.outputChanges() }.collectAsStateWithLifecycle(app.route.currentOutput())
     val current = profiles.firstOrNull { it.id == activeId } ?: profiles.firstOrNull()
+    val on = current != null && settings.outputs.isOn(playingOn, profiles)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).padding(bottom = 16.dp).navigationBarsPadding(),
@@ -61,19 +64,19 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
                     Text(
                         when {
                             current == null -> "No profile yet"
-                            settings.systemEqEnabled -> "On · ${current.name}"
-                            else -> "Off"
+                            on -> "On for ${OutputStates.label(playingOn)}"
+                            else -> offText(playingOn, settings.outputs, profiles)
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Switch(
-                    checked = settings.systemEqEnabled && current != null,
+                    checked = on,
                     enabled = current != null,
-                    onCheckedChange = { on ->
-                        store.updateSettings { it.copy(systemEqEnabled = on) }
-                        if (on) EqService.start(context)
+                    onCheckedChange = { turnOn ->
+                        store.updateSettings { it.copy(outputs = it.outputs.turned(playingOn, turnOn)) }
+                        if (turnOn) EqService.start(context)
                     },
                 )
             }

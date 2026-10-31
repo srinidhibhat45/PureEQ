@@ -26,6 +26,7 @@ class PureEqApp : Application() {
         store = ProfileStore(this)
         engine = AudioEngine(this)
         route = AudioRoute(this)
+        route.listenForFakeOutputs(this)
         library = MusicLibrary(this)
         // GitHub build: the over-the-air updater and its background checks. Play build: never updates itself.
         updater = createUpdater(this, store)

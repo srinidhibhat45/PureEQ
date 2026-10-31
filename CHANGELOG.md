@@ -2,6 +2,12 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.5.3
+- PureEQ now keeps on or off for each output: the phone speaker, each pair of headphones, a car or a Bluetooth speaker. Profiles are tuned for headphones, so the phone speaker now plays untouched instead of quieter and duller. Unplug your headphones and PureEQ steps aside; plug them back in and it comes back on by itself, with the profile you last used with them.
+- Want it on the speaker too? Switch it on while the speaker plays, and that's kept for the speaker. The switch on the home screen, the tile and the notification's Turn off all act on the output playing now.
+- Settings › Where it's on lists your outputs, each with its own switch, so you can turn PureEQ on for your headphones before they're connected.
+- Coming from 1.5.2 with PureEQ on: it stays on for each pair of headphones you made a profile with, and off for the phone speaker.
+
 ## 1.5.2
 - Long-press the PureEQ tile in the swipe-down panel for a quick menu instead of App info: switch the EQ on or off, pick which profile (which headphones) it uses with one tap, or jump straight to Fine-tune. The headphones playing now are marked.
 

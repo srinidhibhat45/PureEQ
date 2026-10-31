@@ -15,9 +15,10 @@ enum class SystemEqMode(val label: String, val detail: String) {
 }
 
 data class AppSettings(
-    val systemEqEnabled: Boolean = false,
+    /** Where the system-wide EQ is on: on or off for each output, with the profile it last played there. */
+    val outputs: OutputStates = OutputStates(),
     val mode: SystemEqMode = SystemEqMode.GLOBAL,
-    /** Switch to the profile made with the headphones that just connected. */
+    /** Switch to the profile last used with the output that starts playing, or the one made with it. */
     val autoSwitch: Boolean = true,
     val startOnBoot: Boolean = true,
     /** Warble (±5 %) test tones; pure tones when off. */
@@ -59,6 +60,7 @@ class ProfileStore(context: Context) {
         _profiles.update { list -> list.filter { it.id != id } }
         if (_activeId.value == id) setActive(next?.id)
         saveProfiles()
+        updateSettings { it.copy(outputs = it.outputs.without(id)) }
     }
 
     /** The profile that becomes active when [id] is deleted while active: the newest of the others. */
@@ -87,7 +89,7 @@ class ProfileStore(context: Context) {
         _settings.update(transform)
         val s = _settings.value
         prefs.edit()
-            .putBoolean("systemEqEnabled", s.systemEqEnabled)
+            .putString(KEY_OUTPUTS, s.outputs.toJson().toString())
             .putString("mode", s.mode.name)
             .putBoolean("autoSwitch", s.autoSwitch)
             .putBoolean("startOnBoot", s.startOnBoot)
@@ -97,13 +99,23 @@ class ProfileStore(context: Context) {
     }
 
     private fun loadSettings() = AppSettings(
-        systemEqEnabled = prefs.getBoolean("systemEqEnabled", false),
+        outputs = loadOutputs(),
         mode = runCatching { SystemEqMode.valueOf(prefs.getString("mode", null) ?: "") }.getOrDefault(SystemEqMode.GLOBAL),
         autoSwitch = prefs.getBoolean("autoSwitch", true),
         startOnBoot = prefs.getBoolean("startOnBoot", true),
         warbleTones = prefs.getBoolean("warbleTones", true),
         autoUpdate = prefs.getBoolean("autoUpdate", true),
     )
+
+    /** Where the EQ is on; the first time, carried over from the single switch of 1.5 and earlier. */
+    private fun loadOutputs(): OutputStates {
+        prefs.getString(KEY_OUTPUTS, null)?.let { raw ->
+            return runCatching { OutputStates.fromJson(JSONObject(raw)) }.getOrDefault(OutputStates())
+        }
+        val outputs = OutputStates.migrated(prefs.getBoolean(KEY_LEGACY_ENABLED, false), _profiles.value)
+        prefs.edit().putString(KEY_OUTPUTS, outputs.toJson().toString()).remove(KEY_LEGACY_ENABLED).apply()
+        return outputs
+    }
 
     private fun loadProfiles(): List<Profile> {
         val raw = prefs.getString(KEY_PROFILES, null) ?: return emptyList()
@@ -123,6 +135,8 @@ class ProfileStore(context: Context) {
         private const val KEY_PROFILES = "profiles"
         private const val KEY_ACTIVE = "active"
         private const val KEY_MODELS = "headphoneModels"
+        private const val KEY_OUTPUTS = "outputs"
+        private const val KEY_LEGACY_ENABLED = "systemEqEnabled"
 
         /** Parses a profile exported with "PureEQ profile (.json)"; gives it a fresh id. */
         fun importJson(text: String, newId: String): Profile = Profile.fromJson(JSONObject(text)).copy(id = newId)

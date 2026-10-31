@@ -1,6 +1,7 @@
 package app.pureeq.system
 
 import android.media.audiofx.DynamicsProcessing
+import app.pureeq.audio.OutputDevice
 import app.pureeq.dsp.Curves
 import app.pureeq.dsp.FreqGrid
 import app.pureeq.profile.ProfileEq
@@ -148,6 +149,9 @@ sealed interface SystemEqStatus {
     data object Off : SystemEqStatus
     data class Active(val profileName: String, val global: Boolean, val sessions: Int) : SystemEqStatus
     data class Paused(val profileName: String) : SystemEqStatus
+
+    /** Off for [output] (nothing applied there) and on for [onFor], which bring it back. */
+    data class Standby(val output: OutputDevice, val onFor: List<String>) : SystemEqStatus
     data class Failed(val message: String) : SystemEqStatus
 }
 

@@ -15,10 +15,10 @@ import app.pureeq.PureEqApp
 import app.pureeq.R
 
 /**
- * Quick Settings tile: switches the system-wide EQ on and off from the swipe-down panel, the same
- * switch as "Apply to all audio" on the home screen. It shows the active profile's name, and opens
- * PureEQ when there is no profile to apply yet. Android binds it only while the panel is open, so
- * it costs nothing in the background.
+ * Quick Settings tile: switches the system-wide EQ on and off from the swipe-down panel for the
+ * output playing now, the same switch as "Apply to all audio" on the home screen. It shows the
+ * active profile's name, and opens PureEQ when there is no profile to apply yet. Android binds it
+ * only while the panel is open, so it costs nothing in the background.
  */
 class EqTileService : TileService() {
     private val app get() = application as PureEqApp
@@ -31,12 +31,14 @@ class EqTileService : TileService() {
             openApp()
             return
         }
-        val on = !store.settings.value.systemEqEnabled
-        store.updateSettings { it.copy(systemEqEnabled = on) }
+        val out = app.route.currentOutput()
+        val on = !store.settings.value.outputs.isOn(out, store.profiles.value)
+        store.updateSettings { it.copy(outputs = it.outputs.turned(out, on)) }
         refresh()
-        // Turning off needs nothing more: the running service sees the setting and stops itself.
-        // Turning on from the background is refused on Android 12+; an invisible activity starts it instead.
-        if (on && !startEq()) launch(Intent(this, TileTrampolineActivity::class.java))
+        // Turning off needs nothing more: the running service sees the setting and stops itself, or
+        // waits if the EQ is still on for another output. A running service picks up "on" the same way.
+        // Starting it from the background is refused on Android 12+; an invisible activity starts it instead.
+        if (on && EqRuntime.status.value is SystemEqStatus.Off && !startEq()) launch(Intent(this, TileTrampolineActivity::class.java))
     }
 
     private fun startEq(): Boolean = runCatching {
@@ -47,7 +49,7 @@ class EqTileService : TileService() {
         val tile = qsTile ?: return
         val store = app.store
         val profile = store.active ?: store.profiles.value.firstOrNull()
-        val on = profile != null && store.settings.value.systemEqEnabled
+        val on = profile != null && store.settings.value.outputs.isOn(app.route.currentOutput(), store.profiles.value)
         tile.label = getString(R.string.tile_label)
         tile.icon = Icon.createWithResource(this, R.drawable.ic_stat_eq)
         tile.state = if (on) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE

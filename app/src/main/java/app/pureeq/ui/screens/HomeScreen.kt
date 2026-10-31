@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.BuildConfig
 import app.pureeq.audio.OutputDevice
+import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
 import app.pureeq.system.SystemEqStatus
@@ -151,7 +152,8 @@ fun HomeScreen(vm: AppViewModel) {
                 ActiveProfileCard(
                     profile = active,
                     output = output,
-                    enabled = settings.systemEqEnabled,
+                    enabled = settings.outputs.isOn(output, profiles),
+                    offText = offText(output, settings.outputs, profiles),
                     status = status,
                     onToggle = { if (it) enableSystemEq() else vm.setSystemEq(false) },
                     onEdit = { vm.go(Screen.Editor(active.id)) },
@@ -283,7 +285,9 @@ private fun WelcomeCard(onStart: () -> Unit) {
 private fun ActiveProfileCard(
     profile: Profile,
     output: OutputDevice,
+    /** Whether the system-wide EQ is on for [output]. */
     enabled: Boolean,
+    offText: String,
     status: SystemEqStatus,
     onToggle: (Boolean) -> Unit,
     onEdit: () -> Unit,
@@ -323,7 +327,7 @@ private fun ActiveProfileCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text("Apply to all audio", style = MaterialTheme.typography.titleSmall)
-                Text(statusText(enabled, status), style = MaterialTheme.typography.bodySmall, color = statusColor(enabled, status))
+                Text(if (enabled) statusText(status) else offText, style = MaterialTheme.typography.bodySmall, color = statusColor(enabled, status))
             }
             Switch(checked = enabled, onCheckedChange = onToggle)
         }
@@ -420,13 +424,24 @@ internal fun profileSubtitle(p: Profile): String {
     return listOfNotNull(p.deviceName, kind, date).joinToString(" · ")
 }
 
-private fun statusText(enabled: Boolean, s: SystemEqStatus): String = when {
-    !enabled -> "Off. Turn on to hear this profile in every app."
-    s is SystemEqStatus.Active && s.global -> "On for all audio"
-    s is SystemEqStatus.Active -> "On for music apps · ${s.sessions} playing"
-    s is SystemEqStatus.Paused -> "Paused while PureEQ plays sound"
-    s is SystemEqStatus.Failed -> s.message
+private fun statusText(s: SystemEqStatus): String = when (s) {
+    is SystemEqStatus.Active -> if (s.global) "On for all audio" else "On for music apps · ${s.sessions} playing"
+    is SystemEqStatus.Paused -> "Paused while PureEQ plays sound"
+    is SystemEqStatus.Failed -> s.message
     else -> "Starting…"
+}
+
+/**
+ * The EQ is off for [output]: "Off for the phone speaker. On for Galaxy Buds2." when it's on for
+ * other outputs, otherwise what turning it on would do.
+ */
+internal fun offText(output: OutputDevice, outputs: OutputStates, profiles: List<Profile>): String {
+    val onFor = outputs.onElsewhere(output, profiles)
+    return when {
+        onFor.isNotEmpty() -> "Off for ${OutputStates.label(output)}. On for ${OutputStates.names(onFor)}."
+        output.kind == OutputDevice.Kind.SPEAKER -> "Off for the phone speaker. Connect your headphones to turn it on for them."
+        else -> "Off. Turn on to hear this profile in every app."
+    }
 }
 
 @Composable
