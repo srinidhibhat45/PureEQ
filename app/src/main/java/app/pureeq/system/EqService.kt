@@ -11,10 +11,12 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.media.audiofx.AudioEffect
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import app.pureeq.BuildConfig
 import app.pureeq.MainActivity
 import app.pureeq.PureEqApp
 import app.pureeq.R
@@ -186,6 +188,7 @@ class EqService : LifecycleService() {
             val base = withContext(Dispatchers.Default) { SystemCurves.of(ProfileEq(profile)) }
             baseCurves = base
             shelves = VolumeBass.shelves(profile, s.output, level ?: app.route.level()).rounded()
+            if (BuildConfig.DEBUG) Log.d("PureEQ", "apply ${profile.name} on ${s.output.name}: volume bass ${shelves.bassDb} dB, treble ${shelves.trebleDb} dB")
             val newCurves = base.with(shelves, VolumeBass.needsHeadroom(s.output))
             curves = newCurves
             appliedMode = s.settings.mode
@@ -242,6 +245,7 @@ class EqService : LifecycleService() {
         if (standby) return
         val next = VolumeBass.shelves(profile, output, level).rounded()
         if (next == shelves) return
+        if (BuildConfig.DEBUG) Log.d("PureEQ", "volume ${level?.index}/${level?.maxIndex} (${level?.db} dB) on ${output.name}: bass ${next.bassDb} dB, treble ${next.trebleDb} dB")
         shelves = next
         val c = base.with(next, VolumeBass.needsHeadroom(output))
         curves = c
