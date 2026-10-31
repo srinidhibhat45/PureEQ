@@ -37,19 +37,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.pureeq.R
+import app.pureeq.dsp.Ear
+import app.pureeq.dsp.FilterType
 import app.pureeq.profile.BandSet
 import app.pureeq.profile.Exporters
+import app.pureeq.profile.FilterRow
 import app.pureeq.profile.ProfileEq
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.StepScaffold
 import app.pureeq.ui.theme.NumberStyle
 import app.pureeq.ui.theme.StatusColors
+import app.pureeq.ui.titleRes
+import app.pureeq.ui.whereRes
 
 private fun copy(context: Context, label: String, text: String) {
     context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText(label, text))
-    Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, R.string.export_copied, Toast.LENGTH_SHORT).show()
 }
 
 private fun share(context: Context, subject: String, text: String) {
@@ -64,7 +71,7 @@ fun ExportScreen(vm: AppViewModel, profileId: String) {
     val context = LocalContext.current
     val eq by produceState<ProfileEq?>(null, profileId) { value = vm.profileEq(profileId) }
     var pending by remember { mutableStateOf("") }
-    val onSaved = { ok: Boolean -> Toast.makeText(context, if (ok) "Saved" else "Couldn't save the file", Toast.LENGTH_SHORT).show() }
+    val onSaved = { ok: Boolean -> Toast.makeText(context, if (ok) R.string.export_saved else R.string.export_save_failed, Toast.LENGTH_SHORT).show() }
     val saveTxt = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         if (uri != null) onSaved(vm.writeText(uri, pending))
     }
@@ -77,7 +84,7 @@ fun ExportScreen(vm: AppViewModel, profileId: String) {
         if (uri != null && e != null) onSaved(vm.writeBytes(uri) { Exporters.convolution(e, pendingRate) })
     }
 
-    StepScaffold(title = "Export", onBack = { vm.back() }) {
+    StepScaffold(title = stringResource(R.string.export_title), onBack = { vm.back() }) {
         val e = eq
         if (e == null) {
             Box(Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -90,70 +97,62 @@ fun ExportScreen(vm: AppViewModel, profileId: String) {
         val perEar = Exporters.parametricPerEar(e)
 
         Text(
-            "Your profile in the formats other apps understand. Or skip all this and switch on \"Apply to all audio\" on the home screen.",
+            stringResource(R.string.export_intro),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Exporters.balanceAdvice(e)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = StatusColors.Warn) }
+        Exporters.balanceAdvice(e)?.let { a ->
+            Text(
+                stringResource(if (a.ear == Ear.LEFT) R.string.export_balance_left else R.string.export_balance_right, a.db),
+                style = MaterialTheme.typography.bodySmall,
+                color = StatusColors.Warn,
+            )
+        }
 
-        ExportCard(
-            "Wavelet",
-            "Save the file, then in Wavelet open AutoEq › Import and pick it. Wavelet needs this exact 127-point GraphicEQ format.",
-        ) {
-            ActionButton("Save file", Icons.Rounded.Download) { pending = graphic; saveTxt.launch("$name GraphicEQ.txt") }
-            ActionButton("Share", Icons.Rounded.Share) { share(context, "$name GraphicEQ", graphic) }
+        ExportCard("Wavelet", stringResource(R.string.export_wavelet)) {
+            ActionButton(stringResource(R.string.export_save_file), Icons.Rounded.Download) { pending = graphic; saveTxt.launch("$name GraphicEQ.txt") }
+            ActionButton(stringResource(R.string.export_share), Icons.Rounded.Share) { share(context, "$name GraphicEQ", graphic) }
         }
-        ExportCard(
-            "Poweramp Equalizer",
-            "Save the file, then in Poweramp Equalizer tap Preset, long-press, choose Import and pick it (or open the file with Poweramp Equalizer). Same format as AutoEq's ParametricEQ.txt.",
-        ) {
-            ActionButton("Save file", Icons.Rounded.Download) { pending = parametric; saveTxt.launch("$name ParametricEQ.txt") }
-            ActionButton("Copy", Icons.Rounded.ContentCopy) { copy(context, "ParametricEQ", parametric) }
+        ExportCard("Poweramp Equalizer", stringResource(R.string.export_poweramp)) {
+            ActionButton(stringResource(R.string.export_save_file), Icons.Rounded.Download) { pending = parametric; saveTxt.launch("$name ParametricEQ.txt") }
+            ActionButton(stringResource(R.string.export_copy), Icons.Rounded.ContentCopy) { copy(context, "ParametricEQ", parametric) }
         }
-        ExportCard(
-            "JamesDSP / RootlessJamesDSP",
-            "Arbitrary response equalizer › Edit as string › paste.",
-        ) {
-            ActionButton("Copy", Icons.Rounded.ContentCopy) { copy(context, "GraphicEQ", graphic) }
-            ActionButton("Share", Icons.Rounded.Share) { share(context, "$name GraphicEQ", graphic) }
+        ExportCard("JamesDSP / RootlessJamesDSP", stringResource(R.string.export_jamesdsp)) {
+            ActionButton(stringResource(R.string.export_copy), Icons.Rounded.ContentCopy) { copy(context, "GraphicEQ", graphic) }
+            ActionButton(stringResource(R.string.export_share), Icons.Rounded.Share) { share(context, "$name GraphicEQ", graphic) }
         }
-        ExportCard(
-            "Equalizer APO / Peace (PC)",
-            "Separate left and right filters. Save as a .txt and include it from config.txt, or paste it into Peace.",
-        ) {
-            ActionButton("Save file", Icons.Rounded.Download) { pending = perEar; saveTxt.launch("$name per-ear.txt") }
-            ActionButton("Copy", Icons.Rounded.ContentCopy) { copy(context, "Equalizer APO", perEar) }
+        ExportCard(stringResource(R.string.export_apo_title), stringResource(R.string.export_apo)) {
+            ActionButton(stringResource(R.string.export_save_file), Icons.Rounded.Download) { pending = perEar; saveTxt.launch("$name per-ear.txt") }
+            ActionButton(stringResource(R.string.export_copy), Icons.Rounded.ContentCopy) { copy(context, "Equalizer APO", perEar) }
         }
-        ExportCard(
-            "Convolution (JamesDSP, ViPER4Android, Equalizer APO)",
-            "Your exact curve for each ear as an impulse response: a stereo WAV with the left and right ear, balance and level as PureEQ applies them. Load it in the convolver, matching your music's sample rate.",
-        ) {
+        ExportCard(stringResource(R.string.export_convolution_title), stringResource(R.string.export_convolution)) {
             ActionButton("48 kHz", Icons.Rounded.Download) { pendingRate = 48000; saveWav.launch("$name 48000 Hz.wav") }
             ActionButton("44.1 kHz", Icons.Rounded.Download) { pendingRate = 44100; saveWav.launch("$name 44100 Hz.wav") }
         }
         GraphicBandsCard(e)
         SectionCard {
-            Text("Parametric values", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.export_parametric_title), style = MaterialTheme.typography.titleSmall)
             Text(
-                "For apps where you type filters in: Neutron, USB Audio Player Pro, Poweramp's parametric mode and others. Both ears averaged.",
+                stringResource(R.string.export_parametric),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text("Preamp ${Exporters.signed(e.linkedPreampDb)} dB", style = MaterialTheme.typography.bodyMedium.merge(NumberStyle))
-            Exporters.filterTable(e.linkedFilters).forEach { Text(it, style = MaterialTheme.typography.bodyMedium.merge(NumberStyle)) }
+            Text(stringResource(R.string.export_preamp, Exporters.signed(e.linkedPreampDb)), style = MaterialTheme.typography.bodyMedium.merge(NumberStyle))
+            Exporters.filterTable(e.linkedFilters).forEach { Text(filterLine(it), style = MaterialTheme.typography.bodyMedium.merge(NumberStyle)) }
             if (e.leftFilters != e.rightFilters) {
-                Text("Per ear (Poweramp can set each band to L or R)", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 6.dp))
-                Text("Left", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Exporters.filterTable(e.leftFilters).forEach { Text(it, style = MaterialTheme.typography.bodySmall.merge(NumberStyle)) }
-                Text("Right", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Exporters.filterTable(e.rightFilters).forEach { Text(it, style = MaterialTheme.typography.bodySmall.merge(NumberStyle)) }
+                Text(stringResource(R.string.export_per_ear), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 6.dp))
+                Text(stringResource(R.string.export_left), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Exporters.filterTable(e.leftFilters).forEach { Text(filterLine(it), style = MaterialTheme.typography.bodySmall.merge(NumberStyle)) }
+                Text(stringResource(R.string.export_right), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Exporters.filterTable(e.rightFilters).forEach { Text(filterLine(it), style = MaterialTheme.typography.bodySmall.merge(NumberStyle)) }
             }
-            ActionRow { ActionButton("Copy", Icons.Rounded.ContentCopy) { copy(context, "Parametric EQ", parametric) } }
+            ActionRow { ActionButton(stringResource(R.string.export_copy), Icons.Rounded.ContentCopy) { copy(context, "Parametric EQ", parametric) } }
         }
-        ExportCard("PureEQ profile", "A backup you can import on another phone (Settings › Import profile).") {
+        ExportCard(stringResource(R.string.export_profile_title), stringResource(R.string.export_profile)) {
             val json = e.profile.toJson().toString(2)
-            ActionButton("Save file", Icons.Rounded.Download) { pending = json; saveJson.launch("$name.pureeq.json") }
-            ActionButton("Share", Icons.Rounded.Share) { share(context, "$name PureEQ profile", json) }
+            val subject = stringResource(R.string.export_profile_subject, name)
+            ActionButton(stringResource(R.string.export_save_file), Icons.Rounded.Download) { pending = json; saveJson.launch("$name.pureeq.json") }
+            ActionButton(stringResource(R.string.export_share), Icons.Rounded.Share) { share(context, subject, json) }
         }
         Spacer(Modifier.size(8.dp))
     }
@@ -165,11 +164,11 @@ private fun GraphicBandsCard(e: ProfileEq) {
     var set by remember { mutableStateOf(BandSet.TEN) }
     val values = remember(e, set) { Exporters.bands(e.linkedCurve, set) }
     SectionCard {
-        Text("Graphic EQ sliders", style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(R.string.export_graphic_title), style = MaterialTheme.typography.titleSmall)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            BandSet.entries.forEach { s -> FilterChip(selected = s == set, onClick = { set = s }, label = { Text(s.label) }) }
+            BandSet.entries.forEach { s -> FilterChip(selected = s == set, onClick = { set = s }, label = { Text(stringResource(s.titleRes)) }) }
         }
-        Text(set.where, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(set.whereRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         val rows = values.chunked(if (values.size > 10) 3 else 2)
         rows.forEach { row ->
             Row(Modifier.fillMaxWidth()) {
@@ -187,15 +186,16 @@ private fun GraphicBandsCard(e: ProfileEq) {
             }
         }
         if (values.any { it.clipped }) {
-            Text("* limited to the app's ${set.minDb.toInt()}…+${set.maxDb.toInt()} dB range", style = MaterialTheme.typography.bodySmall, color = StatusColors.Warn)
+            Text(stringResource(R.string.export_bands_limited, set.minDb.toInt(), set.maxDb.toInt()), style = MaterialTheme.typography.bodySmall, color = StatusColors.Warn)
         }
         Text(
-            "Centred so overall loudness stays the same. Slider EQs can only approximate the curve; the files above are exact.",
+            stringResource(R.string.export_bands_centred),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        val setTitle = stringResource(set.titleRes)
         ActionRow {
-            ActionButton("Copy", Icons.Rounded.ContentCopy) { copy(context, set.label, Exporters.bandsText(e.profile.name, values, set)) }
+            ActionButton(stringResource(R.string.export_copy), Icons.Rounded.ContentCopy) { copy(context, setTitle, Exporters.bandsText(e.profile.name, values, set)) }
         }
     }
 }
@@ -208,6 +208,23 @@ private fun ExportCard(title: String, text: String, actions: @Composable () -> U
         ActionRow(actions)
     }
 }
+
+/** A row of [Exporters.filterTable] as shown: "1. Low shelf · 105 Hz · +6.4 dB · Q 0.70". */
+@Composable
+private fun filterLine(row: FilterRow): String = stringResource(
+    R.string.export_filter_row,
+    row.number,
+    stringResource(
+        when (row.type) {
+            FilterType.LOW_SHELF -> R.string.export_filter_low_shelf
+            FilterType.HIGH_SHELF -> R.string.export_filter_high_shelf
+            else -> R.string.export_filter_peak
+        },
+    ),
+    row.freq,
+    row.gain,
+    row.q,
+)
 
 @Composable
 private fun ActionRow(content: @Composable () -> Unit) {

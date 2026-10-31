@@ -3,6 +3,7 @@ package app.pureeq.profile
 import app.pureeq.dsp.Curves
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FilterSpec
+import app.pureeq.dsp.FilterType
 import app.pureeq.dsp.FreqGrid
 import app.pureeq.dsp.ImpulseResponse
 import app.pureeq.dsp.Loudness
@@ -22,6 +23,12 @@ enum class BandSet(val label: String, val where: String, val freqs: DoubleArray,
 }
 
 data class BandValue(val freq: Double, val gainDb: Double, val clipped: Boolean)
+
+/** One filter of [Exporters.filterTable]: its number and type, and its values written as the exports write them. */
+data class FilterRow(val number: Int, val type: FilterType, val freq: String, val gain: String, val q: String)
+
+/** The ear that needs more level, and how much more in dB ([db], written as the exports write it). */
+data class BalanceAdvice(val ear: Ear, val db: String)
 
 /**
  * Text formats for other apps. The parametric and GraphicEQ formats follow AutoEq's conventions
@@ -116,24 +123,19 @@ object Exporters {
         return if (v > 0 && !s.startsWith("+") && s.trim('0', '.').isNotEmpty()) "+$s" else s
     }
 
-    /** Human-readable filter list for apps where values are typed in (Neutron, UAPP, Poweramp parametric). */
-    fun filterTable(filters: List<FilterSpec>): List<String> = filters.mapIndexed { i, f ->
-        val type = when (f.type.apoCode) {
-            "LSC" -> "Low shelf"
-            "HSC" -> "High shelf"
-            else -> "Peak"
-        }
-        "${i + 1}. $type · ${freqLabel(f.freq)} · ${signed(f.gainDb)} dB · Q ${fmt(f.q, 2)}"
+    /** Filter list for apps where values are typed in (Neutron, UAPP, Poweramp parametric); the Export screen words each row. */
+    fun filterTable(filters: List<FilterSpec>): List<FilterRow> = filters.mapIndexed { i, f ->
+        FilterRow(i + 1, f.type, freqLabel(f.freq), signed(f.gainDb), fmt(f.q, 2))
     }
 
-    /** How to set Android's own balance slider when ears differ, or null if it isn't needed. */
-    fun balanceAdvice(eq: ProfileEq): String? {
+    /**
+     * When the ears differ, the side to move Android's own balance slider toward (the Export screen
+     * says how), or null if it isn't needed.
+     */
+    fun balanceAdvice(eq: ProfileEq): BalanceAdvice? {
         val d = eq.earDifferenceDb
         if (abs(d) < 1.5) return null
-        val louder = if (d > 0) Ear.LEFT else Ear.RIGHT
-        return "Your ${if (louder == Ear.LEFT) "left" else "right"} ear needs about ${fmt(abs(d), 1)} dB more. " +
-            "In apps without per-ear EQ, move Android's balance slider (Settings > Accessibility > Audio adjustment) " +
-            "slightly toward the ${if (louder == Ear.LEFT) "left" else "right"}."
+        return BalanceAdvice(if (d > 0) Ear.LEFT else Ear.RIGHT, fmt(abs(d), 1))
     }
 
     /**

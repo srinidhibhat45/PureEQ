@@ -37,7 +37,7 @@ data class UpdateManifest(
         fun parse(text: String, packageName: String, allowHttp: Boolean = false): UpdateManifest {
             val o = JSONObject(text)
             val pkg = o.optString("package", packageName)
-            require(pkg == packageName) { "The update notice is for another app ($pkg)." }
+            refuseUnless(pkg == packageName, NoticeRefused.Problem.OTHER_APP, pkg) { "The update notice is for another app ($pkg)." }
             val m = UpdateManifest(
                 versionCode = o.getLong("versionCode"),
                 versionName = o.getString("versionName"),
@@ -47,12 +47,24 @@ data class UpdateManifest(
                 minSdk = o.optInt("minSdk", 1),
                 notes = o.optString("notes", "").trim(),
             )
-            require(m.versionCode > 0) { "The update notice has no version." }
-            require(HEX64.matches(m.sha256)) { "The update notice has no valid checksum." }
-            require(m.size in 1..MAX_APK_BYTES) { "The update notice gives an impossible size." }
+            refuseUnless(m.versionCode > 0, NoticeRefused.Problem.NO_VERSION) { "The update notice has no version." }
+            refuseUnless(HEX64.matches(m.sha256), NoticeRefused.Problem.NO_CHECKSUM) { "The update notice has no valid checksum." }
+            refuseUnless(m.size in 1..MAX_APK_BYTES, NoticeRefused.Problem.IMPOSSIBLE_SIZE) { "The update notice gives an impossible size." }
             val scheme = runCatching { URI(m.url).scheme?.lowercase() }.getOrNull()
-            require(scheme == "https" || (allowHttp && scheme == "http")) { "Updates must be downloaded over HTTPS." }
+            refuseUnless(scheme == "https" || (allowHttp && scheme == "http"), NoticeRefused.Problem.NOT_HTTPS) { "Updates must be downloaded over HTTPS." }
             return m
         }
+
+        private inline fun refuseUnless(ok: Boolean, problem: NoticeRefused.Problem, detail: String = "", message: () -> String) {
+            if (!ok) throw NoticeRefused(problem, message(), detail)
+        }
     }
+}
+
+/**
+ * A notice [UpdateManifest.parse] refuses. The message is for tests and logs; the app says what
+ * [problem] means in the phone's language. [detail] is the package a notice for another app names.
+ */
+class NoticeRefused(val problem: Problem, message: String, val detail: String = "") : IllegalArgumentException(message) {
+    enum class Problem { OTHER_APP, NO_VERSION, NO_CHECKSUM, IMPOSSIBLE_SIZE, NOT_HTTPS }
 }
