@@ -1,5 +1,6 @@
 package app.pureeq.system
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -303,6 +304,9 @@ class EqService : LifecycleService() {
         EqRuntime.volumeShelves.value = null
     }
 
+    // The manifest declares foregroundServiceType="specialUse"; lint misses it in the GitHub build,
+    // whose own manifest adds the updater's job service.
+    @SuppressLint("ForegroundServiceType")
     private fun startInForeground(n: Notification) {
         if (Build.VERSION.SDK_INT >= 34) {
             startForeground(NOTIFICATION_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
