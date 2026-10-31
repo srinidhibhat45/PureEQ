@@ -53,12 +53,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pureeq.R
 import app.pureeq.taste.Choice
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
@@ -77,9 +79,9 @@ fun MusicPicker(vm: AppViewModel) {
         Icon(Icons.Rounded.MusicNote, null, tint = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(track?.title ?: "Preparing music…", style = MaterialTheme.typography.titleSmall)
+            Text(track?.title ?: stringResource(R.string.taste_music_preparing), style = MaterialTheme.typography.titleSmall)
             Text(
-                if (busy) "Loading…" else "Loops seamlessly while you compare",
+                stringResource(if (busy) R.string.taste_music_loading else R.string.taste_music_loops),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -90,9 +92,9 @@ fun MusicPicker(vm: AppViewModel) {
         OutlinedButton(onClick = { pick.launch(arrayOf("audio/*")) }, enabled = !busy, modifier = Modifier.weight(1f)) {
             Icon(Icons.Rounded.LibraryMusic, null, Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
-            Text("My song")
+            Text(stringResource(R.string.taste_music_mine))
         }
-        OutlinedButton(onClick = vm::useBuiltIn, enabled = !busy, modifier = Modifier.weight(1f)) { Text("Built-in track") }
+        OutlinedButton(onClick = vm::useBuiltIn, enabled = !busy, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.taste_music_built_in)) }
     }
 }
 
@@ -104,48 +106,47 @@ fun TasteIntroScreen(vm: AppViewModel) {
     // Redoing the taste test of a saved profile (from Fine-tune) rather than making a new one.
     val retune = draft.retuneOf != null
     StepScaffold(
-        title = "Taste",
+        title = stringResource(R.string.taste_title),
         onBack = { vm.back() },
         step = if (retune) null else 6,
         bottom = {
-            PrimaryButton("Start comparing", { vm.previewForVolume(false); vm.go(Screen.Taste) }, enabled = track != null)
+            PrimaryButton(stringResource(R.string.taste_intro_start), { vm.previewForVolume(false); vm.go(Screen.Taste) }, enabled = track != null)
             if (!retune) {
-                TextButton(onClick = { vm.skipTasteFromIntro() }, modifier = Modifier.fillMaxWidth()) { Text("Skip, use the listening check only") }
+                TextButton(onClick = { vm.skipTasteFromIntro() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.taste_intro_skip)) }
             }
         },
     ) {
         if (retune) {
             Headline(
-                "Redo the taste test",
-                "You'll hear the same music as A and B and pick the one you enjoy more, usually 5 to 7 rounds. Both are equally loud. " +
-                    "Your listening result stays as it is; the outcome replaces your bass and treble (warmth and vocals go back to 0) and becomes what Reset goes back to.",
+                stringResource(R.string.taste_redo_headline),
+                stringResource(R.string.taste_redo_subtitle),
             )
         } else {
             Headline(
-                "Now, what do you like?",
-                "You'll hear the same music as A and B. Switch between them as often as you like and pick the one you enjoy more. Both are equally loud, so go with what pleases you. PureEQ learns from every answer, \"Same\" included, and stops once it knows your taste: usually 5 to 7 rounds.",
+                stringResource(R.string.taste_intro_headline),
+                stringResource(R.string.taste_intro_subtitle),
             )
         }
         SectionCard {
-            Text("Music", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.taste_music), style = MaterialTheme.typography.titleSmall)
             MusicPicker(vm)
             Text(
-                "Your own song works best: pick something you know well, with vocals, bass and cymbals. Files on your phone only (streaming apps protect theirs).",
+                stringResource(R.string.taste_music_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         SectionCard {
-            Text("Listening volume", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.taste_volume), style = MaterialTheme.typography.titleSmall)
             Text(
-                "Play the music and set the volume you normally listen at. Taste depends on volume, so this matters.",
+                stringResource(R.string.taste_volume_text),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             FilledTonalButton(onClick = { vm.previewForVolume(!playing) }, enabled = track != null, modifier = Modifier.fillMaxWidth()) {
                 Icon(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, null)
                 Spacer(Modifier.width(8.dp))
-                Text(if (playing) "Pause" else "Play music")
+                Text(stringResource(if (playing) R.string.taste_pause else R.string.taste_play_music))
             }
         }
     }
@@ -158,26 +159,28 @@ fun TasteScreen(vm: AppViewModel) {
     val round = (t.answered + 1).coerceAtMost(t.total)
     val canAnswer = !t.locked && t.heardB
     StepScaffold(
-        title = "Taste",
+        title = stringResource(R.string.taste_title),
         onBack = { vm.back() },
         bottom = {
             Text(
-                when {
-                    t.locked -> "New pair…"
-                    !t.heardB -> "Listen to B as well, then choose."
-                    else -> "Which do you enjoy more?"
-                },
+                stringResource(
+                    when {
+                        t.locked -> R.string.taste_wait
+                        !t.heardB -> R.string.taste_hear_b
+                        else -> R.string.taste_question
+                    },
+                ),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChoiceButton("A is better", Modifier.weight(1f), enabled = canAnswer) { vm.choose(Choice.A) }
-                ChoiceButton("Same", Modifier.weight(0.8f), outlined = true, enabled = canAnswer) { vm.choose(Choice.SAME) }
-                ChoiceButton("B is better", Modifier.weight(1f), enabled = canAnswer) { vm.choose(Choice.B) }
+                ChoiceButton(stringResource(R.string.taste_a_better), Modifier.weight(1f), enabled = canAnswer) { vm.choose(Choice.A) }
+                ChoiceButton(stringResource(R.string.taste_same), Modifier.weight(0.8f), outlined = true, enabled = canAnswer) { vm.choose(Choice.SAME) }
+                ChoiceButton(stringResource(R.string.taste_b_better), Modifier.weight(1f), enabled = canAnswer) { vm.choose(Choice.B) }
             }
-            TextButton(onClick = vm::skipTaste, modifier = Modifier.fillMaxWidth()) { Text("Finish now") }
+            TextButton(onClick = vm::skipTaste, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.taste_finish)) }
         },
     ) {
         LinearProgressIndicator(
@@ -192,18 +195,18 @@ fun TasteScreen(vm: AppViewModel) {
                 label = "round",
             ) { r ->
                 Text(
-                    "Round $r",
+                    stringResource(R.string.taste_round, r),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
             Spacer(Modifier.weight(1f))
-            Text("usually 5 to 7", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.taste_rounds_usual), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         AnimatedVisibility(visible = t.locked && t.answered > 0, enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkVertically()) {
             Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "New pair: a different A and B. Listen to both again.",
+                    stringResource(R.string.taste_new_pair),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -211,7 +214,7 @@ fun TasteScreen(vm: AppViewModel) {
             }
         }
         Text(
-            "Tap A and B to switch instantly, as often as you like. Listen to the whole sound: bass, voices, cymbals, clarity.",
+            stringResource(R.string.taste_how),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -225,14 +228,14 @@ fun TasteScreen(vm: AppViewModel) {
             // The pair sliding away stays idle and ignores taps; only the new one plays.
             val current = shown == round
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                AbTile("A", current && t.listening == Choice.A && playing, heard = true, Modifier.weight(1f)) { if (current) vm.listen(Choice.A) }
-                AbTile("B", current && t.listening == Choice.B && playing, heard = !current || t.heardB, Modifier.weight(1f)) { if (current) vm.listen(Choice.B) }
+                AbTile(stringResource(R.string.taste_a), current && t.listening == Choice.A && playing, heard = true, Modifier.weight(1f)) { if (current) vm.listen(Choice.A) }
+                AbTile(stringResource(R.string.taste_b), current && t.listening == Choice.B && playing, heard = !current || t.heardB, Modifier.weight(1f)) { if (current) vm.listen(Choice.B) }
             }
         }
         FilledTonalButton(onClick = { vm.setMusicPlaying(!playing) }, modifier = Modifier.fillMaxWidth()) {
             Icon(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, null)
             Spacer(Modifier.width(8.dp))
-            Text(if (playing) "Pause music" else "Play music")
+            Text(stringResource(if (playing) R.string.taste_pause_music else R.string.taste_play_music))
         }
         SectionCard { MusicPicker(vm) }
     }
@@ -254,11 +257,13 @@ private fun AbTile(label: String, active: Boolean, heard: Boolean, modifier: Mod
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(label, style = MaterialTheme.typography.displayMedium, color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                 Text(
-                    when {
-                        active -> "Playing"
-                        heard -> "Heard · tap to switch"
-                        else -> "Tap to hear"
-                    },
+                    stringResource(
+                        when {
+                            active -> R.string.taste_tile_playing
+                            heard -> R.string.taste_tile_heard
+                            else -> R.string.taste_tile_new
+                        },
+                    ),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Making a profile: the setup steps, the listening check and the taste test. -->
+<resources>
+
+    <!-- ===== Setup: New profile ===== -->
+    <string name="setup_intro_title">New profile</string>
+    <string name="setup_intro_start">Start</string>
+    <string name="setup_intro_headline">Let\'s find your sound</string>
+    <string name="setup_intro_subtitle">PureEQ measures how well each ear hears each part of the spectrum through these headphones, then learns what you like. Both become one EQ.</string>
+    <!-- The three steps of making a profile, each a title and a text. "Yes" is the listening
+         check's answer button, "A" and "B" the taste test's two options. -->
+    <string name="setup_intro_step_check">1 · Listening check</string>
+    <string name="setup_intro_step_check_text">Short beeps in your left and right ear. Tap Yes whenever you hear one, even faintly. PureEQ picks each beep to learn as much as possible, so it\'s over in about 2 minutes.</string>
+    <string name="setup_intro_step_taste">2 · Taste</string>
+    <string name="setup_intro_step_taste_text">Hear music as A and B, pick the one you like. Both are equally loud, so trust your ears. Usually 5 to 7 rounds.</string>
+    <string name="setup_intro_step_eq">3 · Your EQ</string>
+    <string name="setup_intro_step_eq_text">Apply it to all audio on this phone, or export it to Wavelet, Poweramp Equalizer, JamesDSP and others.</string>
+    <!-- A heading and its tips; each tip is shown after a bullet. -->
+    <string name="setup_intro_tips">Before you start</string>
+    <string name="setup_intro_tip_room">Find a quiet room and wear the headphones the way you normally do.</string>
+    <string name="setup_intro_tip_effects">Turn off other sound effects: Dolby Atmos, Adapt Sound, other EQ apps, and the EQ in your earbuds\' app.</string>
+    <string name="setup_intro_tip_noise_cancelling">Noise cancelling on helps. Transparency / ambient mode should be off.</string>
+    <!-- A switch to include the listening check. Under it, the chosen length, or this text when it is off. -->
+    <string name="setup_intro_check">Listening check</string>
+    <string name="setup_intro_check_skipped">Skipped: taste only</string>
+
+    <!-- ===== Setup: Headphones ===== -->
+    <string name="setup_headphones_title">Headphones</string>
+    <!-- Button on the Headphones and Room check steps. -->
+    <string name="setup_continue">Continue</string>
+    <string name="setup_headphones_continue_without">Continue without headphones</string>
+    <string name="setup_headphones_headline">Put on your headphones</string>
+    <string name="setup_headphones_subtitle">Your result belongs to these headphones and your ears together, so use the pair you\'ll listen with.</string>
+    <string name="setup_headphones_none">No headphones detected. A listening check needs one sound per ear, which a phone speaker can\'t do.</string>
+    <!-- The kind of headphones: a heading and two choices. -->
+    <string name="setup_headphones_type">Type</string>
+    <string name="setup_headphones_in_ear">In-ear / earbuds</string>
+    <string name="setup_headphones_over_ear">Over-ear / on-ear</string>
+    <string name="setup_headphones_type_note">In-ear and over-ear headphones reach the eardrum differently, so each is measured against its own reference.</string>
+    <string name="setup_headphones_bluetooth">Bluetooth works, but disable any EQ, \"adaptive\" or \"spatial\" sound in the earbuds\' companion app for the test.</string>
+    <!-- The headphone model, picked from AutoEq's database. -->
+    <string name="setup_model_title">Model (optional)</string>
+    <string name="setup_model_add">Add your model\'s measured correction from AutoEq\'s database of over 6,000 headphones. It brings them to the Harman target, and the listening check fine-tunes the rest.</string>
+    <string name="setup_model_find">Find my headphones</string>
+    <string name="setup_model_change">Change</string>
+    <!-- Under the picked model's name. %1$s: the target curve's name, shown as it is, such as "Harman in-ear 2019". -->
+    <string name="setup_model_corrected_to">Corrected to the %1$s target.</string>
+    <!-- Instead of the sentence above, for a model whose correction comes ready-made from AutoEq. -->
+    <string name="setup_model_corrected_autoeq">Corrected to AutoEq\'s target for it.</string>
+    <!-- Follows one of the two sentences above when the model was remembered from last time. -->
+    <string name="setup_model_remembered">Picked for these headphones last time.</string>
+    <!-- Credit under the model. %1$s: who measured the headphones, such as "oratory1990". -->
+    <string name="setup_model_attribution">Headphone data: %1$s via AutoEq (Jaakko Pasanen, MIT)</string>
+
+    <!-- ===== Setup: Room check ===== -->
+    <string name="setup_quiet_title">Room check</string>
+    <string name="setup_quiet_skip">Skip check</string>
+    <string name="setup_quiet_headline">Is it quiet enough?</string>
+    <string name="setup_quiet_subtitle">Background noise covers up quiet beeps and skews the result. PureEQ can listen for 3 seconds to check. Nothing is recorded or saved.</string>
+    <!-- Under the measured level, such as "38 dB(A)". -->
+    <string name="setup_quiet_level">approximate room noise</string>
+    <string name="setup_quiet_failed">Couldn\'t use the microphone. You can skip this check.</string>
+    <string name="setup_quiet_good">Quiet. Good for an accurate test.</string>
+    <string name="setup_quiet_fair">A little noisy. Fine with noise cancelling on; quieter is better.</string>
+    <string name="setup_quiet_noisy">Too noisy for an accurate test. Find a quieter spot or turn on noise cancelling.</string>
+    <string name="setup_quiet_check">Check noise</string>
+    <string name="setup_quiet_check_again">Check again</string>
+
+    <!-- ===== Setup: Volume ===== -->
+    <string name="setup_volume_title">Volume</string>
+    <string name="setup_volume_confirm">It\'s soft but clear</string>
+    <string name="setup_volume_headline">Set the volume</string>
+    <string name="setup_volume_subtitle">A beep is repeating in both ears. Adjust the volume until it is soft but clearly audible, like a quiet clock ticking. Keep this volume until the test is over.</string>
+    <!-- Spoken labels of the buttons on either side of the volume slider. -->
+    <string name="setup_volume_down">Quieter</string>
+    <string name="setup_volume_up">Louder</string>
+    <!-- Under the volume slider. %1$d: the phone's media volume step; %2$d: the highest step. -->
+    <string name="setup_volume_level">Volume %1$d of %2$d</string>
+    <string name="setup_volume_cant_hear">Can\'t hear anything even at full volume? Check the headphones are connected and not muted.</string>
+
+    <!-- ===== Setup: Left and right (one beep on one side) ===== -->
+    <string name="setup_channel_title">Left and right</string>
+    <string name="setup_channel_volume_again">Set the volume again</string>
+    <string name="setup_channel_try_again">Try again</string>
+    <string name="setup_channel_continue_anyway">Continue anyway</string>
+    <string name="setup_channel_headline">Where was the beep?</string>
+    <string name="setup_channel_subtitle">One beep played on one side. Tell PureEQ where you heard it; this catches swapped earbuds and mono audio.</string>
+    <!-- Answers: where the beep was heard. -->
+    <string name="setup_channel_left">Left</string>
+    <string name="setup_channel_both">Both</string>
+    <string name="setup_channel_right">Right</string>
+    <string name="setup_channel_play_again">Play again</string>
+    <string name="setup_channel_not_heard">I didn\'t hear it</string>
+    <!-- What the answer showed. -->
+    <string name="setup_channel_ok">Correct. Starting the listening check…</string>
+    <string name="setup_channel_swapped">That beep was on the other side, so left and right look swapped. Check the earbuds are in the correct ears (L/R markings), then try again.</string>
+    <!-- "Settings > Accessibility > Audio" is the path to the setting in Android's Settings app. -->
+    <string name="setup_channel_mono">It sounded on both sides, so mono audio may be on. Turn it off and centre the balance in Settings > Accessibility > Audio, then try again.</string>
+    <string name="setup_channel_missed">The beep was missed. Check both earbuds are in and connected; the volume may be too low.</string>
+
+    <!-- ===== Listening check ===== -->
+    <string name="check_title">Listening check</string>
+    <!-- Spoken label of the pause button. -->
+    <string name="check_pause">Pause</string>
+    <string name="check_yes">Yes, I heard it</string>
+    <string name="check_no">No</string>
+    <string name="check_replay">Play that beep again</string>
+    <!-- How far the check is. %1$d: percent done, 0 to 100. -->
+    <string name="check_progress">%1$d%%</string>
+    <!-- Under the animation: while a beep plays, while waiting for the answer, before the next beep. -->
+    <string name="check_listen">Listen…</string>
+    <string name="check_question">Did you hear a beep?</string>
+    <string name="check_get_ready">Get ready</string>
+    <!-- "Yes" is the answer button. -->
+    <string name="check_instructions">Beeps come in either ear and get very quiet. Tap Yes as soon as you hear one, even faintly. Missed one? You can play it again once before answering.</string>
+    <!-- Shown after Yes answers to silent beeps. -->
+    <string name="check_guessing">Some beeps are silent on purpose, and you said Yes to a few of them. Only tap Yes when you\'re sure you heard something.</string>
+    <string name="check_got_it">Got it</string>
+    <!-- The dialog when the check pauses: the listener paused it, or PureEQ went to the background. -->
+    <string name="check_paused">Paused</string>
+    <string name="check_paused_text">Take a breath. Continue whenever you\'re ready.</string>
+    <string name="check_paused_background">The test paused while PureEQ was in the background.</string>
+    <!-- The dialog when the volume changed during the check. -->
+    <string name="check_volume_changed">Volume changed</string>
+    <string name="check_volume_changed_text">The test needs the volume you set at the start. Restore it and carry on.</string>
+    <string name="check_restore_volume">Restore volume and continue</string>
+    <!-- The dialog when the headphones disconnected during the check. -->
+    <string name="check_headphones_disconnected">Headphones disconnected</string>
+    <string name="check_headphones_disconnected_text">Reconnect the same headphones to continue.</string>
+    <!-- The pause dialog's buttons. -->
+    <string name="check_continue">Continue</string>
+    <string name="check_stop_test">Stop test</string>
+    <!-- Confirms leaving the check with Back. -->
+    <string name="check_stop_title">Stop the listening check?</string>
+    <string name="check_stop_text">Your answers so far will be discarded.</string>
+    <string name="check_stop">Stop</string>
+    <string name="check_keep_going">Keep going</string>
+
+    <!-- ===== Listening check: the result ===== -->
+    <string name="check_done_continue">Continue to taste</string>
+    <string name="check_done_start_over">Start over</string>
+    <string name="check_done_headline">Done. Here\'s your listening profile</string>
+    <!-- How to read the chart, when no headphone model was picked. %1$s: the reference headphones,
+         check_done_reference_in_ear or check_done_reference_over_ear. -->
+    <string name="check_done_explained">Each point compares the quietest beep you heard in that band through these headphones with a reference listener on %1$s, with your low mids (500 Hz to 1.5 kHz) as the zero line. Lower on the chart means that band gets more help. It includes your headphones\' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point.</string>
+    <!-- The reference headphones in the sentence above: "…with a reference listener on well-tuned in-ear headphones, …" -->
+    <string name="check_done_reference_in_ear">well-tuned in-ear headphones</string>
+    <string name="check_done_reference_over_ear">well-tuned over-ear headphones</string>
+    <!-- How to read the chart, when the picked headphone model's measured response is taken out. -->
+    <string name="check_done_explained_corrected">Each point compares the quietest beep you heard in that band with a reference listener, after your headphones\' measured response is taken out, with your low mids (500 Hz to 1.5 kHz) as the zero line. Lower on the chart means that band gets more help. What\'s left is your ears and how the headphones sit on them. The EQ follows the smooth trend, not every point.</string>
+    <!-- The chart's legend; ● and ■ are the shapes of each ear's points on the chart. -->
+    <string name="check_done_left">● Left</string>
+    <string name="check_done_right">■ Right</string>
+    <!-- What the chart's values mean. -->
+    <string name="check_done_axis">dB, relative to the reference</string>
+    <!-- A heading and a rating of how consistent the answers were. -->
+    <string name="check_done_reliability">Reliability</string>
+    <string name="check_reliability_good">Good</string>
+    <string name="check_reliability_fair">Fair</string>
+    <string name="check_reliability_low">Low</string>
+    <!-- The next four sentences make one paragraph, in this order. The second appears only for a
+         check made with PureEQ 1.0 or 1.1, the third only for one made with 1.2 or later. -->
+    <!-- %1$d: silent beeps answered Yes; %2$d: silent beeps played. -->
+    <string name="check_done_false_alarms">Silent check beeps answered Yes: %1$d of %2$d.</string>
+    <!-- %1$s: the largest difference, a whole number such as "4". -->
+    <string name="check_done_retest">1 kHz re-check differed by up to %1$s dB.</string>
+    <!-- %1$d: answers far off the result; %2$d: all answers to beeps that played. -->
+    <string name="check_done_inconsistent">Answers that didn\'t fit the rest: %1$d of %2$d.</string>
+    <!-- %1$d: all answers; %2$d min %3$d s: how long the check took. The English "one" form keeps
+         "answers", as the app has always shown it. -->
+    <plurals name="check_done_answers">
+        <item quantity="one">%1$d answers in %2$d min %3$d s.</item>
+        <item quantity="other">%1$d answers in %2$d min %3$d s.</item>
+    </plurals>
+    <!-- %1$d: bands where even the loudest beep was missed, or even the quietest was heard. -->
+    <plurals name="check_done_edge">
+        <item quantity="one">%1$d band(s) were at the edge of the test range; PureEQ limits the correction there.</item>
+        <item quantity="other">%1$d band(s) were at the edge of the test range; PureEQ limits the correction there.</item>
+    </plurals>
+    <string name="check_done_poor">The answers weren\'t very consistent. A quieter room and only answering Yes when sure usually fixes this; consider starting over.</string>
+    <string name="check_done_disclaimer">This is a relative listening profile for tuning sound, not a hearing test or an audiogram. PureEQ is not a medical device. A hearing care professional can help with any questions about your hearing.</string>
+
+    <!-- ===== Taste test ===== -->
+    <string name="taste_title">Taste</string>
+    <!-- Choosing the music, before and during the taste test. -->
+    <string name="taste_music_preparing">Preparing music…</string>
+    <string name="taste_music_loading">Loading…</string>
+    <string name="taste_music_loops">Loops seamlessly while you compare</string>
+    <string name="taste_music_mine">My song</string>
+    <string name="taste_music_built_in">Built-in track</string>
+    <!-- Before the taste test. "Same" is the answer button for no preference. -->
+    <string name="taste_intro_start">Start comparing</string>
+    <string name="taste_intro_skip">Skip, use the listening check only</string>
+    <string name="taste_intro_headline">Now, what do you like?</string>
+    <string name="taste_intro_subtitle">You\'ll hear the same music as A and B. Switch between them as often as you like and pick the one you enjoy more. Both are equally loud, so go with what pleases you. PureEQ learns from every answer, \"Same\" included, and stops once it knows your taste: usually 5 to 7 rounds.</string>
+    <!-- Before redoing the taste test of a saved profile, from Fine-tune. "Reset" is a button there. -->
+    <string name="taste_redo_headline">Redo the taste test</string>
+    <string name="taste_redo_subtitle">You\'ll hear the same music as A and B and pick the one you enjoy more, usually 5 to 7 rounds. Both are equally loud. Your listening result stays as it is; the outcome replaces your bass and treble (warmth and vocals go back to 0) and becomes what Reset goes back to.</string>
+    <string name="taste_music">Music</string>
+    <string name="taste_music_hint">Your own song works best: pick something you know well, with vocals, bass and cymbals. Files on your phone only (streaming apps protect theirs).</string>
+    <string name="taste_volume">Listening volume</string>
+    <string name="taste_volume_text">Play the music and set the volume you normally listen at. Taste depends on volume, so this matters.</string>
+    <string name="taste_pause">Pause</string>
+    <string name="taste_play_music">Play music</string>
+    <!-- The comparison. Above the answer buttons: while a new pair starts, until B was heard, then. -->
+    <string name="taste_wait">New pair…</string>
+    <string name="taste_hear_b">Listen to B as well, then choose.</string>
+    <string name="taste_question">Which do you enjoy more?</string>
+    <string name="taste_a_better">A is better</string>
+    <string name="taste_same">Same</string>
+    <string name="taste_b_better">B is better</string>
+    <string name="taste_finish">Finish now</string>
+    <!-- %1$d: the number of the round being played. -->
+    <string name="taste_round">Round %1$d</string>
+    <!-- Next to the round: how many rounds it usually takes. -->
+    <string name="taste_rounds_usual">usually 5 to 7</string>
+    <string name="taste_new_pair">New pair: a different A and B. Listen to both again.</string>
+    <string name="taste_how">Tap A and B to switch instantly, as often as you like. Listen to the whole sound: bass, voices, cymbals, clarity.</string>
+    <string name="taste_pause_music">Pause music</string>
+    <!-- The letters on the two big tiles; the same letters as in the texts about A and B. -->
+    <string name="taste_a">A</string>
+    <string name="taste_b">B</string>
+    <!-- Under a tile's letter: playing now, heard already, not heard yet. -->
+    <string name="taste_tile_playing">Playing</string>
+    <string name="taste_tile_heard">Heard · tap to switch</string>
+    <string name="taste_tile_new">Tap to hear</string>
+</resources>

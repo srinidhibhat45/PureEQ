@@ -49,10 +49,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pureeq.R
 import app.pureeq.audio.NoiseMeter
 import app.pureeq.dsp.Ear
 import app.pureeq.hearing.HeadphoneType
@@ -67,8 +69,10 @@ import app.pureeq.ui.components.KeepScreenOn
 import app.pureeq.ui.components.ListeningOrb
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.detailRes
 import app.pureeq.ui.kindLabel
 import app.pureeq.ui.outputName
+import app.pureeq.ui.titleRes
 import app.pureeq.ui.components.StepScaffold
 import app.pureeq.ui.theme.StatusColors
 import kotlinx.coroutines.delay
@@ -78,36 +82,36 @@ import kotlin.math.roundToInt
 fun IntroScreen(vm: AppViewModel) {
     val draft by vm.draft.collectAsStateWithLifecycle()
     StepScaffold(
-        title = "New profile",
+        title = stringResource(R.string.setup_intro_title),
         onBack = { vm.back() },
         step = 0,
-        bottom = { PrimaryButton("Start", vm::beginChecks) },
+        bottom = { PrimaryButton(stringResource(R.string.setup_intro_start), vm::beginChecks) },
     ) {
         Headline(
-            "Let's find your sound",
-            "PureEQ measures how well each ear hears each part of the spectrum through these headphones, then learns what you like. Both become one EQ.",
+            stringResource(R.string.setup_intro_headline),
+            stringResource(R.string.setup_intro_subtitle),
         )
         SectionCard {
-            InfoRow(Icons.Rounded.Hearing, "1 · Listening check", "Short beeps in your left and right ear. Tap Yes whenever you hear one, even faintly. PureEQ picks each beep to learn as much as possible, so it's over in about 2 minutes.")
-            InfoRow(Icons.Rounded.Tune, "2 · Taste", "Hear music as A and B, pick the one you like. Both are equally loud, so trust your ears. Usually 5 to 7 rounds.")
-            InfoRow(Icons.Rounded.Equalizer, "3 · Your EQ", "Apply it to all audio on this phone, or export it to Wavelet, Poweramp Equalizer, JamesDSP and others.")
+            InfoRow(Icons.Rounded.Hearing, stringResource(R.string.setup_intro_step_check), stringResource(R.string.setup_intro_step_check_text))
+            InfoRow(Icons.Rounded.Tune, stringResource(R.string.setup_intro_step_taste), stringResource(R.string.setup_intro_step_taste_text))
+            InfoRow(Icons.Rounded.Equalizer, stringResource(R.string.setup_intro_step_eq), stringResource(R.string.setup_intro_step_eq_text))
         }
         SectionCard {
-            Text("Before you start", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.setup_intro_tips), style = MaterialTheme.typography.titleSmall)
             listOf(
-                "Find a quiet room and wear the headphones the way you normally do.",
-                "Turn off other sound effects: Dolby Atmos, Adapt Sound, other EQ apps, and the EQ in your earbuds' app.",
-                "Noise cancelling on helps. Transparency / ambient mode should be off.",
+                R.string.setup_intro_tip_room,
+                R.string.setup_intro_tip_effects,
+                R.string.setup_intro_tip_noise_cancelling,
             ).forEach {
-                Text("•  $it", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("•  ${stringResource(it)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         SectionCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Listening check", style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.setup_intro_check), style = MaterialTheme.typography.titleSmall)
                     Text(
-                        if (draft.includeHearing) draft.length.detail else "Skipped: taste only",
+                        stringResource(if (draft.includeHearing) draft.length.detailRes else R.string.setup_intro_check_skipped),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -121,7 +125,7 @@ fun IntroScreen(vm: AppViewModel) {
                             selected = draft.length == l,
                             onClick = { vm.setTestLength(l) },
                             shape = SegmentedButtonDefaults.itemShape(i, TestLength.entries.size),
-                        ) { Text(l.label) }
+                        ) { Text(stringResource(l.titleRes)) }
                     }
                 }
             }
@@ -133,19 +137,19 @@ fun IntroScreen(vm: AppViewModel) {
 fun HeadphonesScreen(vm: AppViewModel) {
     val output by vm.output.collectAsStateWithLifecycle()
     StepScaffold(
-        title = "Headphones",
+        title = stringResource(R.string.setup_headphones_title),
         onBack = { vm.back() },
         step = 1,
         bottom = {
-            PrimaryButton("Continue", vm::afterHeadphones, enabled = output.isHeadphones)
+            PrimaryButton(stringResource(R.string.setup_continue), vm::afterHeadphones, enabled = output.isHeadphones)
             if (!output.isHeadphones) {
-                TextButton(onClick = vm::afterHeadphones, modifier = Modifier.fillMaxWidth()) { Text("Continue without headphones") }
+                TextButton(onClick = vm::afterHeadphones, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.setup_headphones_continue_without)) }
             }
         },
     ) {
         val draft by vm.draft.collectAsStateWithLifecycle()
         LaunchedEffect(output) { vm.updateDevice() }
-        Headline("Put on your headphones", "Your result belongs to these headphones and your ears together, so use the pair you'll listen with.")
+        Headline(stringResource(R.string.setup_headphones_headline), stringResource(R.string.setup_headphones_subtitle))
         SectionCard(padding = 22.dp) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -164,7 +168,7 @@ fun HeadphonesScreen(vm: AppViewModel) {
             }
             if (!output.isHeadphones) {
                 Text(
-                    "No headphones detected. A listening check needs one sound per ear, which a phone speaker can't do.",
+                    stringResource(R.string.setup_headphones_none),
                     style = MaterialTheme.typography.bodyMedium,
                     color = StatusColors.Warn,
                 )
@@ -173,36 +177,36 @@ fun HeadphonesScreen(vm: AppViewModel) {
         // The type only matters for the listening check's reference curve.
         if (draft.includeHearing) {
             SectionCard {
-                Text("Type", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.setup_headphones_type), style = MaterialTheme.typography.titleSmall)
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     HeadphoneType.entries.forEachIndexed { i, t ->
                         SegmentedButton(
                             selected = draft.headphones == t,
                             onClick = { vm.setHeadphones(t) },
                             shape = SegmentedButtonDefaults.itemShape(i, HeadphoneType.entries.size),
-                        ) { Text(if (t == HeadphoneType.IN_EAR) "In-ear / earbuds" else "Over-ear / on-ear") }
+                        ) { Text(stringResource(if (t == HeadphoneType.IN_EAR) R.string.setup_headphones_in_ear else R.string.setup_headphones_over_ear)) }
                     }
                 }
                 Text(
-                    "In-ear and over-ear headphones reach the eardrum differently, so each is measured against its own reference.",
+                    stringResource(R.string.setup_headphones_type_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
         SectionCard {
-            Text("Model (optional)", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.setup_model_title), style = MaterialTheme.typography.titleSmall)
             val model = draft.headphoneModel
             if (model == null) {
                 Text(
-                    "Add your model's measured correction from AutoEq's database of over 6,000 headphones. It brings them to the Harman target, and the listening check fine-tunes the rest.",
+                    stringResource(R.string.setup_model_add),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 OutlinedButton(onClick = { vm.openHeadphonePicker(forEditor = false) }, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Rounded.Search, null, Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Find my headphones")
+                    Text(stringResource(R.string.setup_model_find))
                 }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -210,19 +214,23 @@ fun HeadphonesScreen(vm: AppViewModel) {
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(model.name, style = MaterialTheme.typography.bodyLarge)
+                        // HeadphoneModel.targetLabel in the phone's language; the target's name stays as it is.
+                        val corrected = model.target?.let { stringResource(R.string.setup_model_corrected_to, it) }
+                            ?: stringResource(R.string.setup_model_corrected_autoeq)
                         Text(
-                            if (draft.modelRemembered) "Corrected to ${model.targetLabel}. Picked for these headphones last time." else "Corrected to ${model.targetLabel}.",
+                            if (draft.modelRemembered) "$corrected ${stringResource(R.string.setup_model_remembered)}" else corrected,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    TextButton(onClick = { vm.openHeadphonePicker(forEditor = false) }) { Text("Change") }
+                    TextButton(onClick = { vm.openHeadphonePicker(forEditor = false) }) { Text(stringResource(R.string.setup_model_change)) }
                 }
-                Text(model.attribution, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // HeadphoneModel.attribution in the phone's language.
+                Text(stringResource(R.string.setup_model_attribution, model.source), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Text(
-            "Bluetooth works, but disable any EQ, \"adaptive\" or \"spatial\" sound in the earbuds' companion app for the test.",
+            stringResource(R.string.setup_headphones_bluetooth),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -245,16 +253,20 @@ fun QuietScreen(vm: AppViewModel) {
         if (allowed && quiet.result == null && !quiet.measuring) vm.measureNoise()
     }
     StepScaffold(
-        title = "Room check",
+        title = stringResource(R.string.setup_quiet_title),
         onBack = { vm.back() },
         step = 2,
         bottom = {
-            PrimaryButton(if (quiet.result != null) "Continue" else "Skip check", { vm.go(Screen.Volume) }, enabled = !quiet.measuring)
+            PrimaryButton(
+                stringResource(if (quiet.result != null) R.string.setup_continue else R.string.setup_quiet_skip),
+                { vm.go(Screen.Volume) },
+                enabled = !quiet.measuring,
+            )
         },
     ) {
         Headline(
-            "Is it quiet enough?",
-            "Background noise covers up quiet beeps and skews the result. PureEQ can listen for 3 seconds to check. Nothing is recorded or saved.",
+            stringResource(R.string.setup_quiet_headline),
+            stringResource(R.string.setup_quiet_subtitle),
         )
         SectionCard(padding = 22.dp) {
             val level = quiet.level
@@ -266,7 +278,7 @@ fun QuietScreen(vm: AppViewModel) {
                         if (level != null) "${level.roundToInt()} dB(A)" else "--",
                         style = MaterialTheme.typography.headlineMedium,
                     )
-                    Text("approximate room noise", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.setup_quiet_level), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             if (quiet.measuring) {
@@ -274,15 +286,15 @@ fun QuietScreen(vm: AppViewModel) {
             }
             val r = quiet.result
             when {
-                quiet.failed -> Text("Couldn't use the microphone. You can skip this check.", color = StatusColors.Warn)
-                r != null && r < NoiseMeter.QUIET_DB -> Text("Quiet. Good for an accurate test.", color = StatusColors.Good)
-                r != null && r < NoiseMeter.NOISY_DB -> Text("A little noisy. Fine with noise cancelling on; quieter is better.", color = StatusColors.Warn)
-                r != null -> Text("Too noisy for an accurate test. Find a quieter spot or turn on noise cancelling.", color = StatusColors.Bad)
+                quiet.failed -> Text(stringResource(R.string.setup_quiet_failed), color = StatusColors.Warn)
+                r != null && r < NoiseMeter.QUIET_DB -> Text(stringResource(R.string.setup_quiet_good), color = StatusColors.Good)
+                r != null && r < NoiseMeter.NOISY_DB -> Text(stringResource(R.string.setup_quiet_fair), color = StatusColors.Warn)
+                r != null -> Text(stringResource(R.string.setup_quiet_noisy), color = StatusColors.Bad)
             }
             OutlinedButton(onClick = check, enabled = !quiet.measuring, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Rounded.Mic, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text(if (quiet.result == null) "Check noise" else "Check again")
+                Text(stringResource(if (quiet.result == null) R.string.setup_quiet_check else R.string.setup_quiet_check_again))
             }
         }
     }
@@ -308,20 +320,20 @@ private fun VolumeSetting(vm: AppViewModel) {
     val min = vm.volumeMin
     val max = vm.volumeMax
     StepScaffold(
-        title = "Volume",
+        title = stringResource(R.string.setup_volume_title),
         onBack = { vm.back() },
         step = 3,
-        bottom = { PrimaryButton("It's soft but clear", vm::confirmVolume) },
+        bottom = { PrimaryButton(stringResource(R.string.setup_volume_confirm), vm::confirmVolume) },
     ) {
         Headline(
-            "Set the volume",
-            "A beep is repeating in both ears. Adjust the volume until it is soft but clearly audible, like a quiet clock ticking. Keep this volume until the test is over.",
+            stringResource(R.string.setup_volume_headline),
+            stringResource(R.string.setup_volume_subtitle),
         )
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { ListeningOrb(active = true, size = 180.dp) }
         SectionCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 FilledIconButton(onClick = { vm.setVolume(volume - 1); volume = vm.currentVolume() }) {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeDown, "Quieter")
+                    Icon(Icons.AutoMirrored.Rounded.VolumeDown, stringResource(R.string.setup_volume_down))
                 }
                 Slider(
                     value = volume.toFloat(),
@@ -331,11 +343,11 @@ private fun VolumeSetting(vm: AppViewModel) {
                     modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
                 )
                 FilledIconButton(onClick = { vm.setVolume(volume + 1); volume = vm.currentVolume() }) {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, "Louder")
+                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, stringResource(R.string.setup_volume_up))
                 }
             }
             Text(
-                "Volume $volume of $max",
+                stringResource(R.string.setup_volume_level, volume, max),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
@@ -343,7 +355,7 @@ private fun VolumeSetting(vm: AppViewModel) {
             )
         }
         Text(
-            "Can't hear anything even at full volume? Check the headphones are connected and not muted.",
+            stringResource(R.string.setup_volume_cant_hear),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -356,54 +368,58 @@ private fun ChannelCheck(vm: AppViewModel, c: ChannelUi) {
     val sounding by vm.toneActive.collectAsStateWithLifecycle()
     BackHandler { vm.redoVolume() }
     StepScaffold(
-        title = "Left and right",
+        title = stringResource(R.string.setup_channel_title),
         onBack = { vm.redoVolume() },
         step = 4,
         bottom = {
             when (c.verdict) {
                 null, ChannelVerdict.OK -> Unit
                 ChannelVerdict.NOT_HEARD -> {
-                    PrimaryButton("Set the volume again", vm::redoVolume, icon = Icons.Rounded.Refresh)
-                    TextButton(onClick = { vm.go(Screen.Hearing) }, modifier = Modifier.fillMaxWidth()) { Text("Continue anyway") }
+                    PrimaryButton(stringResource(R.string.setup_channel_volume_again), vm::redoVolume, icon = Icons.Rounded.Refresh)
+                    TextButton(onClick = { vm.go(Screen.Hearing) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.setup_channel_continue_anyway)) }
                 }
                 else -> {
-                    PrimaryButton("Try again", vm::retryChannel, icon = Icons.Rounded.Refresh)
-                    TextButton(onClick = { vm.go(Screen.Hearing) }, modifier = Modifier.fillMaxWidth()) { Text("Continue anyway") }
+                    PrimaryButton(stringResource(R.string.setup_channel_try_again), vm::retryChannel, icon = Icons.Rounded.Refresh)
+                    TextButton(onClick = { vm.go(Screen.Hearing) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.setup_channel_continue_anyway)) }
                 }
             }
         },
     ) {
-        Headline("Where was the beep?", "One beep played on one side. Tell PureEQ where you heard it; this catches swapped earbuds and mono audio.")
+        Headline(stringResource(R.string.setup_channel_headline), stringResource(R.string.setup_channel_subtitle))
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             ListeningOrb(active = sounding && c.verdict == null, size = 170.dp)
         }
         when (val v = c.verdict) {
             null -> {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    listOf("Left" to Ear.LEFT, "Both" to Ear.BOTH, "Right" to Ear.RIGHT).forEach { (label, ear) ->
+                    listOf(
+                        R.string.setup_channel_left to Ear.LEFT,
+                        R.string.setup_channel_both to Ear.BOTH,
+                        R.string.setup_channel_right to Ear.RIGHT,
+                    ).forEach { (label, ear) ->
                         OutlinedButton(
                             onClick = { vm.answerChannel(ear) },
                             modifier = Modifier.weight(1f).height(56.dp),
                             shape = RoundedCornerShape(16.dp),
-                        ) { Text(label) }
+                        ) { Text(stringResource(label)) }
                     }
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    TextButton(onClick = { vm.playChannel(c.side) }) { Text("Play again") }
-                    TextButton(onClick = { vm.answerChannel(null) }) { Text("I didn't hear it") }
+                    TextButton(onClick = { vm.playChannel(c.side) }) { Text(stringResource(R.string.setup_channel_play_again)) }
+                    TextButton(onClick = { vm.answerChannel(null) }) { Text(stringResource(R.string.setup_channel_not_heard)) }
                 }
             }
             else -> SectionCard {
                 val (ok, text) = when (v) {
-                    ChannelVerdict.OK -> true to "Correct. Starting the listening check…"
-                    ChannelVerdict.SWAPPED -> false to "That beep was on the other side, so left and right look swapped. Check the earbuds are in the correct ears (L/R markings), then try again."
-                    ChannelVerdict.MONO -> false to "It sounded on both sides, so mono audio may be on. Turn it off and centre the balance in Settings > Accessibility > Audio, then try again."
-                    ChannelVerdict.NOT_HEARD -> false to "The beep was missed. Check both earbuds are in and connected; the volume may be too low."
+                    ChannelVerdict.OK -> true to R.string.setup_channel_ok
+                    ChannelVerdict.SWAPPED -> false to R.string.setup_channel_swapped
+                    ChannelVerdict.MONO -> false to R.string.setup_channel_mono
+                    ChannelVerdict.NOT_HEARD -> false to R.string.setup_channel_missed
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(if (ok) Icons.Rounded.CheckCircle else Icons.Rounded.Warning, null, tint = if (ok) StatusColors.Good else StatusColors.Warn)
                     Spacer(Modifier.width(12.dp))
-                    Text(text, style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(text), style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
