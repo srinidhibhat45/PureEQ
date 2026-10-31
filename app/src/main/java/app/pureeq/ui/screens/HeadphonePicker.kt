@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.R
@@ -106,7 +107,7 @@ private fun ResultRow(entry: AutoEqEntry, fetching: Boolean, selected: Boolean, 
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.fillMaxWidth().clickable(enabled = !fetching, onClick = onClick),
+        modifier = Modifier.fillMaxWidth().clickable(enabled = !fetching, role = Role.Button, onClick = onClick),
     ) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Rounded.Headphones, null, tint = MaterialTheme.colorScheme.primary)

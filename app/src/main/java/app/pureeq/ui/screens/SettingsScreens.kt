@@ -4,13 +4,13 @@ import android.os.Build
 import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material.icons.rounded.Info
@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.BuildConfig
@@ -46,6 +47,7 @@ import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
 import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.StepScaffold
+import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.detailRes
 import app.pureeq.ui.outputName
 import app.pureeq.ui.titleRes
@@ -63,8 +65,11 @@ fun SettingsScreen(vm: AppViewModel) {
         SectionCard {
             Text(stringResource(R.string.settings_system_eq), style = MaterialTheme.typography.titleSmall)
             SystemEqMode.entries.forEach { m ->
-                Row(Modifier.fillMaxWidth().clickable { update { it.copy(mode = m) } }, verticalAlignment = Alignment.Top) {
-                    RadioButton(selected = s.mode == m, onClick = { update { it.copy(mode = m) } })
+                Row(
+                    Modifier.fillMaxWidth().selectable(selected = s.mode == m, role = Role.RadioButton) { update { it.copy(mode = m) } },
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    RadioButton(selected = s.mode == m, onClick = null, modifier = Modifier.padding(12.dp))
                     Column(Modifier.padding(top = 12.dp)) {
                         Text(stringResource(m.titleRes), style = MaterialTheme.typography.bodyLarge)
                         Text(stringResource(m.detailRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -141,13 +146,13 @@ private fun OutputsSection(vm: AppViewModel, s: AppSettings) {
                 stringResource(R.string.settings_playing_now).takeIf { playing },
                 if (on) uses?.name else stringResource(R.string.settings_off),
             ).joinToString(" · ")
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.switchRow(on, enabled = active != null) { vm.setOutputOn(d, it) }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(deviceIcon(d), null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
                     Text(outputName(d.name), style = MaterialTheme.typography.bodyLarge)
                     Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = on, enabled = active != null, onCheckedChange = { vm.setOutputOn(d, it) })
+                Switch(checked = on, enabled = active != null, onCheckedChange = null)
             }
         }
     }
@@ -267,12 +272,12 @@ private fun ago(t: Long): String {
 
 @Composable
 private fun ToggleRow(title: String, text: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.switchRow(checked, onChange = onChange), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f).padding(end = 12.dp)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Switch(checked = checked, onCheckedChange = onChange)
+        Switch(checked = checked, onCheckedChange = null)
     }
 }
 

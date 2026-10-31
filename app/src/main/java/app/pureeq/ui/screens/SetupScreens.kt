@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,6 +51,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -69,6 +73,7 @@ import app.pureeq.ui.components.KeepScreenOn
 import app.pureeq.ui.components.ListeningOrb
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.detailRes
 import app.pureeq.ui.kindLabel
 import app.pureeq.ui.outputName
@@ -107,7 +112,7 @@ fun IntroScreen(vm: AppViewModel) {
             }
         }
         SectionCard {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.switchRow(draft.includeHearing, onChange = vm::setIncludeHearing), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.setup_intro_check), style = MaterialTheme.typography.titleSmall)
                     Text(
@@ -116,7 +121,7 @@ fun IntroScreen(vm: AppViewModel) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(checked = draft.includeHearing, onCheckedChange = vm::setIncludeHearing)
+                Switch(checked = draft.includeHearing, onCheckedChange = null)
             }
             if (draft.includeHearing) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -335,12 +340,14 @@ private fun VolumeSetting(vm: AppViewModel) {
                 FilledIconButton(onClick = { vm.setVolume(volume - 1); volume = vm.currentVolume() }) {
                     Icon(Icons.AutoMirrored.Rounded.VolumeDown, stringResource(R.string.setup_volume_down))
                 }
+                val volumeName = stringResource(R.string.setup_volume_name)
+                val volumeText = stringResource(R.string.setup_volume_level, volume, max)
                 Slider(
                     value = volume.toFloat(),
                     onValueChange = { vm.setVolume(it.roundToInt()); volume = it.roundToInt() },
                     valueRange = min.toFloat()..max.toFloat(),
                     steps = (max - min - 1).coerceAtLeast(0),
-                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp).semantics { contentDescription = volumeName; stateDescription = volumeText },
                 )
                 FilledIconButton(onClick = { vm.setVolume(volume + 1); volume = vm.currentVolume() }) {
                     Icon(Icons.AutoMirrored.Rounded.VolumeUp, stringResource(R.string.setup_volume_up))
@@ -399,7 +406,7 @@ private fun ChannelCheck(vm: AppViewModel, c: ChannelUi) {
                     ).forEach { (label, ear) ->
                         OutlinedButton(
                             onClick = { vm.answerChannel(ear) },
-                            modifier = Modifier.weight(1f).height(56.dp),
+                            modifier = Modifier.weight(1f).heightIn(min = 56.dp),
                             shape = RoundedCornerShape(16.dp),
                         ) { Text(stringResource(label)) }
                     }

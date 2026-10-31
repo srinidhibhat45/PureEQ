@@ -16,20 +16,45 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.pureeq.R
+import app.pureeq.dsp.Curves
 import app.pureeq.dsp.FreqGrid
+import app.pureeq.profile.Exporters
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.min
 
-class ChartCurve(val db: DoubleArray, val color: Color, val fill: Boolean = false, val dashed: Boolean = false)
+/** One curve; [label] names it for TalkBack when a chart shows more than one ("Left ear"). */
+class ChartCurve(val db: DoubleArray, val color: Color, val fill: Boolean = false, val dashed: Boolean = false, val label: String? = null)
+
+/** Where TalkBack reads a curve's level: bass, low mids, presence, treble. */
+private val SPOKEN_FREQS = listOf(100.0, 1000.0, 4000.0, 10000.0)
+
+private fun spokenFreq(f: Double) = if (f >= 1000) "${(f / 1000).toInt()} kHz" else "${f.toInt()} Hz"
+
+/** "Left ear: +4.5 dB at 100 Hz, 0.0 dB at 1 kHz, …" for each curve, from resources. */
+@Composable
+private fun spokenCurves(curves: List<Pair<String?, List<Pair<Double, Double>>>>): String {
+    val point = stringResource(R.string.chart_point)
+    val named = stringResource(R.string.chart_named)
+    val sep = stringResource(R.string.chart_separator)
+    return curves.joinToString(stringResource(R.string.chart_curve_separator)) { (label, pts) ->
+        val values = pts.joinToString(sep) { (f, v) -> point.format(Exporters.signed(v), spokenFreq(f)) }
+        if (label == null) values else named.format(label, values)
+    }
+}
 
 private val GRID_FREQS = listOf(50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0, 10000.0)
 private fun freqText(f: Double) = if (f >= 1000) "${(f / 1000).toInt()}k" else f.toInt().toString()
@@ -41,8 +66,14 @@ fun EqChart(curves: List<ChartCurve>, modifier: Modifier = Modifier, height: Dp 
     val grid = MaterialTheme.colorScheme.outlineVariant
     val zero = MaterialTheme.colorScheme.outline
     val label = MaterialTheme.colorScheme.onSurfaceVariant
-    val labelStyle = TextStyle(fontSize = 10.sp, color = label)
-    Canvas(modifier.fillMaxWidth().height(height)) {
+    // Axis numbers grow with the phone's text only up to 1.3×; beyond that they'd collide.
+    val fontScale = LocalDensity.current.fontScale
+    val labelStyle = TextStyle(fontSize = (10f * min(fontScale, 1.3f) / fontScale).sp, color = label)
+    val spoken = stringResource(
+        R.string.chart_eq,
+        spokenCurves(curves.filter { !it.dashed }.map { c -> c.label to SPOKEN_FREQS.map { f -> f to Curves.sample(c.db, f) } }),
+    )
+    Canvas(modifier.fillMaxWidth().height(height).semantics { contentDescription = spoken }) {
         var lo = curves.minOfOrNull { it.db.min() } ?: -6.0
         var hi = curves.maxOfOrNull { it.db.max() } ?: 6.0
         val span = max(12.0, hi - lo + 4.0)
@@ -103,7 +134,7 @@ private fun DrawScope.drawCurve(c: ChartCurve, x: (Double) -> Float, y: (Double)
     )
 }
 
-class HearingSeries(val points: List<Pair<Double, Double>>, val color: Color, val square: Boolean)
+class HearingSeries(val points: List<Pair<Double, Double>>, val color: Color, val square: Boolean, val label: String? = null)
 
 /**
  * The relative listening profile: bands that get more help sit lower. Left ear dots, right ear
@@ -114,9 +145,12 @@ fun HearingChart(series: List<HearingSeries>, modifier: Modifier = Modifier, hei
     val measurer = rememberTextMeasurer()
     val grid = MaterialTheme.colorScheme.outlineVariant
     val label = MaterialTheme.colorScheme.onSurfaceVariant
-    val labelStyle = TextStyle(fontSize = 10.sp, color = label)
+    // Axis numbers grow with the phone's text only up to 1.3×; beyond that they'd collide.
+    val fontScale = LocalDensity.current.fontScale
+    val labelStyle = TextStyle(fontSize = (10f * min(fontScale, 1.3f) / fontScale).sp, color = label)
     val freqs = series.flatMap { s -> s.points.map { it.first } }.distinct().sorted()
-    Canvas(modifier.fillMaxWidth().height(height)) {
+    val spoken = stringResource(R.string.chart_listening, spokenCurves(series.map { s -> s.label to s.points.sortedBy { it.first } }))
+    Canvas(modifier.fillMaxWidth().height(height).semantics { contentDescription = spoken }) {
         if (freqs.isEmpty()) return@Canvas
         val all = series.flatMap { s -> s.points.map { it.second } }
         val lo = min(-10.0, floor(all.min() / 5) * 5 - 5)

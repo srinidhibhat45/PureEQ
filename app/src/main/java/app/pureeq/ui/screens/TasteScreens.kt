@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -55,6 +56,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -64,6 +66,7 @@ import app.pureeq.R
 import app.pureeq.taste.Choice
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
+import app.pureeq.ui.components.AdaptiveButtons
 import app.pureeq.ui.components.Headline
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
@@ -175,10 +178,10 @@ fun TasteScreen(vm: AppViewModel) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChoiceButton(stringResource(R.string.taste_a_better), Modifier.weight(1f), enabled = canAnswer) { vm.choose(Choice.A) }
-                ChoiceButton(stringResource(R.string.taste_same), Modifier.weight(0.8f), outlined = true, enabled = canAnswer) { vm.choose(Choice.SAME) }
-                ChoiceButton(stringResource(R.string.taste_b_better), Modifier.weight(1f), enabled = canAnswer) { vm.choose(Choice.B) }
+            AdaptiveButtons(spacing = 8.dp) {
+                ChoiceButton(stringResource(R.string.taste_a_better), Modifier.share(), enabled = canAnswer) { vm.choose(Choice.A) }
+                ChoiceButton(stringResource(R.string.taste_same), Modifier.share(0.8f), outlined = true, enabled = canAnswer) { vm.choose(Choice.SAME) }
+                ChoiceButton(stringResource(R.string.taste_b_better), Modifier.share(), enabled = canAnswer) { vm.choose(Choice.B) }
             }
             TextButton(onClick = vm::skipTaste, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.taste_finish)) }
         },
@@ -248,7 +251,7 @@ private fun AbTile(label: String, active: Boolean, heard: Boolean, modifier: Mod
         label = "ab",
     )
     Card(
-        modifier.aspectRatio(0.9f).clickable(onClick = onClick),
+        modifier.aspectRatio(0.9f).clickable(role = Role.Button, onClick = onClick),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = bg),
         border = if (active) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
@@ -281,11 +284,11 @@ private fun ChoiceButton(text: String, modifier: Modifier, outlined: Boolean = f
         onClick()
     }
     if (outlined) {
-        OutlinedButton(onClick = tap, enabled = enabled, modifier = modifier.height(54.dp), shape = RoundedCornerShape(16.dp)) {
+        OutlinedButton(onClick = tap, enabled = enabled, modifier = modifier.heightIn(min = 54.dp), shape = RoundedCornerShape(16.dp)) {
             Text(text, textAlign = TextAlign.Center)
         }
     } else {
-        Button(onClick = tap, enabled = enabled, modifier = modifier.height(54.dp), shape = RoundedCornerShape(16.dp)) {
+        Button(onClick = tap, enabled = enabled, modifier = modifier.heightIn(min = 54.dp), shape = RoundedCornerShape(16.dp)) {
             Text(text, textAlign = TextAlign.Center)
         }
     }

@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -52,8 +54,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -79,7 +85,7 @@ fun StepScaffold(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text(title, style = MaterialTheme.typography.titleMedium) },
+                    title = { Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() }) },
                     navigationIcon = {
                         if (onBack != null) {
                             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.common_back)) }
@@ -119,12 +125,50 @@ fun StepScaffold(
     }
 }
 
+/**
+ * A row of text with a [androidx.compose.material3.Switch] at its end, as one control: the whole row
+ * toggles it, and TalkBack reads the text with the switch's state. The switch inside takes
+ * `onCheckedChange = null`.
+ */
+fun Modifier.switchRow(checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit): Modifier =
+    toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
+
+/** Lets each button in [AdaptiveButtons] take its share of the width. */
+interface AdaptiveButtonsScope {
+    fun Modifier.share(weight: Float = 1f): Modifier
+}
+
+/**
+ * Buttons side by side, or one under another when the phone's text is set large, so a label
+ * never breaks inside a word.
+ */
+@Composable
+fun AdaptiveButtons(spacing: Dp = 10.dp, content: @Composable AdaptiveButtonsScope.() -> Unit) {
+    if (LocalDensity.current.fontScale > LARGE_TEXT) {
+        Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
+            object : AdaptiveButtonsScope {
+                override fun Modifier.share(weight: Float) = fillMaxWidth()
+            }.content()
+        }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
+            val row = this
+            object : AdaptiveButtonsScope {
+                override fun Modifier.share(weight: Float) = with(row) { weight(weight) }
+            }.content()
+        }
+    }
+}
+
+/** Font scale above which side-by-side buttons stack. */
+private const val LARGE_TEXT = 1.3f
+
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, icon: ImageVector? = null) {
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.fillMaxWidth().height(54.dp),
+        modifier = modifier.fillMaxWidth().heightIn(min = 54.dp),
         shape = RoundedCornerShape(16.dp),
         contentPadding = PaddingValues(horizontal = 20.dp),
     ) {

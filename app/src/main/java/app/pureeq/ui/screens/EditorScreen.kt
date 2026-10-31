@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -43,6 +44,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.R
@@ -59,6 +63,7 @@ import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.StepScaffold
+import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.hintRes
 import app.pureeq.ui.theme.EarColors
 import app.pureeq.ui.theme.NumberStyle
@@ -100,14 +105,14 @@ fun EditorScreen(vm: AppViewModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(
                         onClick = { vm.go(Screen.Export(p.id)) },
-                        modifier = Modifier.weight(1f).height(54.dp),
+                        modifier = Modifier.weight(1f).heightIn(min = 54.dp),
                         shape = RoundedCornerShape(16.dp),
                     ) {
                         Icon(Icons.Rounded.IosShare, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(stringResource(R.string.editor_export))
                     }
-                    Button(onClick = vm::saveEditor, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(16.dp)) { Text(stringResource(R.string.editor_done)) }
+                    Button(onClick = vm::saveEditor, modifier = Modifier.weight(1f).heightIn(min = 54.dp), shape = RoundedCornerShape(16.dp)) { Text(stringResource(R.string.editor_done)) }
                 }
             }
         },
@@ -235,7 +240,7 @@ private fun FineTuning(
         val model = p.headphoneModel
         if (model != null) {
             Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.switchRow(p.headphoneCorrection) { on -> edit { it.copy(headphoneCorrection = on) } }, verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f).padding(end = 12.dp)) {
                         Text(stringResource(R.string.editor_headphone_correction), style = MaterialTheme.typography.titleSmall)
                         val target = model.target
@@ -250,7 +255,7 @@ private fun FineTuning(
                         )
                         Text(stringResource(R.string.editor_headphone_data, model.source), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Switch(checked = p.headphoneCorrection, onCheckedChange = { on -> edit { it.copy(headphoneCorrection = on) } })
+                    Switch(checked = p.headphoneCorrection, onCheckedChange = null)
                 }
                 TextButton(onClick = onPickModel, contentPadding = PaddingValues(horizontal = 0.dp)) {
                     // Models picked with 1.3 carry AutoEq's published correction; picking again computes the new one.
@@ -271,8 +276,9 @@ private fun FineTuning(
                 stringResource(R.string.editor_ear_tuning_hint),
                 suggested = percent(rec.hearingStrength).takeIf { p.hearingStrength != rec.hearingStrength },
                 onRestore = { edit { it.copy(hearingStrength = rec.hearingStrength) } },
-            ) {
+            ) { m ->
                 Slider(
+                    modifier = m,
                     value = p.hearingStrength.toFloat(),
                     onValueChange = { v -> edit { it.copy(hearingStrength = (v * 20).roundToInt() / 20.0) } },
                     valueRange = 0f..1f,
@@ -289,8 +295,9 @@ private fun FineTuning(
                 stringResource(if (band == TasteBand.TREBLE && p.taste.legacyTreble) R.string.editor_treble_legacy_hint else band.hintRes),
                 suggested = r?.takeIf { it != v }?.let { "${Exporters.signed(it)} dB" },
                 onRestore = { if (r != null) edit { it.copy(taste = it.taste.with(band, r)) } },
-            ) {
+            ) { m ->
                 Slider(
+                    modifier = m,
                     value = v.toFloat(),
                     onValueChange = { x -> edit { it.copy(taste = it.taste.with(band, (x * 2).roundToInt() / 2.0)) } },
                     valueRange = band.minDb.toFloat()..band.maxDb.toFloat(),
@@ -298,7 +305,11 @@ private fun FineTuning(
             }
             // Over-ears hold bass below 50 Hz near the 50 Hz level; worth offering only when that saves volume.
             if (band == TasteBand.BASS && (p.fullSubBass || subBassCostDb >= 0.5)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    Modifier.switchRow(p.fullSubBass) { on -> edit { it.copy(fullSubBass = on) } },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.editor_full_sub_bass), style = MaterialTheme.typography.titleSmall)
                         Text(
@@ -310,7 +321,7 @@ private fun FineTuning(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(checked = p.fullSubBass, onCheckedChange = { on -> edit { it.copy(fullSubBass = on) } })
+                    Switch(checked = p.fullSubBass, onCheckedChange = null)
                 }
             }
             if (band == TasteBand.BASS) VolumeBassRow(p, volumeNow, edit)
@@ -321,8 +332,9 @@ private fun FineTuning(
             stringResource(R.string.editor_balance_hint),
             suggested = balanceLabel(rec.balanceDb).takeIf { p.balanceDb != rec.balanceDb },
             onRestore = { edit { it.copy(balanceDb = rec.balanceDb) } },
-        ) {
+        ) { m ->
             Slider(
+                modifier = m,
                 value = p.balanceDb.toFloat(),
                 onValueChange = { x -> edit { it.copy(balanceDb = (x * 2).roundToInt() / 2.0) } },
                 valueRange = -6f..6f,
@@ -342,7 +354,11 @@ private fun FineTuning(
 @Composable
 private fun VolumeBassRow(p: Profile, now: VolumeBass.Shelves?, edit: ((Profile) -> Profile) -> Unit) {
     val usable = p.tasteLevel != null
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(
+        Modifier.switchRow(usable && p.volumeBass, enabled = usable) { on -> edit { it.copy(volumeBass = on) } },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         Column(Modifier.weight(1f)) {
             Text(stringResource(R.string.editor_volume_bass), style = MaterialTheme.typography.titleSmall)
             Text(
@@ -368,7 +384,7 @@ private fun VolumeBassRow(p: Profile, now: VolumeBass.Shelves?, edit: ((Profile)
                 )
             }
         }
-        Switch(checked = usable && p.volumeBass, enabled = usable, onCheckedChange = { on -> edit { it.copy(volumeBass = on) } })
+        Switch(checked = usable && p.volumeBass, enabled = usable, onCheckedChange = null)
     }
 }
 
@@ -380,7 +396,8 @@ private fun Control(
     hint: String,
     suggested: String?,
     onRestore: () -> Unit,
-    slider: @Composable ColumnScope.() -> Unit,
+    /** The slider, given a modifier that names it and speaks its value for TalkBack. */
+    slider: @Composable ColumnScope.(Modifier) -> Unit,
 ) {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -401,7 +418,7 @@ private fun Control(
                 Text(stringResource(R.string.editor_suggested, suggested), style = MaterialTheme.typography.labelMedium.merge(NumberStyle))
             }
         }
-        slider()
+        slider(Modifier.semantics { contentDescription = title; stateDescription = value })
     }
 }
 

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -71,7 +72,7 @@ fun HearingScreen(vm: AppViewModel) {
             OutlinedButton(
                 onClick = { vm.answer(false) },
                 enabled = h.canSayNo,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp),
                 shape = RoundedCornerShape(16.dp),
             ) { Text(stringResource(R.string.check_no)) }
             TextButton(onClick = vm::replayBeep, enabled = h.canReplay, modifier = Modifier.fillMaxWidth()) {
@@ -171,6 +172,7 @@ fun HearingDoneScreen(vm: AppViewModel) {
             HearingCompensation.chartPoints(result, type, ear, correction),
             if (ear == Ear.LEFT) EarColors.Left else EarColors.Right,
             square = ear == Ear.RIGHT,
+            label = stringResource(if (ear == Ear.LEFT) R.string.ear_left else R.string.ear_right),
         )
     }
     val reliability = result.reliability

@@ -68,6 +68,19 @@
     <string name="bands_third_octave">31-band</string>
     <string name="bands_third_octave_where">1/3-octave graphic EQs</string>
 
+    <!-- What TalkBack reads for the charts. %1$s: each curve's levels, built from the strings below. -->
+    <string name="chart_eq">EQ curve. %1$s</string>
+    <string name="chart_listening">Listening profile: how much help each band gets, higher is more. %1$s</string>
+    <!-- One point of a curve. %1$s: a signed level such as "+4.5"; %2$s: a frequency such as "1 kHz". -->
+    <string name="chart_point">%1$s dB at %2$s</string>
+    <!-- %1$s: the curve's name, such as "Left ear"; %2$s: its points. -->
+    <string name="chart_named">%1$s: %2$s</string>
+    <!-- Between the points of one curve, and between curves. Quoted to keep the spaces. -->
+    <string name="chart_separator">", "</string>
+    <string name="chart_curve_separator">"; "</string>
+    <string name="ear_left">Left ear</string>
+    <string name="ear_right">Right ear</string>
+
     <!-- The system-wide EQ's notification. -->
     <string name="notif_on">PureEQ is on</string>
     <string name="notif_starting">Starting…</string>

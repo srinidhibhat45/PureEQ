@@ -75,6 +75,8 @@
     <string name="setup_volume_down">Quieter</string>
     <string name="setup_volume_up">Louder</string>
     <!-- Under the volume slider. %1$d: the phone's media volume step; %2$d: the highest step. -->
+    <!-- What TalkBack calls the volume slider. -->
+    <string name="setup_volume_name">Media volume</string>
     <string name="setup_volume_level">Volume %1$d of %2$d</string>
     <string name="setup_volume_cant_hear">Can\'t hear anything even at full volume? Check the headphones are connected and not muted.</string>
 

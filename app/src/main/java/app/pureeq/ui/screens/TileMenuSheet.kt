@@ -35,7 +35,9 @@ import app.pureeq.R
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.system.EqService
+import app.pureeq.ui.components.AdaptiveButtons
 import app.pureeq.ui.components.Pill
+import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.outputInText
 import app.pureeq.ui.theme.StatusColors
 
@@ -61,7 +63,11 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).padding(bottom = 16.dp).navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            val toggle = { turnOn: Boolean ->
+                store.updateSettings { it.copy(outputs = it.outputs.turned(playingOn, turnOn)) }
+                if (turnOn) EqService.start(context)
+            }
+            Row(Modifier.switchRow(on, enabled = current != null, onChange = toggle), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text("PureEQ", style = MaterialTheme.typography.titleLarge)
                     Text(
@@ -74,14 +80,7 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
-                    checked = on,
-                    enabled = current != null,
-                    onCheckedChange = { turnOn ->
-                        store.updateSettings { it.copy(outputs = it.outputs.turned(playingOn, turnOn)) }
-                        if (turnOn) EqService.start(context)
-                    },
-                )
+                Switch(checked = on, enabled = current != null, onCheckedChange = null)
             }
             if (profiles.isEmpty()) {
                 Text(
@@ -97,9 +96,9 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
                     }
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onOpenApp, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.tile_menu_open_app)) }
-                Button(onClick = { current?.let { onFineTune(it.id) } }, enabled = current != null, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.tile_menu_fine_tune)) }
+            AdaptiveButtons(spacing = 8.dp) {
+                OutlinedButton(onClick = onOpenApp, modifier = Modifier.share()) { Text(stringResource(R.string.tile_menu_open_app)) }
+                Button(onClick = { current?.let { onFineTune(it.id) } }, enabled = current != null, modifier = Modifier.share()) { Text(stringResource(R.string.tile_menu_fine_tune)) }
             }
         }
     }

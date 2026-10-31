@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -67,6 +68,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -79,12 +81,14 @@ import app.pureeq.profile.ProfileEq
 import app.pureeq.system.SystemEqStatus
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
+import app.pureeq.ui.components.AdaptiveButtons
 import app.pureeq.ui.components.ChartCurve
 import app.pureeq.ui.components.EqChart
 import app.pureeq.ui.components.ListeningOrb
 import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.kindLabel
 import app.pureeq.ui.outputInText
 import app.pureeq.ui.outputList
@@ -190,7 +194,7 @@ fun HomeScreen(vm: AppViewModel) {
             item {
                 OutlinedButton(
                     onClick = vm::startNewProfile,
-                    modifier = Modifier.fillMaxWidth().height(52.dp).padding(top = 4.dp),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(top = 4.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Icon(Icons.Rounded.Add, null)
@@ -328,20 +332,20 @@ private fun ActiveProfileCard(
             )
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.switchRow(enabled, onChange = onToggle), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(stringResource(R.string.home_apply_all_audio), style = MaterialTheme.typography.titleSmall)
                 Text(if (enabled) statusText(status) else offText, style = MaterialTheme.typography.bodySmall, color = statusColor(enabled, status))
             }
-            Switch(checked = enabled, onCheckedChange = onToggle)
+            Switch(checked = enabled, onCheckedChange = null)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            FilledTonalButton(onClick = onEdit, modifier = Modifier.weight(1f)) {
+        AdaptiveButtons {
+            FilledTonalButton(onClick = onEdit, modifier = Modifier.share()) {
                 Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.home_fine_tune))
             }
-            FilledTonalButton(onClick = onExport, modifier = Modifier.weight(1f)) {
+            FilledTonalButton(onClick = onExport, modifier = Modifier.share()) {
                 Icon(Icons.Rounded.IosShare, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.home_export))
@@ -374,7 +378,7 @@ private fun ProfileRow(p: Profile, onActivate: () -> Unit, onEdit: () -> Unit, o
     var menu by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     Card(
-        Modifier.fillMaxWidth().clickable(onClick = onActivate),
+        Modifier.fillMaxWidth().clickable(onClickLabel = stringResource(R.string.home_use_profile), role = Role.Button, onClick = onActivate),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
@@ -408,12 +412,16 @@ private fun ProfileRow(p: Profile, onActivate: () -> Unit, onEdit: () -> Unit, o
 }
 
 /** One curve when both ears share the EQ, otherwise left (blue) and right (red). */
+@Composable
 fun curvesFor(eq: ProfileEq, combined: Color): List<ChartCurve> {
     val same = eq.leftCurve.indices.all { kotlin.math.abs(eq.leftCurve[it] - eq.rightCurve[it]) < 0.05 }
     return if (same) {
         listOf(ChartCurve(eq.leftCurve, combined, fill = true))
     } else {
-        listOf(ChartCurve(eq.leftCurve, EarColors.Left, fill = true), ChartCurve(eq.rightCurve, EarColors.Right, fill = true))
+        listOf(
+            ChartCurve(eq.leftCurve, EarColors.Left, fill = true, label = stringResource(R.string.ear_left)),
+            ChartCurve(eq.rightCurve, EarColors.Right, fill = true, label = stringResource(R.string.ear_right)),
+        )
     }
 }
 
