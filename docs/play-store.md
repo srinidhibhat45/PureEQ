@@ -2,7 +2,15 @@
 
 PureEQ goes to Play as the `play` flavour: the same app and package (`app.pureeq`) as the GitHub build, minus the self-updater. Positioning: a personal-sound app that tunes your headphones to your ears and taste, not a medical device. Nothing has been submitted yet.
 
+## Decisions (owner, 2026-10-31)
+
+- **Account:** an older personal developer account (created before 13 November 2023), so no 14-day closed test: internal testing, then production.
+- **Signing:** B below. Google generates and keeps the app signing key; uploads are signed with an upload key you create (Google can reset a lost upload key). Moving a phone between the GitHub and Play builds means exporting profiles, reinstalling and importing.
+- **Launch build:** 1.6.0 with per-output switching (1.5.3), volume-linked bass, an accessibility pass, translations (Spanish, German, French, Portuguese, Hindi) and the screenshots and graphics in [store/](store/).
+
 ## Timeline for a November 2026 launch
+
+With the account above, the closed test below doesn't apply: internal testing for a few days, then a production release, which Google reviews (new apps can take several days). The rest of this section is for accounts that need it.
 
 A personal developer account created after 13 November 2023 gets production access only after a closed test with at least 12 opted-in testers for 14 days (Play Console Help, checked 2026-10-31), so the dates hang on when that test starts:
 
@@ -22,7 +30,25 @@ Android only lets one build replace the other when both are signed with the same
 
 ## 1. Build the upload
 
-- [ ] Configure the signing key first ([key-rotation.md](key-rotation.md)); Play refuses debug-signed bundles.
+- [ ] Create the upload key (decision B), on your computer and never in chat or in the repository, then keep a backup offline like the release key in [key-rotation.md](key-rotation.md#2-back-it-up-offline):
+
+  ```bash
+  keytool -genkeypair -v -keystore ~/pureeq-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000
+  ```
+
+  Play refuses debug-signed bundles, so build the Play bundle with that key in the `PUREEQ_*` variables, set only in the terminal that builds it (they take precedence over `keystore.properties`; the GitHub build keeps its own key). `read -s` asks for the password without echoing it or leaving it in the shell history:
+
+  ```bash
+  export PUREEQ_KEYSTORE=~/pureeq-upload.jks PUREEQ_KEY_ALIAS=upload; read -s "PUREEQ_KEYSTORE_PASSWORD?Upload key password: "; export PUREEQ_KEYSTORE_PASSWORD PUREEQ_KEY_PASSWORD=$PUREEQ_KEYSTORE_PASSWORD
+  ```
+
+  ```bash
+  ./gradlew :app:testPlayDebugUnitTest :app:bundlePlayRelease
+  ```
+
+  Close that terminal afterwards, so a later `python3 ota/publish.py` can't sign the GitHub build with the upload key.
+
+  On the first upload Play Console asks how to sign: keep **Let Google create and manage my app signing key**.
 - [ ] Build and test:
 
   ```bash
@@ -123,7 +149,7 @@ Category: Music & Audio. Contact email: the same address as the privacy policy.
 
 **Never in the listing, screenshots or release notes:** "hearing test", "hearing loss", "hearing aid", "audiogram", "dB HL", "screening", "clinically validated", and Apple or Samsung product names. Use "personal sound profile", "listening check" and "tunes your headphones to your ears and taste".
 
-**Graphics:** icon 512 × 512, feature graphic 1024 × 500, at least two phone screenshots (home with a profile, the listening check, the taste test, the profile editor), checked against the list above.
+**Graphics:** in [store/](store/): `icon-512.png` (512 × 512) and `feature-graphic-1024x500.png`, drawn by `store/art.py` from the launcher icon; phone screenshots (home with a profile, the listening check, the taste test, Fine-tune, Where it's on) in `store/screenshots/`, checked against the list above.
 
 ## 5. Release
 
