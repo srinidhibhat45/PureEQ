@@ -284,6 +284,7 @@ fun AboutScreen(vm: AppViewModel) {
         AboutSection(stringResource(R.string.about_measured_title), stringResource(R.string.about_measured_text))
         AboutSection(stringResource(R.string.about_bass_title), stringResource(R.string.about_bass_text))
         AboutSection(stringResource(R.string.about_taste_title), stringResource(R.string.about_taste_text))
+        AboutSection(stringResource(R.string.about_volume_bass_title), stringResource(R.string.about_volume_bass_text))
         AboutSection(stringResource(R.string.about_applying_title), stringResource(R.string.about_applying_text))
         AboutSection(
             stringResource(R.string.about_privacy_title),

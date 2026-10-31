@@ -49,6 +49,8 @@ import app.pureeq.R
 import app.pureeq.headphones.AutoEqTarget
 import app.pureeq.profile.Exporters
 import app.pureeq.profile.Profile
+import app.pureeq.profile.VolumeBass
+import app.pureeq.system.EqRuntime
 import app.pureeq.taste.TasteBand
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
@@ -155,9 +157,13 @@ fun EditorScreen(vm: AppViewModel) {
             )
             MusicPicker(vm)
         }
+        // What volume-linked bass adds right now, when the system-wide EQ is playing this profile.
+        val shelves by EqRuntime.volumeShelves.collectAsStateWithLifecycle()
+        val activeId by vm.store.activeId.collectAsStateWithLifecycle()
         FineTuning(
             p,
             subBassCostDb = e.eq?.subBassCostDb ?: 0.0,
+            volumeNow = shelves.takeIf { !e.isDraft && p.id == activeId },
             isDraft = e.isDraft,
             onReset = reset,
             onRedoTaste = { vm.redoTaste(p.id) },
@@ -175,6 +181,8 @@ fun EditorScreen(vm: AppViewModel) {
 private fun FineTuning(
     p: Profile,
     subBassCostDb: Double,
+    /** What volume-linked bass adds right now; null when the system-wide EQ isn't playing this profile. */
+    volumeNow: VolumeBass.Shelves?,
     isDraft: Boolean,
     onReset: () -> Unit,
     onRedoTaste: () -> Unit,
@@ -187,6 +195,7 @@ private fun FineTuning(
     val changed = buildList<Int> {
         if (p.headphoneModel != null && !p.headphoneCorrection) add(R.string.editor_changed_headphone_correction)
         if (p.fullSubBass) add(R.string.editor_changed_full_sub_bass)
+        if (!p.volumeBass && p.tasteLevel != null) add(R.string.editor_changed_volume_bass)
         if (p.hearing != null && p.hearingStrength != rec.hearingStrength) add(R.string.editor_changed_ear_tuning)
         suggestedTaste?.let { t -> TasteBand.entries.filter { p.taste[it] != t[it] }.forEach { add(it.changedRes) } }
         if (p.balanceDb != rec.balanceDb) add(R.string.editor_changed_balance)
@@ -304,6 +313,7 @@ private fun FineTuning(
                     Switch(checked = p.fullSubBass, onCheckedChange = { on -> edit { it.copy(fullSubBass = on) } })
                 }
             }
+            if (band == TasteBand.BASS) VolumeBassRow(p, volumeNow, edit)
         }
         Control(
             stringResource(R.string.editor_balance),
@@ -321,6 +331,44 @@ private fun FineTuning(
         if (!isDraft && suggestedTaste != null) {
             TextButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.editor_redo_taste)) }
         }
+    }
+}
+
+/**
+ * Bass that follows the volume ([VolumeBass]): the switch, what it does, and what it adds at the
+ * volume playing now. Profiles without a tuning volume (before 1.5) can't use it until the taste
+ * test is redone.
+ */
+@Composable
+private fun VolumeBassRow(p: Profile, now: VolumeBass.Shelves?, edit: ((Profile) -> Profile) -> Unit) {
+    val usable = p.tasteLevel != null
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.editor_volume_bass), style = MaterialTheme.typography.titleSmall)
+            Text(
+                stringResource(
+                    when {
+                        !usable -> R.string.editor_volume_bass_needs_taste
+                        p.volumeBass -> R.string.editor_volume_bass_on
+                        else -> R.string.editor_volume_bass_off
+                    },
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (usable && p.volumeBass && now != null) {
+                Text(
+                    if (now.isFlat) {
+                        stringResource(R.string.editor_volume_bass_now_flat)
+                    } else {
+                        stringResource(R.string.editor_volume_bass_now, Exporters.signed(now.bassDb), Exporters.signed(now.trebleDb))
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+        Switch(checked = usable && p.volumeBass, enabled = usable, onCheckedChange = { on -> edit { it.copy(volumeBass = on) } })
     }
 }
 

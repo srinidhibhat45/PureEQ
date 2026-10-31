@@ -43,6 +43,7 @@
     <!-- Items of that list, written as they read inside the sentence. -->
     <string name="editor_changed_headphone_correction">headphone correction</string>
     <string name="editor_changed_full_sub_bass">full sub-bass</string>
+    <string name="editor_changed_volume_bass">bass that follows the volume</string>
     <string name="editor_changed_ear_tuning">ear tuning</string>
     <string name="editor_changed_bass">bass</string>
     <string name="editor_changed_warmth">warmth</string>
@@ -83,6 +84,14 @@
     <string name="editor_full_sub_bass_on">Bass below 50 Hz follows your settings all the way down, at about %1$s dB less volume.</string>
     <!-- %1$s: the volume it would cost, such as "1.5". -->
     <string name="editor_full_sub_bass_off">Bass below 50 Hz is held near the 50 Hz level, where little music lives. Letting it follow your settings would cost about %1$s dB of volume on these headphones.</string>
+    <!-- Volume-linked bass: below the volume of the taste test, the system-wide EQ adds bass. -->
+    <string name="editor_volume_bass">Bass follows the volume</string>
+    <string name="editor_volume_bass_on">Below the volume you tuned at, adds back the bass your ears lose at lower levels: about 1.5 dB for every 10 dB quieter, up to +6 dB, and a touch of treble. In the system-wide EQ only.</string>
+    <string name="editor_volume_bass_off">Off: the bass stays as tuned at every volume.</string>
+    <string name="editor_volume_bass_needs_taste">Needs the volume of a taste test from PureEQ 1.5 or later. Redo the taste test to use it.</string>
+    <!-- %1$s and %2$s: signed amounts such as "+3.0" and "+0.8". -->
+    <string name="editor_volume_bass_now">At this volume: bass %1$s dB, treble %2$s dB.</string>
+    <string name="editor_volume_bass_now_flat">At this volume it adds nothing.</string>
     <string name="editor_balance">Balance</string>
     <string name="editor_balance_hint">Only needed if one side still sounds louder</string>
     <!-- Balance values. %1$s: how much the other side is turned down, such as "1.5". -->
