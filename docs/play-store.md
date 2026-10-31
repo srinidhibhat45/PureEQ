@@ -131,6 +131,7 @@ Category: Music & Audio. Contact email: the same address as the privacy policy.
 > • Listening check: short beeps in each ear find which frequencies come through clearly with these headphones and which need a lift.
 > • Taste test: blind A/B comparisons, matched in loudness, find the bass and treble you prefer, on the built-in track or a song of your own.
 > • Your sound: both become one smooth EQ curve per ear. Fine-tune bass, warmth, vocals, treble and balance, and compare EQ on and off at the same loudness.
+> • Bass that follows the volume: turn down from the volume you tuned at and PureEQ adds back the bass your ears lose at lower levels.
 >
 > Optionally pick your headphone model from the open-source AutoEq database of over 6,000 measured headphones, and PureEQ corrects that model's measured response as well.
 >
@@ -139,6 +140,7 @@ Category: Music & Audio. Contact email: the same address as the privacy policy.
 > • Switch it on and off from a Quick Settings tile.
 > • Profiles follow your headphones: connect a pair and its profile takes over. PureEQ keeps on or off for each output, so the phone speaker plays untouched.
 > • Export it in AutoEq's formats for other equalizer apps on Android and on your computer.
+> • In English, Spanish, German, French, Portuguese and Hindi, and made to work with TalkBack and large text.
 >
 > Private by design:
 > • Everything runs on your phone. No account, no ads, no analytics.
@@ -149,7 +151,9 @@ Category: Music & Audio. Contact email: the same address as the privacy policy.
 
 **Never in the listing, screenshots or release notes:** "hearing test", "hearing loss", "hearing aid", "audiogram", "dB HL", "screening", "clinically validated", and Apple or Samsung product names. Use "personal sound profile", "listening check" and "tunes your headphones to your ears and taste".
 
-**Graphics:** in [store/](store/): `icon-512.png` (512 × 512) and `feature-graphic-1024x500.png`, drawn by `store/art.py` from the launcher icon; phone screenshots (home with a profile, the listening check, the taste test, Fine-tune, Where it's on) in `store/screenshots/`, checked against the list above.
+**Graphics:** in [store/](store/): `icon-512.png` (512 × 512) and `feature-graphic-1024x500.png`, drawn by `store/art.py` from the launcher icon, and seven phone screenshots in `store/screenshots/` (1080 × 2160, or 1080 × 1500 for the listening profile, which is cropped above its reliability card; upload them in their numbered order). Taken on the emulator with neutral headphone names and checked against the list above. They show the English app; the translated listings can use them too.
+
+**Translated listings:** `store/listing-<language>.md` has the app name, short description and full description in Spanish, German, French, Portuguese (Brazil) and Hindi; add each as a translation in Play Console › Store presence › Main store listing.
 
 ## 5. Release
 

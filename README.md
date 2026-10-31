@@ -116,7 +116,7 @@ Requires JDK 17 and the Android SDK (platform 36). The version lives in `version
 ./gradlew :app:assembleGithubRelease
 ```
 
-The APK lands in `app/build/outputs/apk/github/release/` (the Play build: `:app:bundlePlayRelease`). Debug builds log each test trial (`adb logcat -s PureEQ`); release builds don't. To try output switching on an emulator, a debug build pretends media plays on another output: `adb shell am broadcast -a app.pureeq.debug.OUTPUT --es name "'Galaxy Buds2 Pro'" --ei type 8` (type: an `AudioDeviceInfo` type), and the same without `--es name` goes back to the real output. Release builds leave this out.
+The APK lands in `app/build/outputs/apk/github/release/` (the Play build: `:app:bundlePlayRelease`). Debug builds log each test trial and what volume-linked bass adds (`adb logcat -s PureEQ`); release builds don't. To try output switching on an emulator, a debug build pretends media plays on another output: `adb shell am broadcast -a app.pureeq.debug.OUTPUT --es name "'Galaxy Buds2 Pro'" --ei type 8` (type: an `AudioDeviceInfo` type), and the same without `--es name` goes back to the real output. Release builds leave this out.
 
 ## Builds and distribution
 
@@ -149,6 +149,11 @@ app/src/test/  unit tests: DSP accuracy, hearing-test simulation, whole-pipeline
 docs/          key rotation, the Google Play checklist, the privacy policy
 ota/publish.py  builds, tests, checks the signing key of and publishes a GitHub-build update
 ```
+
+## Languages and accessibility
+
+- **Languages (1.6).** English, Spanish, German, French, Portuguese (Brazil) and Hindi, in `res/values*/strings*.xml`: one file per area (`strings_common`, `strings_home_settings`, `strings_setup_tests`, `strings_editor_export`). Names from the model (output names, modes, bands, check lengths, export layouts) stay English inside it, because output names are storage keys, and `ui/Labels.kt` shows them translated. Android 13+'s per-app language setting lists the six (`generateLocaleConfig`), and the APK keeps only those languages from the libraries (`localeFilters`). A new language: copy each English file into `values-xx`, translate, and check it with the placeholder and plural rules lint enforces. "Listening check" is never a medical hearing test in any language.
+- **Accessibility.** Charts describe themselves to TalkBack (levels at 100 Hz, 1 kHz, 4 kHz and 10 kHz per ear), a row with a switch is one control (`Modifier.switchRow`), sliders announce name and value, choices have roles, and screen titles are headings. At large text, side-by-side buttons stack whenever a label wouldn't fit on one line (`AdaptiveButtons`), button heights are minimums and chart axis numbers stop growing at 1.3×. Checked at 200 % text.
 
 ## Limits worth knowing
 

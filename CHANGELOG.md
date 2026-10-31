@@ -2,6 +2,11 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.6.0
+- Bass that follows the volume. Your profile remembers the volume you tuned it at; turn down from there and PureEQ adds back the bass your ears lose at lower levels (about 1.5 dB for every 10 dB quieter, up to +6 dB, plus a touch of treble), and eases off a little when you turn up. Fine-tune shows what it adds right now and has a switch. For profiles tuned with PureEQ 1.5 or later; redo the taste test of an older one to use it.
+- PureEQ now speaks Spanish, German, French, Portuguese and Hindi, following your phone's language. On Android 13 and later you can also pick its language in Settings › Apps › PureEQ › Language.
+- Better with TalkBack and large text: charts say what they show, every switch row is one control that reads its label, sliders speak their values, and buttons stack instead of breaking words.
+
 ## 1.5.3
 - PureEQ now keeps on or off for each output: the phone speaker, each pair of headphones, a car or a Bluetooth speaker. Profiles are tuned for headphones, so the phone speaker now plays untouched instead of quieter and duller. Unplug your headphones and PureEQ steps aside; plug them back in and it comes back on by itself, with the profile you last used with them.
 - Want it on the speaker too? Switch it on while the speaker plays, and that's kept for the speaker. The switch on the home screen, the tile and the notification's Turn off all act on the output playing now.
