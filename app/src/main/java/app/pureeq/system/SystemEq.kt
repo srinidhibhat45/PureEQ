@@ -5,6 +5,7 @@ import app.pureeq.audio.OutputDevice
 import app.pureeq.dsp.Curves
 import app.pureeq.dsp.FreqGrid
 import app.pureeq.profile.ProfileEq
+import app.pureeq.profile.VolumeBass
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlin.math.max
@@ -13,6 +14,21 @@ import kotlin.math.pow
 
 /** Per-ear curves to apply system-wide, in dB on [FreqGrid], preamp and balance included. */
 class SystemCurves(val left: DoubleArray, val right: DoubleArray) {
+
+    /**
+     * With [shelves] for the volume added to both ears. Where the effect may see full-scale audio
+     * ([VolumeBass.needsHeadroom]) the level drops by the largest boost, so it can't clip.
+     */
+    fun with(shelves: VolumeBass.Shelves, headroom: Boolean): SystemCurves {
+        if (shelves.isFlat) return this
+        val add = shelves.curve()
+        val down = if (headroom) maxOf(shelves.bassDb, shelves.trebleDb, 0.0) else 0.0
+        return SystemCurves(
+            DoubleArray(FreqGrid.SIZE) { left[it] + add[it] - down },
+            DoubleArray(FreqGrid.SIZE) { right[it] + add[it] - down },
+        )
+    }
+
     companion object {
         fun of(eq: ProfileEq) = SystemCurves(
             DoubleArray(FreqGrid.SIZE) { eq.leftCurve[it] + eq.preampDb },
@@ -170,4 +186,7 @@ object EqRuntime {
     }
 
     val status = MutableStateFlow<SystemEqStatus>(SystemEqStatus.Off)
+
+    /** What the volume adds to the system-wide EQ right now ([VolumeBass]); null while it isn't applied. */
+    val volumeShelves = MutableStateFlow<VolumeBass.Shelves?>(null)
 }

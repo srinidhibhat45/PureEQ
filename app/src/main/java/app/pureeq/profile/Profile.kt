@@ -50,6 +50,8 @@ data class Profile(
      * the reference for anything that follows the volume. Null when the test was skipped.
      */
     val tasteLevel: ListeningLevel? = null,
+    /** Below the taste test's volume the system-wide EQ adds bass ([VolumeBass]); on by default. */
+    val volumeBass: Boolean = true,
 ) {
     /** This profile with corrections, taste and balance as the tests recommended; name and results unchanged. */
     fun recommended(): Profile = copy(
@@ -58,6 +60,7 @@ data class Profile(
         balanceDb = 0.0,
         headphoneCorrection = true,
         fullSubBass = false,
+        volumeBass = true,
     )
 
     val isRecommended: Boolean get() = recommended() == this
@@ -77,6 +80,7 @@ data class Profile(
         headphoneModel?.let { put("headphoneModel", modelJson(it)) }
         put("headphoneCorrection", headphoneCorrection)
         if (fullSubBass) put("fullSubBass", true)
+        if (!volumeBass) put("volumeBass", false)
         if (checkLevel != null || tasteLevel != null) {
             put("levels", JSONObject().apply {
                 checkLevel?.let { put("check", levelJson(it)) }
@@ -181,6 +185,7 @@ data class Profile(
                 fullSubBass = o.optBoolean("fullSubBass", false),
                 checkLevel = o.optJSONObject("levels")?.optJSONObject("check")?.let(::levelFrom),
                 tasteLevel = o.optJSONObject("levels")?.optJSONObject("taste")?.let(::levelFrom),
+                volumeBass = o.optBoolean("volumeBass", true),
             )
         }
 

@@ -15,10 +15,12 @@ import android.os.Handler
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import app.pureeq.BuildConfig
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -85,6 +87,22 @@ class AudioRoute(context: Context) {
         set(value) {
             runCatching { am.setStreamVolume(AudioManager.STREAM_MUSIC, value.coerceIn(minVolume, maxVolume), 0) }
         }
+
+    /**
+     * The media volume now and after every change of it, a held volume key's burst settled into
+     * one. Android announces volume changes only through a broadcast without a public constant.
+     */
+    @OptIn(FlowPreview::class)
+    fun volumeChanges(context: Context): Flow<ListeningLevel> = callbackFlow {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(c: Context, i: Intent) {
+                if (i.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1) == AudioManager.STREAM_MUSIC) trySend(level())
+            }
+        }
+        trySend(level())
+        ContextCompat.registerReceiver(context, receiver, IntentFilter(VOLUME_CHANGED_ACTION), ContextCompat.RECEIVER_NOT_EXPORTED)
+        awaitClose { runCatching { context.unregisterReceiver(receiver) } }
+    }.debounce(150).distinctUntilChanged()
 
     /** The media volume right now and what it means in dB on the current output. */
     fun level(): ListeningLevel {
@@ -186,6 +204,10 @@ class AudioRoute(context: Context) {
     }
 
     private companion object {
+        // AudioManager.VOLUME_CHANGED_ACTION and EXTRA_VOLUME_STREAM_TYPE (hidden, stable since Android 4).
+        const val VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION"
+        const val EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE"
+
         val PRIORITY = listOf(
             AudioDeviceInfo.TYPE_USB_HEADSET,
             AudioDeviceInfo.TYPE_WIRED_HEADPHONES,

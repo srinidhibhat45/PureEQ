@@ -18,12 +18,14 @@ import androidx.lifecycle.lifecycleScope
 import app.pureeq.MainActivity
 import app.pureeq.PureEqApp
 import app.pureeq.R
+import app.pureeq.audio.ListeningLevel
 import app.pureeq.audio.OutputDevice
 import app.pureeq.profile.AppSettings
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
 import app.pureeq.profile.SystemEqMode
+import app.pureeq.profile.VolumeBass
 import app.pureeq.ui.Labels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -47,6 +49,11 @@ class EqService : LifecycleService() {
     private val sessions = HashMap<Int, DpEffect>()
     private val knownSessions = LinkedHashSet<Int>()
     private var curves: SystemCurves? = null
+    /** [curves] before the volume's shelves. */
+    private var baseCurves: SystemCurves? = null
+    private var shelves = VolumeBass.FLAT
+    /** The media volume, as of the last change or output switch. */
+    private var level: ListeningLevel? = null
     private var lastOutput: OutputDevice? = null
     private var appliedMode: SystemEqMode? = null
     private var appliedProfileId: String? = null
@@ -95,6 +102,12 @@ class EqService : LifecycleService() {
             ) { profiles, activeId, settings, suspended, output -> State(profiles, activeId, settings, suspended, output) }
                 .collectLatest { apply(it) }
         }
+        lifecycleScope.launch {
+            app.route.volumeChanges(this@EqService).collect {
+                level = it
+                followVolume()
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -125,7 +138,11 @@ class EqService : LifecycleService() {
             return
         }
         val outputChanged = lastOutput != null && lastOutput != s.output
-        if (outputChanged) needsRecreate = true
+        if (outputChanged) {
+            needsRecreate = true
+            // Each output keeps its own volume.
+            level = app.route.level()
+        }
         lastOutput = s.output
 
         // Another output started playing: switch to the profile last used there, or to the one made
@@ -150,6 +167,7 @@ class EqService : LifecycleService() {
             releaseAll()
             needsRecreate = true
             standby = true
+            EqRuntime.volumeShelves.value = null
             val onFor = outputs.onElsewhere(s.output, s.profiles)
             EqRuntime.status.value = SystemEqStatus.Standby(s.output, onFor)
             updateNotification(
@@ -165,7 +183,10 @@ class EqService : LifecycleService() {
         // When only the pause state changed (PureEQ started or stopped its own sound), the effects
         // already carry this profile: just flip them on or off below.
         if (profile != appliedProfile || needsRecreate || modeChanged || !effectsLive) {
-            val newCurves = withContext(Dispatchers.Default) { SystemCurves.of(ProfileEq(profile)) }
+            val base = withContext(Dispatchers.Default) { SystemCurves.of(ProfileEq(profile)) }
+            baseCurves = base
+            shelves = VolumeBass.shelves(profile, s.output, level ?: app.route.level()).rounded()
+            val newCurves = base.with(shelves, VolumeBass.needsHeadroom(s.output))
             curves = newCurves
             appliedMode = s.settings.mode
             appliedProfileId = profile.id
@@ -206,10 +227,29 @@ class EqService : LifecycleService() {
         paused = s.suspended
         global?.setEnabled(!paused)
         sessions.values.forEach { it.setEnabled(!paused) }
+        EqRuntime.volumeShelves.value = shelves
         publishStatus(profile)
         // What this output comes back to next time: on, with this profile.
         val used = outputs.used(s.output, profile.id)
         if (used != outputs) app.store.updateSettings { it.copy(outputs = it.outputs.used(s.output, profile.id)) }
+    }
+
+    /** The volume moved: adds or takes away the bass it calls for, if that changed by a step. */
+    private fun followVolume() {
+        val profile = appliedProfile ?: return
+        val output = lastOutput ?: return
+        val base = baseCurves ?: return
+        if (standby) return
+        val next = VolumeBass.shelves(profile, output, level).rounded()
+        if (next == shelves) return
+        shelves = next
+        val c = base.with(next, VolumeBass.needsHeadroom(output))
+        curves = c
+        runCatching {
+            global?.update(c)
+            sessions.values.forEach { it.update(c) }
+        }
+        EqRuntime.volumeShelves.value = next
     }
 
     private fun publishStatus(profile: Profile) {
@@ -256,6 +296,7 @@ class EqService : LifecycleService() {
         global = null
         releaseSessions()
         appliedProfile = null
+        EqRuntime.volumeShelves.value = null
     }
 
     private fun startInForeground(n: Notification) {
