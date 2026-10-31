@@ -29,9 +29,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pureeq.R
 import app.pureeq.dsp.Ear
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.Reliability
@@ -59,22 +62,22 @@ fun HearingScreen(vm: AppViewModel) {
     var confirmStop by remember { mutableStateOf(false) }
     BackHandler { confirmStop = true }
     StepScaffold(
-        title = "Listening check",
+        title = stringResource(R.string.check_title),
         onBack = { confirmStop = true },
         scroll = false,
-        actions = { IconButton(onClick = { vm.pauseHearing(PauseReason.USER) }) { Icon(Icons.Rounded.Pause, "Pause") } },
+        actions = { IconButton(onClick = { vm.pauseHearing(PauseReason.USER) }) { Icon(Icons.Rounded.Pause, stringResource(R.string.check_pause)) } },
         bottom = {
-            PrimaryButton("Yes, I heard it", { vm.answer(true) }, enabled = h.canSayYes || h.canSayNo)
+            PrimaryButton(stringResource(R.string.check_yes), { vm.answer(true) }, enabled = h.canSayYes || h.canSayNo)
             OutlinedButton(
                 onClick = { vm.answer(false) },
                 enabled = h.canSayNo,
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape = RoundedCornerShape(16.dp),
-            ) { Text("No") }
+            ) { Text(stringResource(R.string.check_no)) }
             TextButton(onClick = vm::replayBeep, enabled = h.canReplay, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Rounded.Replay, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Play that beep again")
+                Text(stringResource(R.string.check_replay))
             }
         },
     ) {
@@ -90,23 +93,25 @@ fun HearingScreen(vm: AppViewModel) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
             )
-            Text("${(h.progress * 100).toInt()}%", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.check_progress, (h.progress * 100).toInt()), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.weight(1f))
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { ListeningOrb(active = h.playing, size = 230.dp) }
         Spacer(Modifier.height(8.dp))
         Text(
-            when {
-                h.playing -> "Listen…"
-                h.canSayNo -> "Did you hear a beep?"
-                else -> "Get ready"
-            },
+            stringResource(
+                when {
+                    h.playing -> R.string.check_listen
+                    h.canSayNo -> R.string.check_question
+                    else -> R.string.check_get_ready
+                },
+            ),
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            "Beeps come in either ear and get very quiet. Tap Yes as soon as you hear one, even faintly. Missed one? You can play it again once before answering.",
+            stringResource(R.string.check_instructions),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -116,34 +121,41 @@ fun HearingScreen(vm: AppViewModel) {
         if (h.guessingWarning) {
             SectionCard {
                 Text(
-                    "Some beeps are silent on purpose, and you said Yes to a few of them. Only tap Yes when you're sure you heard something.",
+                    stringResource(R.string.check_guessing),
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                TextButton(onClick = vm::dismissGuessingWarning) { Text("Got it") }
+                TextButton(onClick = vm::dismissGuessingWarning) { Text(stringResource(R.string.check_got_it)) }
             }
         }
     }
 
     h.pause?.let { reason ->
+        // PauseReason's title and text in the phone's language.
+        val (title, text) = when (reason) {
+            PauseReason.USER -> R.string.check_paused to R.string.check_paused_text
+            PauseReason.VOLUME -> R.string.check_volume_changed to R.string.check_volume_changed_text
+            PauseReason.HEADPHONES -> R.string.check_headphones_disconnected to R.string.check_headphones_disconnected_text
+            PauseReason.BACKGROUND -> R.string.check_paused to R.string.check_paused_background
+        }
         AlertDialog(
             onDismissRequest = {},
-            title = { Text(reason.title) },
-            text = { Text(reason.text) },
+            title = { Text(stringResource(title)) },
+            text = { Text(stringResource(text)) },
             confirmButton = {
                 TextButton(onClick = vm::resumeHearing) {
-                    Text(if (reason == PauseReason.VOLUME) "Restore volume and continue" else "Continue")
+                    Text(stringResource(if (reason == PauseReason.VOLUME) R.string.check_restore_volume else R.string.check_continue))
                 }
             },
-            dismissButton = { TextButton(onClick = { vm.home() }) { Text("Stop test") } },
+            dismissButton = { TextButton(onClick = { vm.home() }) { Text(stringResource(R.string.check_stop_test)) } },
         )
     }
     if (confirmStop) {
         AlertDialog(
             onDismissRequest = { confirmStop = false },
-            title = { Text("Stop the listening check?") },
-            text = { Text("Your answers so far will be discarded.") },
-            confirmButton = { TextButton(onClick = { confirmStop = false; vm.home() }) { Text("Stop") } },
-            dismissButton = { TextButton(onClick = { confirmStop = false }) { Text("Keep going") } },
+            title = { Text(stringResource(R.string.check_stop_title)) },
+            text = { Text(stringResource(R.string.check_stop_text)) },
+            confirmButton = { TextButton(onClick = { confirmStop = false; vm.home() }) { Text(stringResource(R.string.check_stop)) } },
+            dismissButton = { TextButton(onClick = { confirmStop = false }) { Text(stringResource(R.string.check_keep_going)) } },
         )
     }
 }
@@ -163,72 +175,76 @@ fun HearingDoneScreen(vm: AppViewModel) {
     }
     val reliability = result.reliability
     StepScaffold(
-        title = "Listening check",
+        title = stringResource(R.string.check_title),
         onBack = null,
         step = 6,
         bottom = {
-            PrimaryButton("Continue to taste", { vm.go(Screen.TasteIntro) })
-            TextButton(onClick = { vm.home(); vm.startNewProfile() }, modifier = Modifier.fillMaxWidth()) { Text("Start over") }
+            PrimaryButton(stringResource(R.string.check_done_continue), { vm.go(Screen.TasteIntro) })
+            TextButton(onClick = { vm.home(); vm.startNewProfile() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.check_done_start_over)) }
         },
     ) {
-        Text("Done. Here's your listening profile", style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.check_done_headline), style = MaterialTheme.typography.headlineSmall)
         Text(
             if (correction.isEmpty()) {
-                "Each point compares the quietest beep you heard in that band through these headphones with a reference listener on well-tuned ${type.label.lowercase()} headphones, with your low mids (500 Hz to 1.5 kHz) as the zero line. Lower on the chart means that band gets more help. It includes your headphones' own sound, which is exactly what the EQ corrects. The EQ follows the smooth trend, not every point."
+                val reference = when (type) {
+                    HeadphoneType.IN_EAR -> R.string.check_done_reference_in_ear
+                    HeadphoneType.OVER_EAR -> R.string.check_done_reference_over_ear
+                }
+                stringResource(R.string.check_done_explained, stringResource(reference))
             } else {
-                "Each point compares the quietest beep you heard in that band with a reference listener, after your headphones' measured response is taken out, with your low mids (500 Hz to 1.5 kHz) as the zero line. Lower on the chart means that band gets more help. What's left is your ears and how the headphones sit on them. The EQ follows the smooth trend, not every point."
+                stringResource(R.string.check_done_explained_corrected)
             },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         SectionCard {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Pill("● Left", EarColors.Left)
-                Pill("■ Right", EarColors.Right)
+                Pill(stringResource(R.string.check_done_left), EarColors.Left)
+                Pill(stringResource(R.string.check_done_right), EarColors.Right)
                 Spacer(Modifier.weight(1f))
-                Text("dB, relative to the reference", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.check_done_axis), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             HearingChart(series, height = 220.dp)
         }
         SectionCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Reliability", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.check_done_reliability), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                 when (reliability) {
-                    Reliability.GOOD -> Pill("Good", StatusColors.Good)
-                    Reliability.FAIR -> Pill("Fair", StatusColors.Warn)
-                    Reliability.POOR -> Pill("Low", StatusColors.Bad)
+                    Reliability.GOOD -> Pill(stringResource(R.string.check_reliability_good), StatusColors.Good)
+                    Reliability.FAIR -> Pill(stringResource(R.string.check_reliability_fair), StatusColors.Warn)
+                    Reliability.POOR -> Pill(stringResource(R.string.check_reliability_low), StatusColors.Bad)
                 }
             }
+            // Whole sentences, one resource each, joined into one paragraph.
+            val retest = listOfNotNull(result.retestDiffLeft, result.retestDiffRight).takeIf { it.isNotEmpty() }
             Text(
-                buildString {
-                    append("Silent check beeps answered Yes: ${result.falseAlarms} of ${result.catchTrials}. ")
-                    listOfNotNull(result.retestDiffLeft, result.retestDiffRight).takeIf { it.isNotEmpty() }?.let {
-                        append("1 kHz re-check differed by up to ${"%.0f".format(it.maxOf { d -> kotlin.math.abs(d) })} dB. ")
-                    }
-                    if (result.trialLog.isNotEmpty()) append("Answers that didn't fit the rest: ${result.inconsistent} of ${result.trialLog.size}. ")
-                    append("${result.trials} answers in ${result.durationSec / 60} min ${result.durationSec % 60} s.")
-                },
+                listOfNotNull(
+                    stringResource(R.string.check_done_false_alarms, result.falseAlarms, result.catchTrials),
+                    retest?.let { stringResource(R.string.check_done_retest, "%.0f".format(it.maxOf { d -> kotlin.math.abs(d) })) },
+                    if (result.trialLog.isNotEmpty()) stringResource(R.string.check_done_inconsistent, result.inconsistent, result.trialLog.size) else null,
+                    pluralStringResource(R.plurals.check_done_answers, result.trials, result.trials, result.durationSec / 60, result.durationSec % 60),
+                ).joinToString(" "),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             val edge = result.points.count { it.flag != ThresholdFlag.OK }
             if (edge > 0) {
                 Text(
-                    "$edge band(s) were at the edge of the test range; PureEQ limits the correction there.",
+                    pluralStringResource(R.plurals.check_done_edge, edge, edge),
                     style = MaterialTheme.typography.bodySmall,
                     color = StatusColors.Warn,
                 )
             }
             if (reliability == Reliability.POOR) {
                 Text(
-                    "The answers weren't very consistent. A quieter room and only answering Yes when sure usually fixes this; consider starting over.",
+                    stringResource(R.string.check_done_poor),
                     style = MaterialTheme.typography.bodySmall,
                     color = StatusColors.Bad,
                 )
             }
         }
         Text(
-            "This is a relative listening profile for tuning sound, not a hearing test or an audiogram. PureEQ is not a medical device. A hearing care professional can help with any questions about your hearing.",
+            stringResource(R.string.check_done_disclaimer),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
