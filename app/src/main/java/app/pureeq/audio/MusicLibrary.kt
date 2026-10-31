@@ -7,6 +7,7 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.net.Uri
 import android.provider.OpenableColumns
+import app.pureeq.R
 import app.pureeq.dsp.Fft
 import app.pureeq.dsp.MusicSynth
 import kotlinx.coroutines.Dispatchers
@@ -29,17 +30,17 @@ class MusicLibrary(private val context: Context) {
     suspend fun builtIn(rate: Int): MusicTrack = withContext(Dispatchers.Default) {
         val file = File(context.cacheDir, "loop_v${LOOP_VERSION}_$rate.f32")
         val pcm = readFloats(file) ?: MusicSynth.render(rate).also { writeFloats(file, it) }
-        MusicTrack("PureEQ demo track", pcm, rate, Fft.longTermSpectrumDb(pcm, rate))
+        MusicTrack(context.getString(R.string.music_library_demo_track), pcm, rate, Fft.longTermSpectrumDb(pcm, rate))
     }
 
     /** Decodes about 40 s from a quarter of the way into a song and turns it into a seamless loop. */
     suspend fun decode(uri: Uri): MusicTrack = withContext(Dispatchers.IO) {
-        val title = displayName(uri) ?: "Your song"
+        val title = displayName(uri) ?: context.getString(R.string.music_library_your_song)
         val ex = MediaExtractor()
         ex.setDataSource(context, uri, null)
         val trackIndex = (0 until ex.trackCount).firstOrNull {
             ex.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true
-        } ?: error("No audio found in this file")
+        } ?: error(context.getString(R.string.music_library_no_audio))
         ex.selectTrack(trackIndex)
         val format = ex.getTrackFormat(trackIndex)
         val mime = format.getString(MediaFormat.KEY_MIME)!!
@@ -60,7 +61,7 @@ class MusicLibrary(private val context: Context) {
             val started = System.nanoTime()
             while (true) {
                 // A broken or exotic file must not hang the app.
-                if (System.nanoTime() - started > DECODE_TIMEOUT_NS) error("Decoding took too long")
+                if (System.nanoTime() - started > DECODE_TIMEOUT_NS) error(context.getString(R.string.music_library_too_slow))
                 if (!inputDone) {
                     val inIdx = codec.dequeueInputBuffer(10_000)
                     if (inIdx >= 0) {
@@ -96,7 +97,7 @@ class MusicLibrary(private val context: Context) {
             ex.release()
         }
         val pcm = makeLoop(out.toArray(), rate)
-        if (pcm.size < rate * 2 * 4) error("This file is too short to use")
+        if (pcm.size < rate * 2 * 4) error(context.getString(R.string.music_library_too_short))
         MusicTrack(title, pcm, rate, Fft.longTermSpectrumDb(pcm, rate))
     }
 
