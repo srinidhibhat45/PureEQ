@@ -75,6 +75,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.BuildConfig
 import app.pureeq.R
 import app.pureeq.audio.OutputDevice
+import app.pureeq.profile.ListeningMode
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
@@ -85,14 +86,17 @@ import app.pureeq.ui.components.AdaptiveButtons
 import app.pureeq.ui.components.ChartCurve
 import app.pureeq.ui.components.EqChart
 import app.pureeq.ui.components.ListeningOrb
+import app.pureeq.ui.components.ModeSelector
 import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.switchRow
+import app.pureeq.ui.doesRes
 import app.pureeq.ui.kindLabel
 import app.pureeq.ui.outputInText
 import app.pureeq.ui.outputList
 import app.pureeq.ui.outputName
+import app.pureeq.ui.titleRes
 import app.pureeq.ui.theme.EarColors
 import app.pureeq.ui.theme.StatusColors
 import app.pureeq.update.UpdateState
@@ -169,6 +173,7 @@ fun HomeScreen(vm: AppViewModel) {
                     offText = offText(output, settings.outputs, profiles),
                     status = status,
                     onToggle = { if (it) enableSystemEq() else vm.setSystemEq(false) },
+                    onMode = { vm.setMode(active.id, it) },
                     onEdit = { vm.go(Screen.Editor(active.id)) },
                     onExport = { vm.go(Screen.Export(active.id)) },
                     successor = vm.store.successorOf(active.id),
@@ -298,6 +303,7 @@ private fun ActiveProfileCard(
     offText: String,
     status: SystemEqStatus,
     onToggle: (Boolean) -> Unit,
+    onMode: (ListeningMode) -> Unit,
     onEdit: () -> Unit,
     onExport: () -> Unit,
     /** The profile that takes over if this one is deleted; null if it's the only one. */
@@ -330,6 +336,23 @@ private fun ActiveProfileCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = StatusColors.Warn,
             )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        // Profiles from before modes are asked once; until then they play as they always did (Music).
+        val mode = profile.mode
+        if (mode == null) {
+            Text(stringResource(R.string.home_mode_ask_title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            Text(
+                stringResource(R.string.home_mode_ask_text, profile.deviceName?.let { outputName(it) } ?: profile.name),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            Text(stringResource(R.string.home_mode_title), style = MaterialTheme.typography.titleSmall)
+        }
+        ModeSelector(mode, onMode)
+        if (mode != null) {
+            Text(stringResource(mode.doesRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Row(Modifier.switchRow(enabled, onChange = onToggle), verticalAlignment = Alignment.CenterVertically) {
@@ -425,7 +448,7 @@ fun curvesFor(eq: ProfileEq, combined: Color): List<ChartCurve> {
     }
 }
 
-/** "Galaxy Buds2 Pro · Ears + taste · 30 Oct 2026": the profile's headphones, what made it, and when. */
+/** "Galaxy Buds2 Pro · Gaming · Ears + taste · 30 Oct 2026": the profile's headphones, mode, what made it, and when. */
 @Composable
 internal fun profileSubtitle(p: Profile): String {
     val date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(p.createdAt))
@@ -433,7 +456,7 @@ internal fun profileSubtitle(p: Profile): String {
         p.hearing != null -> stringResource(R.string.home_made_with_ears)
         else -> stringResource(R.string.home_made_with_taste)
     }
-    return listOfNotNull(p.deviceName?.let { outputName(it) }, kind, date).joinToString(" · ")
+    return listOfNotNull(p.deviceName?.let { outputName(it) }, p.mode?.let { stringResource(it.titleRes) }, kind, date).joinToString(" · ")
 }
 
 @Composable

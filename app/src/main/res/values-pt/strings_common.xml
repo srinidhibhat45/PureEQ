@@ -97,4 +97,18 @@
     <string name="notif_failed">Não foi possível iniciar o equalizador</string>
     <string name="status_no_profile">Nenhum perfil ainda</string>
     <string name="status_refused">Este telefone recusou o equalizador do sistema (%1$s). Tente o modo \"Apps de música\" nas Configurações.</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="use_gaming">Jogos</string>
+    <string name="use_gaming_detail">Passos e pistas ficam à frente; explosões não os encobrem.</string>
+    <string name="use_gaming_does">Graves em −3 dB ou menos para que explosões não mascarem os passos, +2 dB onde soam passos e recargas, agudos nunca cortados para você saber de onde vem cada som e cerca de 20 ms a menos de atraso. Nenhum equalizador alcança jogos que usam o caminho de baixa latência do Android.</string>
+    <string name="use_music">Música</string>
+    <string name="use_music_detail">Seu som exatamente como ajustado: graves e dinâmica completos.</string>
+    <string name="use_music_does">Seu som exatamente como você ajustou: correção dos fones, seus ouvidos e sua preferência, com graves completos e cada momento alto e baixo como o artista fez. Os graves continuam seguindo o volume.</string>
+    <string name="use_voice">Voz</string>
+    <string name="use_voice_detail">Podcasts, audiolivros, mensagens de voz e vídeos falados.</string>
+    <string name="use_voice_does">Vozes claras e próximas: menos ronco nos graves, +2,5 dB de clareza em 2 kHz, sem reforço de graves ou agudos, seu ajuste aos ouvidos com força total e um nivelador para quem fala mais alto ou mais baixo. No Android, chamadas telefônicas e de apps não passam por nenhum app de equalizador, então soam como o telefone as faz.</string>
+    <string name="use_general">Geral</string>
+    <string name="use_general_detail">Um pouco de tudo: vídeos, redes sociais, podcasts, música.</string>
+    <string name="use_general_does">Seu som com um pouco mais de clareza nas vozes (+1,5 dB perto de 2,5 kHz) e um nivelador lento que abaixa os momentos altos, para mexer menos no volume ao passar de um app ou vídeo para outro. Sua preferência fica como ajustada.</string>
 </resources>

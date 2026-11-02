@@ -33,6 +33,11 @@
     <string name="editor_eq_off">Off</string>
     <string name="editor_loudness_matched">On and off are loudness-matched, so you hear the change in balance, not just a volume jump.</string>
 
+    <!-- The listening mode card: a heading above the four modes (Gaming, Music, Calls, General). -->
+    <string name="editor_mode">Tuned for</string>
+    <!-- Under the modes, for a profile made before modes existed. -->
+    <string name="editor_mode_unset">Not picked yet, so it plays as Music: your sound exactly as tuned. Pick what you mostly use these headphones for.</string>
+
     <!-- The Fine-tuning card. -->
     <string name="editor_fine_tuning">Fine-tuning</string>
     <!-- %1$s: what was changed: editor_changed_* items joined with editor_changed_separator,
@@ -110,6 +115,10 @@
     <string name="export_saved">Saved</string>
     <string name="export_save_failed">Couldn\'t save the file</string>
     <string name="export_intro">Your profile in the formats other apps understand. Or skip all this and switch on \"Apply to all audio\" on the home screen.</string>
+    <!-- %1$s: the profile's listening mode, such as "Gaming". -->
+    <string name="export_mode">Exported as tuned for %1$s. Switch the mode first to export another.</string>
+    <!-- As above, for a mode that also evens out loud and quiet moments, which only PureEQ itself can do. -->
+    <string name="export_mode_leveller">Exported as tuned for %1$s: its EQ, without the levelling of loud and quiet moments, which only PureEQ\'s own system-wide EQ does. Switch the mode first to export another.</string>
     <!-- When one ear needs more level than the other. %1$s: how much, such as "2.5". -->
     <string name="export_balance_left">Your left ear needs about %1$s dB more. In apps without per-ear EQ, move Android\'s balance slider (Settings &gt; Accessibility &gt; Audio adjustment) slightly toward the left.</string>
     <string name="export_balance_right">Your right ear needs about %1$s dB more. In apps without per-ear EQ, move Android\'s balance slider (Settings &gt; Accessibility &gt; Audio adjustment) slightly toward the right.</string>

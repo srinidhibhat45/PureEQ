@@ -2,6 +2,14 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.7.0
+- Modes: tell PureEQ what you mostly use your headphones for, Gaming, Music, Voice or General, and it fine-tunes your profile for it. New profiles ask; switch any time on the home screen, in Fine-tune or from the Quick Settings tile's menu.
+- Gaming holds bass at −3 dB or less so explosions don't bury footsteps, lifts footsteps and reloads (+2 dB at 2 kHz), never cuts the treble your ears tell direction with, and halves the EQ's delay to about 21 ms.
+- Music is your sound exactly as you tuned it. Profiles you already have play as Music until you pick a mode, so nothing changes until you do.
+- Voice is for podcasts, audiobooks, voice notes and talk videos: less boom, clearer voices, your ear tuning at full strength and a leveller for louder and quieter talkers. Android doesn't let any app's EQ reach phone or app calls.
+- General adds a touch of voice clarity and a slow leveller, so moving between apps and videos needs fewer volume changes.
+- Every mode plays as loud as Music, so switching changes the balance, not the volume. Exports carry the mode's EQ.
+
 ## 1.6.0
 - Bass that follows the volume. Your profile remembers the volume you tuned it at; turn down from there and PureEQ adds back the bass your ears lose at lower levels (about 1.5 dB for every 10 dB quieter, up to +6 dB, plus a touch of treble), and eases off a little when you turn up. Fine-tune shows what it adds right now and has a switch. For profiles tuned with PureEQ 1.5 or later; redo the taste test of an older one to use it.
 - PureEQ now speaks Spanish, German, French, Portuguese and Hindi, following your phone's language. On Android 13 and later you can also pick its language in Settings › Apps › PureEQ › Language.

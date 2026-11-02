@@ -190,4 +190,11 @@
     <string name="taste_tile_playing">चल रहा है</string>
     <string name="taste_tile_heard">सुन लिया · स्विच करने के लिए टैप करें</string>
     <string name="taste_tile_new">सुनने के लिए टैप करें</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="setup_use_title">आपका इस्तेमाल</string>
+    <string name="setup_use_headline">आप इन्हें ज़्यादातर किसलिए इस्तेमाल करेंगे?</string>
+    <string name="setup_use_headline_named">आप %1$s को ज़्यादातर किसलिए इस्तेमाल करेंगे?</string>
+    <string name="setup_use_subtitle">PureEQ आपके कानों और आपकी पसंद के ऊपर, आपके साउंड को इसके लिए ट्यून करता है।</string>
+    <string name="setup_use_switch_later">पक्का नहीं पता? सामान्य चुनें। आप कभी भी बदल सकते हैं: होम स्क्रीन पर, फ़ाइन-ट्यून में या फटाफट सेटिंग टाइल से।</string>
 </resources>

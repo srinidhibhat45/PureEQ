@@ -31,6 +31,7 @@ import app.pureeq.ui.screens.QuietScreen
 import app.pureeq.ui.screens.SettingsScreen
 import app.pureeq.ui.screens.TasteIntroScreen
 import app.pureeq.ui.screens.TasteScreen
+import app.pureeq.ui.screens.UseScreen
 import app.pureeq.ui.screens.VolumeScreen
 
 @Composable
@@ -67,6 +68,7 @@ private fun Screens(vm: AppViewModel, screen: Screen) {
             Screen.Home -> HomeScreen(vm)
             Screen.Intro -> IntroScreen(vm)
             Screen.Headphones -> HeadphonesScreen(vm)
+            Screen.Use -> UseScreen(vm)
             is Screen.HeadphonePicker -> HeadphonePickerScreen(vm, s.forEditor)
             Screen.Quiet -> QuietScreen(vm)
             Screen.Volume -> VolumeScreen(vm)

@@ -79,35 +79,41 @@ class ExportersTest {
 
     @Test
     fun systemEqBandsReproduceTheCurveOnRealFftBins() {
-        val edges = DpBands.edges
-        assertTrue(edges.size <= 128)
-        for (i in 1 until edges.size) assertTrue(edges[i] > edges[i - 1])
-        assertEquals(48000.0, edges.last(), 0.0)
         val curve = Curves.add(ProfileEq(profile).leftCurve, DoubleArray(FreqGrid.SIZE))
-        val gains = DpBands.gains(curve)
-        for (rate in listOf(44100.0, 48000.0)) {
-            // Mirror DPFrequency: bin stop = (int)(0.5 + cutoff * N / rate), bands are contiguous.
-            val n = 2048
-            val perBin = DoubleArray(n / 2 + 1) { Double.NaN }
-            var start = 0
-            for (b in edges.indices) {
-                val stop = (0.5 + edges[b] * n / rate).toInt()
-                for (k in start..minOf(stop, n / 2)) perBin[k] = gains[b].toDouble()
-                start = stop + 1
-            }
-            assertTrue("every bin written at $rate", perBin.none { it.isNaN() })
-            var worst = 0.0
-            var worstHz = 0.0
-            for (k in 2..n / 2) {
-                val f = k * rate / n
-                if (f > 20000) break
-                val err = abs(perBin[k] - Curves.sample(curve, f))
-                if (err > worst) {
-                    worst = err
-                    worstHz = f
+        // 40 ms frames (2048 points) as Music, General and Voice play; 20 ms (1024) as Gaming does.
+        for (frameMs in listOf(40f, 20f)) {
+            val n = DpBands.fftSize(frameMs)
+            val layout = DpBands.forFrame(frameMs)
+            val edges = layout.edges
+            assertTrue(edges.size <= 128)
+            for (i in 1 until edges.size) assertTrue(edges[i] > edges[i - 1])
+            assertEquals(48000.0, edges.last(), 0.0)
+            val gains = layout.gains(curve)
+            for (rate in listOf(44100.0, 48000.0)) {
+                // Mirror DPFrequency: bin stop = (int)(0.5 + cutoff * N / rate), bands are contiguous.
+                val perBin = DoubleArray(n / 2 + 1) { Double.NaN }
+                var start = 0
+                for (b in edges.indices) {
+                    val stop = (0.5 + edges[b] * n / rate).toInt()
+                    for (k in start..minOf(stop, n / 2)) perBin[k] = gains[b].toDouble()
+                    start = stop + 1
                 }
+                assertTrue("every bin written at $rate, $n points", perBin.none { it.isNaN() })
+                var worst = 0.0
+                var worstHz = 0.0
+                for (k in 2..n / 2) {
+                    val f = k * rate / n
+                    if (f > 20000) break
+                    val err = abs(perBin[k] - Curves.sample(curve, f))
+                    if (err > worst) {
+                        worst = err
+                        worstHz = f
+                    }
+                }
+                assertTrue("staircase error $worst dB at ${worstHz.roundToInt()} Hz, rate $rate, $n points", worst < 0.75)
             }
-            assertTrue("staircase error $worst dB at ${worstHz.roundToInt()} Hz, rate $rate", worst < 0.75)
         }
+        assertEquals(2048, DpBands.fftSize(40f))
+        assertEquals(1024, DpBands.fftSize(20f))
     }
 }

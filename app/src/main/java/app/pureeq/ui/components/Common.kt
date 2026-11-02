@@ -73,7 +73,7 @@ fun StepScaffold(
     title: String,
     onBack: (() -> Unit)?,
     step: Int? = null,
-    steps: Int = 8,
+    steps: Int = 9,
     scroll: Boolean = true,
     actions: @Composable (() -> Unit)? = null,
     snackbarHost: @Composable () -> Unit = {},

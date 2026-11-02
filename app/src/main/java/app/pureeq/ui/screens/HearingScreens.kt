@@ -179,7 +179,7 @@ fun HearingDoneScreen(vm: AppViewModel) {
     StepScaffold(
         title = stringResource(R.string.check_title),
         onBack = null,
-        step = 6,
+        step = 7,
         bottom = {
             PrimaryButton(stringResource(R.string.check_done_continue), { vm.go(Screen.TasteIntro) })
             TextButton(onClick = { vm.home(); vm.startNewProfile() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.check_done_start_over)) }

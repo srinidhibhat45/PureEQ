@@ -101,4 +101,18 @@
     <string name="status_no_profile">Noch kein Profil</string>
     <!-- %1$s: the error's technical name. -->
     <string name="status_refused">Dieses Handy hat den System-Equalizer abgelehnt (%1$s). Probiere in den Einstellungen den Modus „Musik-Apps“.</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="use_gaming">Gaming</string>
+    <string name="use_gaming_detail">Schritte und Hinweise rücken nach vorn, Explosionen überdecken sie nicht.</string>
+    <string name="use_gaming_does">Bass bei −3 dB oder darunter, damit Explosionen keine Schritte überdecken, +2 dB dort, wo Schritte und Nachladen klingen, Höhen nie abgesenkt, damit du hörst, woher ein Geräusch kommt, und etwa 20 ms weniger Verzögerung. Spiele auf Androids Low-Latency-Weg erreicht kein EQ.</string>
+    <string name="use_music">Musik</string>
+    <string name="use_music_detail">Dein Sound genau wie abgestimmt: voller Bass, volle Dynamik.</string>
+    <string name="use_music_does">Dein Sound genau so, wie du ihn abgestimmt hast: Kopfhörerkorrektur, deine Ohren und dein Geschmack, mit vollem Bass und jedem lauten und leisen Moment, wie ihn die Künstler gemacht haben. Der Bass folgt weiter der Lautstärke.</string>
+    <string name="use_voice">Stimme</string>
+    <string name="use_voice_detail">Podcasts, Hörbücher, Sprachnachrichten und Talk-Videos.</string>
+    <string name="use_voice_does">Klare, nahe Stimmen: weniger Dröhnen im Bass, +2,5 dB Klarheit bei 2 kHz, keine Anhebung von Bass oder Höhen, deine Ohranpassung mit voller Stärke und ein Pegelausgleich für lautere und leisere Sprecher. Telefon- und App-Anrufe umgehen unter Android jede EQ-App und klingen so, wie das Handy sie macht.</string>
+    <string name="use_general">Allgemein</string>
+    <string name="use_general_detail">Von allem etwas: Videos, Social-Apps, Podcasts, Musik.</string>
+    <string name="use_general_does">Dein Sound mit etwas mehr Stimmklarheit (+1,5 dB um 2,5 kHz) und einem langsamen Pegelausgleich, der laute Momente absenkt, damit du zwischen Apps und Videos seltener die Lautstärke ändern musst. Dein Geschmack bleibt, wie du ihn abgestimmt hast.</string>
 </resources>

@@ -59,11 +59,13 @@ import app.pureeq.taste.TasteBand
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
 import app.pureeq.ui.components.EqChart
+import app.pureeq.ui.components.ModeSelector
 import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.StepScaffold
 import app.pureeq.ui.components.switchRow
+import app.pureeq.ui.doesRes
 import app.pureeq.ui.hintRes
 import app.pureeq.ui.theme.EarColors
 import app.pureeq.ui.theme.NumberStyle
@@ -96,7 +98,7 @@ fun EditorScreen(vm: AppViewModel) {
     StepScaffold(
         title = stringResource(if (e.isDraft) R.string.editor_title_draft else R.string.editor_title),
         onBack = { vm.back() },
-        step = if (e.isDraft) 8 else null,
+        step = if (e.isDraft) 9 else null,
         snackbarHost = { SnackbarHost(snackbar) },
         bottom = {
             if (e.isDraft) {
@@ -141,6 +143,15 @@ fun EditorScreen(vm: AppViewModel) {
                 }
             }
             if (eq != null) EqChart(curvesFor(eq, MaterialTheme.colorScheme.primary), height = 220.dp) else Spacer(Modifier.height(220.dp))
+        }
+        SectionCard {
+            Text(stringResource(R.string.editor_mode), style = MaterialTheme.typography.titleMedium)
+            ModeSelector(p.mode, onSelect = { m -> vm.editProfile { it.copy(mode = m) } })
+            Text(
+                stringResource(p.mode?.doesRes ?: R.string.editor_mode_unset),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         SectionCard {
             Text(stringResource(R.string.editor_listen), style = MaterialTheme.typography.titleSmall)

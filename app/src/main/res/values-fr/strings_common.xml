@@ -84,4 +84,18 @@
     <string name="notif_failed">Impossible de démarrer l’égaliseur</string>
     <string name="status_no_profile">Aucun profil pour l’instant</string>
     <string name="status_refused">Ce téléphone a refusé l’égaliseur système (%1$s). Essayez le mode « Applis de musique » dans les paramètres.</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="use_gaming">Jeux</string>
+    <string name="use_gaming_detail">Les pas et les indices passent devant, les explosions ne les couvrent plus.</string>
+    <string name="use_gaming_does">Basses à −3 dB ou moins pour que les explosions ne masquent pas les pas, +2 dB là où sonnent les pas et les rechargements, aigus jamais réduits pour savoir d’où viennent les sons, et environ 20 ms de délai en moins. Aucun égaliseur n’atteint les jeux qui passent par la voie basse latence d’Android.</string>
+    <string name="use_music">Musique</string>
+    <string name="use_music_detail">Votre son tel que réglé : basses et dynamique complètes.</string>
+    <string name="use_music_does">Votre son exactement tel que vous l’avez réglé : correction des écouteurs, vos oreilles et vos préférences, avec toutes les basses et chaque moment fort ou doux tel que l’artiste l’a voulu. Les basses suivent toujours le volume.</string>
+    <string name="use_voice">Voix</string>
+    <string name="use_voice_detail">Podcasts, livres audio, messages vocaux et vidéos parlées.</string>
+    <string name="use_voice_does">Des voix claires et proches : moins de grondement dans le grave, +2,5 dB de clarté à 2 kHz, aucune hausse des basses ni des aigus, votre adaptation aux oreilles à pleine force et un niveleur pour les voix plus fortes ou plus faibles. Sur Android, les appels téléphoniques et ceux des applis échappent à toute appli d’égaliseur : ils sonnent comme le téléphone les produit.</string>
+    <string name="use_general">Général</string>
+    <string name="use_general_detail">Un peu de tout : vidéos, réseaux sociaux, podcasts, musique.</string>
+    <string name="use_general_does">Votre son avec un peu plus de clarté pour les voix (+1,5 dB autour de 2,5 kHz) et un niveleur lent qui baisse les moments forts, pour moins toucher au volume d’une appli ou d’une vidéo à l’autre. Vos préférences restent telles que réglées.</string>
 </resources>

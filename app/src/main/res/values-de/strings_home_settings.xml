@@ -185,4 +185,12 @@
     <string name="music_library_no_audio">Keine Audiodaten in dieser Datei gefunden</string>
     <string name="music_library_too_slow">Das Decodieren hat zu lange gedauert</string>
     <string name="music_library_too_short">Diese Datei ist zu kurz</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="home_mode_title">Abgestimmt auf</string>
+    <string name="home_mode_ask_title">Neu: abgestimmt auf das, was du tust</string>
+    <string name="home_mode_ask_text">Wofür nutzt du %1$s meistens? PureEQ stimmt dieses Profil darauf ab. Bis du wählst, klingt es wie Musik, genau so, wie du es abgestimmt hast.</string>
+    <string name="tile_menu_mode">Abgestimmt auf</string>
+    <string name="about_modes_title">Modi</string>
+    <string name="about_modes_text">Jedes Profil wird darauf abgestimmt, wofür seine Kopfhörer meistens da sind, und du kannst jederzeit wechseln. Der Modus formt deine Abstimmung um, ersetzt sie aber nie, und behandelt beide Ohren gleich. Jeder Modus spielt so laut wie Musik, ein Wechsel ändert also die Balance, nicht die Lautstärke. Musik ist dein Sound genau wie abgestimmt: Alles darin wurde mit Musik gewählt, und Hörer bewerten unbearbeiteten, unkomprimierten Klang bei Musik am besten (Kirchberger und Russo 2016; Moore und Sęk 2016). Allgemein fügt +1,5 dB um 2,5 kHz für Stimmen hinzu und einen langsamen Pegelausgleich (2:1, 3 s Release), der laute Quellen näher an leise bringt: Musik und Videos sind etwa 13 dB lauter gemischt als Filmdialoge. Gaming hält den Bass bei −3 dB oder darunter, weil laute tiefe Töne verdecken, was darüber liegt, hebt 2 kHz um 2 dB an, wo Schritte liegen, senkt nie den Bereich von 4 bis 16 kHz ab, mit dem deine Ohren die Richtung erkennen, und halbiert die Verzögerung des EQ auf etwa 21 ms. Stimme nimmt Dröhnen unter etwa 100 Hz heraus und fügt +2,5 dB bei 2 kHz hinzu (die Oktaven von 1 bis 4 kHz tragen das meiste dessen, was Sprache verständlich macht), wendet deine Ohranpassung mit voller Stärke an und gleicht Sprecher mit einem Pegelausgleich an (2:1, 0,4 s Release). Die Pegelausgleiche hier senken nur ab, beide Ohren gemeinsam, und können daher weder übersteuern noch das Stereobild verschieben. Android hält Telefonanrufe, App-Anrufe und Spiele auf seinem Low-Latency-Weg von den Effekten aller Apps fern, die Modi formen also alles andere.</string>
 </resources>

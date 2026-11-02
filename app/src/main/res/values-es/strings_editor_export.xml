@@ -188,4 +188,10 @@
     <!-- %1$s: Android's technical message. -->
     <string name="update_error_not_installed_because">La actualización no se instaló (%1$s).</string>
     <string name="update_error_not_installed">La actualización no se instaló.</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="editor_mode">Ajustado para</string>
+    <string name="editor_mode_unset">Aún sin elegir, así que suena como Música: tu sonido tal como lo ajustaste. Elige para qué usas más estos auriculares.</string>
+    <string name="export_mode">Exportado tal como está ajustado para %1$s. Cambia antes de modo para exportar otro.</string>
+    <string name="export_mode_leveller">Exportado tal como está ajustado para %1$s: su ecualización, sin la nivelación de momentos fuertes y suaves, que solo hace el ecualizador del sistema de PureEQ. Cambia antes de modo para exportar otro.</string>
 </resources>

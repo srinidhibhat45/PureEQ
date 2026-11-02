@@ -157,4 +157,10 @@
     <string name="update_error_storage">Não há espaço livre suficiente para instalar a atualização.</string>
     <string name="update_error_not_installed_because">A atualização não foi instalada (%1$s).</string>
     <string name="update_error_not_installed">A atualização não foi instalada.</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="editor_mode">Ajustado para</string>
+    <string name="editor_mode_unset">Ainda não escolhido, então toca como Música: seu som exatamente como ajustado. Escolha para que você mais usa estes fones.</string>
+    <string name="export_mode">Exportado como ajustado para %1$s. Troque de modo antes para exportar outro.</string>
+    <string name="export_mode_leveller">Exportado como ajustado para %1$s: a equalização dele, sem o nivelamento de momentos altos e baixos, que só o equalizador do sistema do PureEQ faz. Troque de modo antes para exportar outro.</string>
 </resources>

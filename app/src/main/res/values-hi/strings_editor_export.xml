@@ -186,4 +186,10 @@
     <!-- %1$s: Android's technical message. -->
     <string name="update_error_not_installed_because">अपडेट इंस्टॉल नहीं हुआ (%1$s)।</string>
     <string name="update_error_not_installed">अपडेट इंस्टॉल नहीं हुआ।</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="editor_mode">मोड</string>
+    <string name="editor_mode_unset">अभी चुना नहीं गया, इसलिए यह संगीत की तरह बजता है: आपका साउंड ठीक वैसा जैसा ट्यून किया। चुनें कि आप इन हेडफ़ोन को ज़्यादातर किसलिए इस्तेमाल करते हैं।</string>
+    <string name="export_mode">%1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया। कोई दूसरा एक्सपोर्ट करने के लिए पहले मोड बदलें।</string>
+    <string name="export_mode_leveller">%1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया: उसका EQ, तेज़ और धीमे पलों की लेवलिंग के बिना, जो सिर्फ़ PureEQ का अपना सिस्टम-वाइड EQ करता है। कोई दूसरा एक्सपोर्ट करने के लिए पहले मोड बदलें।</string>
 </resources>

@@ -111,7 +111,7 @@ fun TasteIntroScreen(vm: AppViewModel) {
     StepScaffold(
         title = stringResource(R.string.taste_title),
         onBack = { vm.back() },
-        step = if (retune) null else 6,
+        step = if (retune) null else 7,
         bottom = {
             PrimaryButton(stringResource(R.string.taste_intro_start), { vm.previewForVolume(false); vm.go(Screen.Taste) }, enabled = track != null)
             if (!retune) {

@@ -52,7 +52,15 @@ data class Profile(
     val tasteLevel: ListeningLevel? = null,
     /** Below the taste test's volume the system-wide EQ adds bass ([VolumeBass]); on by default. */
     val volumeBass: Boolean = true,
+    /**
+     * What these headphones are mostly used for ([ListeningMode]). Null for profiles made before
+     * PureEQ 1.7, which play as [ListeningMode.MUSIC] (the sound they were tuned with) until asked.
+     */
+    val mode: ListeningMode? = null,
 ) {
+    /** The mode this profile plays in. */
+    val playMode: ListeningMode get() = mode ?: ListeningMode.MUSIC
+
     /** This profile with corrections, taste and balance as the tests recommended; name and results unchanged. */
     fun recommended(): Profile = copy(
         hearingStrength = if (hearing != null) HearingCompensation.DEFAULT_STRENGTH else hearingStrength,
@@ -81,6 +89,7 @@ data class Profile(
         put("headphoneCorrection", headphoneCorrection)
         if (fullSubBass) put("fullSubBass", true)
         if (!volumeBass) put("volumeBass", false)
+        mode?.let { put("mode", it.name) }
         if (checkLevel != null || tasteLevel != null) {
             put("levels", JSONObject().apply {
                 checkLevel?.let { put("check", levelJson(it)) }
@@ -186,6 +195,7 @@ data class Profile(
                 checkLevel = o.optJSONObject("levels")?.optJSONObject("check")?.let(::levelFrom),
                 tasteLevel = o.optJSONObject("levels")?.optJSONObject("taste")?.let(::levelFrom),
                 volumeBass = o.optBoolean("volumeBass", true),
+                mode = o.optString("mode").let { m -> ListeningMode.entries.firstOrNull { it.name == m } },
             )
         }
 

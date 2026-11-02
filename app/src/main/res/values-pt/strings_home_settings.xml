@@ -159,4 +159,12 @@
     <string name="music_library_no_audio">Nenhum áudio encontrado neste arquivo</string>
     <string name="music_library_too_slow">A decodificação demorou demais</string>
     <string name="music_library_too_short">Este arquivo é curto demais para usar</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="home_mode_title">Ajustado para</string>
+    <string name="home_mode_ask_title">Novo: ajuste para o que você faz</string>
+    <string name="home_mode_ask_text">Para que você mais usa %1$s? O PureEQ ajusta este perfil para isso. Até você escolher, ele toca como Música, exatamente como você ajustou.</string>
+    <string name="tile_menu_mode">Ajustado para</string>
+    <string name="about_modes_title">Modos</string>
+    <string name="about_modes_text">Cada perfil é ajustado para o uso principal dos seus fones, e você pode trocar quando quiser. O modo remodela seu ajuste, nunca o substitui, e trata os dois ouvidos igualmente. Todo modo toca tão alto quanto Música, então trocar muda o equilíbrio, não o volume. Música é seu som exatamente como ajustado: tudo nele foi escolhido com música, e os ouvintes avaliam o som sem processamento nem compressão como o melhor para música (Kirchberger e Russo 2016; Moore e Sęk 2016). Geral acrescenta +1,5 dB perto de 2,5 kHz para as vozes e um nivelador lento (2:1, liberação de 3 s) que aproxima as fontes altas das baixas: músicas e vídeos são feitos cerca de 13 dB mais altos que diálogos de filmes. Jogos mantém os graves em −3 dB ou menos, porque graves altos mascaram o que soa acima deles, eleva 2 kHz em 2 dB, onde ficam os passos, nunca corta a faixa de 4 a 16 kHz que seus ouvidos usam para saber a direção e reduz pela metade o atraso do equalizador, para cerca de 21 ms. Voz tira o ronco abaixo de cerca de 100 Hz e acrescenta +2,5 dB em 2 kHz (as oitavas de 1 a 4 kHz carregam quase tudo o que torna a fala inteligível), aplica seu ajuste aos ouvidos com força total e iguala quem fala com um nivelador (2:1, liberação de 0,4 s). Aqui os niveladores só abaixam, os dois ouvidos juntos, então não podem distorcer nem deslocar a imagem estéreo. O Android mantém chamadas telefônicas, chamadas de apps e jogos que usam seu caminho de baixa latência longe dos efeitos de qualquer app, então os modos moldam todo o resto.</string>
 </resources>

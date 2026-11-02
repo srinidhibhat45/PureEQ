@@ -154,4 +154,12 @@
     <string name="music_library_no_audio">Aucun audio trouvé dans ce fichier</string>
     <string name="music_library_too_slow">Le décodage a pris trop de temps</string>
     <string name="music_library_too_short">Ce fichier est trop court pour être utilisé</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="home_mode_title">Réglé pour</string>
+    <string name="home_mode_ask_title">Nouveau : un réglage selon votre usage</string>
+    <string name="home_mode_ask_text">À quoi vous servent surtout %1$s ? PureEQ règle ce profil pour cet usage. Tant que vous n’avez pas choisi, il sonne comme Musique, exactement tel que vous l’avez réglé.</string>
+    <string name="tile_menu_mode">Réglé pour</string>
+    <string name="about_modes_title">Modes</string>
+    <string name="about_modes_text">Chaque profil est réglé pour l’usage principal de ses écouteurs, et vous pouvez changer à tout moment. Le mode remodèle votre réglage sans jamais le remplacer, et traite les deux oreilles de la même façon. Chaque mode joue aussi fort que Musique : changer de mode change l’équilibre, pas le volume. Musique est votre son tel que réglé : tout y a été choisi sur de la musique, et les auditeurs jugent le son non traité et non compressé le meilleur pour la musique (Kirchberger et Russo 2016 ; Moore et Sęk 2016). Général ajoute +1,5 dB autour de 2,5 kHz pour les voix et un niveleur lent (2:1, relâchement de 3 s) qui rapproche les sources fortes des sources douces : la musique et les vidéos sont produites environ 13 dB plus fort que les dialogues de film. Jeux garde les basses à −3 dB ou moins, car les sons graves forts masquent ce qui se trouve au-dessus, relève 2 kHz de 2 dB, là où se trouvent les pas, ne réduit jamais la plage de 4 à 16 kHz que vos oreilles utilisent pour situer les sons, et divise par deux le délai de l’égaliseur, à environ 21 ms. Voix retire le grondement sous environ 100 Hz et ajoute +2,5 dB à 2 kHz (les octaves de 1 à 4 kHz portent l’essentiel de ce qui rend la parole intelligible), applique votre adaptation aux oreilles à pleine force et égalise les voix avec un niveleur (2:1, relâchement de 0,4 s). Ici, les niveleurs ne font que baisser, les deux oreilles ensemble : ils ne peuvent ni saturer ni déplacer l’image stéréo. Android tient les appels téléphoniques, les appels des applis et les jeux qui passent par sa voie basse latence à l’écart des effets de toute appli : les modes façonnent tout le reste.</string>
 </resources>

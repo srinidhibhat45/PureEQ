@@ -71,6 +71,7 @@ import app.pureeq.ui.components.Headline
 import app.pureeq.ui.components.InfoRow
 import app.pureeq.ui.components.KeepScreenOn
 import app.pureeq.ui.components.ListeningOrb
+import app.pureeq.ui.components.ModeChoices
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.switchRow
@@ -242,6 +243,30 @@ fun HeadphonesScreen(vm: AppViewModel) {
     }
 }
 
+/** What the headphones are mostly for: the profile's mode, which can be switched any time later. */
+@Composable
+fun UseScreen(vm: AppViewModel) {
+    val draft by vm.draft.collectAsStateWithLifecycle()
+    StepScaffold(
+        title = stringResource(R.string.setup_use_title),
+        onBack = { vm.back() },
+        step = 2,
+        bottom = { PrimaryButton(stringResource(R.string.setup_continue), vm::afterUse, enabled = draft.mode != null) },
+    ) {
+        val device = draft.device?.takeIf { it.isHeadphones }?.name
+        Headline(
+            if (device != null) stringResource(R.string.setup_use_headline_named, outputName(device)) else stringResource(R.string.setup_use_headline),
+            stringResource(R.string.setup_use_subtitle),
+        )
+        ModeChoices(draft.mode, vm::setDraftMode)
+        Text(
+            stringResource(R.string.setup_use_switch_later),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
 @Composable
 fun QuietScreen(vm: AppViewModel) {
     val quiet by vm.quiet.collectAsStateWithLifecycle()
@@ -260,7 +285,7 @@ fun QuietScreen(vm: AppViewModel) {
     StepScaffold(
         title = stringResource(R.string.setup_quiet_title),
         onBack = { vm.back() },
-        step = 2,
+        step = 3,
         bottom = {
             PrimaryButton(
                 stringResource(if (quiet.result != null) R.string.setup_continue else R.string.setup_quiet_skip),
@@ -327,7 +352,7 @@ private fun VolumeSetting(vm: AppViewModel) {
     StepScaffold(
         title = stringResource(R.string.setup_volume_title),
         onBack = { vm.back() },
-        step = 3,
+        step = 4,
         bottom = { PrimaryButton(stringResource(R.string.setup_volume_confirm), vm::confirmVolume) },
     ) {
         Headline(
@@ -377,7 +402,7 @@ private fun ChannelCheck(vm: AppViewModel, c: ChannelUi) {
     StepScaffold(
         title = stringResource(R.string.setup_channel_title),
         onBack = { vm.redoVolume() },
-        step = 4,
+        step = 5,
         bottom = {
             when (c.verdict) {
                 null, ChannelVerdict.OK -> Unit

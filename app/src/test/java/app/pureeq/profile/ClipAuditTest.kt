@@ -101,5 +101,11 @@ class ClipAuditTest {
         audit("bass-light in-ear at the bass ceiling", ProfileEq(p(TasteSettings(bass = 8.0), bassLight)), music)
         audit("no model, treble +6, air +6", ProfileEq(p(TasteSettings(treble = 6.0, air = 6.0))), music)
         audit("Galaxy Buds2, vocals +4, treble +3", ProfileEq(p(TasteSettings(vocals = 4.0, treble = 3.0), buds2)), music)
+        // Listening modes add their own shapes on top (the levellers only turn down, so the EQ is the risk).
+        for (m in listOf(ListeningMode.GAMING, ListeningMode.VOICE, ListeningMode.GENERAL)) {
+            audit("$m: HD 650, bass +5, treble +2", ProfileEq(p(TasteSettings(bass = 5.0, treble = 2.0), hd650).copy(mode = m)), music)
+            audit("$m: Galaxy Buds2, vocals +4, treble +3", ProfileEq(p(TasteSettings(vocals = 4.0, treble = 3.0), buds2).copy(mode = m)), music)
+            audit("$m: no model, treble +6, air +6", ProfileEq(p(TasteSettings(treble = 6.0, air = 6.0)).copy(mode = m)), music)
+        }
     }
 }

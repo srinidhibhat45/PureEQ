@@ -30,6 +30,7 @@ import app.pureeq.hearing.HearingTestConfig
 import app.pureeq.hearing.HearingTestResult
 import app.pureeq.hearing.TestLength
 import app.pureeq.profile.HearingCompensation
+import app.pureeq.profile.ListeningMode
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
 import app.pureeq.profile.ProfileStore
@@ -67,6 +68,8 @@ sealed interface Screen {
     data object Home : Screen
     data object Intro : Screen
     data object Headphones : Screen
+    /** What the headphones are mostly used for: picks the profile's [ListeningMode]. */
+    data object Use : Screen
     /** Search AutoEq for the headphone model; for the profile in the editor, or for the new-profile flow. */
     data class HeadphonePicker(val forEditor: Boolean) : Screen
     data object Quiet : Screen
@@ -110,6 +113,8 @@ data class Draft(
     val retuneOf: String? = null,
     /** The saved profile's sub-bass choice, so a redone taste test hears its bass as it will play. */
     val fullSubBass: Boolean = false,
+    /** What the headphones will mostly be used for; null until the listener answers. */
+    val mode: ListeningMode? = null,
 )
 
 /**
@@ -253,6 +258,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         when (s) {
             Screen.Home -> route.abandonFocus()
             Screen.Headphones -> applyRememberedModel()
+            Screen.Use -> suggestMode()
             Screen.Volume -> {
                 _channel.value = ChannelUi()
                 startVolumeTone()
@@ -317,7 +323,30 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun afterHeadphones() {
         updateDevice()
+        go(Screen.Use)
+    }
+
+    fun setDraftMode(m: ListeningMode) = _draft.update { it.copy(mode = m) }
+
+    fun afterUse() {
         if (_draft.value.includeHearing) go(Screen.Quiet) else go(Screen.TasteIntro)
+    }
+
+    /**
+     * The Use step starts from the mode of the newest profile for these headphones, so a second
+     * profile for the same pair needs one tap less. Nothing is picked for a new pair.
+     */
+    private fun suggestMode() {
+        if (_draft.value.mode != null) return
+        val name = _draft.value.device?.takeIf { it.isHeadphones }?.name ?: return
+        store.profiles.value.filter { it.deviceName == name && it.mode != null }.maxByOrNull { it.createdAt }
+            ?.let { p -> _draft.update { it.copy(mode = p.mode) } }
+    }
+
+    /** Switches a saved profile's mode; the system-wide EQ follows at once when it's the one in use. */
+    fun setMode(id: String, m: ListeningMode) {
+        val p = store.profile(id) ?: return
+        if (p.mode != m) store.upsert(p.copy(mode = m))
     }
 
     /** Follows the connected headphones; the type follows their name until the listener picks one. */
@@ -744,7 +773,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val d = _draft.value
         val track = _music.value
         if (tastePreparedFor == Triple(d.hearing, d.headphoneModel, track) && hearingBase != null) return
-        val base = withContext(Dispatchers.Default) { ProfileEq(draftProfile().copy(taste = TasteSettings())) }
+        // Taste is chosen on music, with the profile as tuned: Music adds nothing of its own.
+        val base = withContext(Dispatchers.Default) { ProfileEq(draftProfile().copy(taste = TasteSettings(), mode = ListeningMode.MUSIC)) }
         hearingBase = base
         if (track != null) {
             val extreme = TasteSession.extreme(d.taste).filters()
@@ -884,6 +914,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             checkLevel = d.checkLevel,
             tasteLevel = d.tasteLevel,
             fullSubBass = d.fullSubBass,
+            mode = d.mode ?: ListeningMode.GENERAL,
         )
     }
 
@@ -911,8 +942,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun editProfile(change: (Profile) -> Profile) {
         _editor.update { it?.copy(profile = change(it.profile)) }
-        // A draft's taste lives in the flow, so a redone taste test starts from the tweaked values.
-        _editor.value?.takeIf { it.isDraft }?.let { ui -> _draft.update { it.copy(taste = ui.profile.taste) } }
+        // A draft's taste and mode live in the flow, so a redone taste test starts from the tweaked values.
+        _editor.value?.takeIf { it.isDraft }?.let { ui -> _draft.update { it.copy(taste = ui.profile.taste, mode = ui.profile.mode) } }
         recompute(save = true)
     }
 

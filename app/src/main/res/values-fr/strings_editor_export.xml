@@ -152,4 +152,10 @@
     <string name="update_error_storage">Espace de stockage insuffisant pour installer la mise à jour.</string>
     <string name="update_error_not_installed_because">La mise à jour ne s’est pas installée (%1$s).</string>
     <string name="update_error_not_installed">La mise à jour ne s’est pas installée.</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="editor_mode">Réglé pour</string>
+    <string name="editor_mode_unset">Pas encore choisi : il sonne donc comme Musique, votre son tel que réglé. Choisissez l’usage principal de ces écouteurs.</string>
+    <string name="export_mode">Exporté tel que réglé pour %1$s. Changez d’abord de mode pour en exporter un autre.</string>
+    <string name="export_mode_leveller">Exporté tel que réglé pour %1$s : son égalisation, sans le nivellement des moments forts et doux, que seul l’égaliseur système de PureEQ applique. Changez d’abord de mode pour en exporter un autre.</string>
 </resources>

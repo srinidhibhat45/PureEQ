@@ -9,6 +9,7 @@ import app.pureeq.audio.OutputDevice
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.TestLength
 import app.pureeq.profile.BandSet
+import app.pureeq.profile.ListeningMode
 import app.pureeq.profile.SystemEqMode
 import app.pureeq.taste.TasteBand
 
@@ -85,6 +86,35 @@ val SystemEqMode.detailRes: Int
     get() = when (this) {
         SystemEqMode.GLOBAL -> R.string.mode_global_detail
         SystemEqMode.PER_APP -> R.string.mode_per_app_detail
+    }
+
+@get:StringRes
+val ListeningMode.titleRes: Int
+    get() = when (this) {
+        ListeningMode.GAMING -> R.string.use_gaming
+        ListeningMode.MUSIC -> R.string.use_music
+        ListeningMode.VOICE -> R.string.use_voice
+        ListeningMode.GENERAL -> R.string.use_general
+    }
+
+/** What the mode is for, in a line: the new-profile question. */
+@get:StringRes
+val ListeningMode.detailRes: Int
+    get() = when (this) {
+        ListeningMode.GAMING -> R.string.use_gaming_detail
+        ListeningMode.MUSIC -> R.string.use_music_detail
+        ListeningMode.VOICE -> R.string.use_voice_detail
+        ListeningMode.GENERAL -> R.string.use_general_detail
+    }
+
+/** What the mode changes in the sound: Fine-tune. */
+@get:StringRes
+val ListeningMode.doesRes: Int
+    get() = when (this) {
+        ListeningMode.GAMING -> R.string.use_gaming_does
+        ListeningMode.MUSIC -> R.string.use_music_does
+        ListeningMode.VOICE -> R.string.use_voice_does
+        ListeningMode.GENERAL -> R.string.use_general_does
     }
 
 @get:StringRes

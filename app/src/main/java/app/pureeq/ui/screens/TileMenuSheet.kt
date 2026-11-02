@@ -36,6 +36,7 @@ import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.system.EqService
 import app.pureeq.ui.components.AdaptiveButtons
+import app.pureeq.ui.components.ModeSelector
 import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.outputInText
@@ -81,6 +82,10 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
                     )
                 }
                 Switch(checked = on, enabled = current != null, onCheckedChange = null)
+            }
+            if (current != null) {
+                Text(stringResource(R.string.tile_menu_mode), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                ModeSelector(current.mode, onSelect = { m -> if (current.mode != m) store.upsert(current.copy(mode = m)) })
             }
             if (profiles.isEmpty()) {
                 Text(

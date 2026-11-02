@@ -215,4 +215,11 @@
     <string name="taste_tile_playing">Läuft</string>
     <string name="taste_tile_heard">Gehört · zum Wechseln tippen</string>
     <string name="taste_tile_new">Zum Anhören tippen</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="setup_use_title">Deine Nutzung</string>
+    <string name="setup_use_headline">Wofür nutzt du sie meistens?</string>
+    <string name="setup_use_headline_named">Wofür nutzt du %1$s meistens?</string>
+    <string name="setup_use_subtitle">PureEQ stimmt deinen Sound darauf ab, zusätzlich zu deinen Ohren und deinem Geschmack.</string>
+    <string name="setup_use_switch_later">Nicht sicher? Wähle Allgemein. Du kannst jederzeit wechseln: auf dem Startbildschirm, in der Feinabstimmung oder über die Kachel für Schnelleinstellungen.</string>
 </resources>

@@ -64,13 +64,18 @@ object VolumeBass {
         val ref = profile.tasteLevel ?: return FLAT
         if (!profile.volumeBass || now == null) return FLAT
         if (OutputDevice("", ref.deviceType).kind != output.kind) return FLAT
-        return forDrop(dropDb(ref, now) ?: return FLAT)
+        val t = profile.playMode.tuning
+        return forDrop(dropDb(ref, now) ?: return FLAT, t.volumeBass, t.volumeTreble)
     }
 
-    /** The shelves for listening [dropDb] below the tuning volume (negative: above it). */
-    fun forDrop(dropDb: Double): Shelves = Shelves(
-        bassDb = (SHARE * BASS_PER_DB * dropDb).coerceIn(MIN_BASS_DB, MAX_BASS_DB),
-        trebleDb = (SHARE * TREBLE_PER_DB * dropDb).coerceIn(0.0, MAX_TREBLE_DB),
+    /**
+     * The shelves for listening [dropDb] below the tuning volume (negative: above it), with
+     * [bassScale] and [trebleScale] of the usual amounts (the profile's mode decides them; the
+     * limits stay the same).
+     */
+    fun forDrop(dropDb: Double, bassScale: Double = 1.0, trebleScale: Double = 1.0): Shelves = Shelves(
+        bassDb = (bassScale * SHARE * BASS_PER_DB * dropDb).coerceIn(MIN_BASS_DB, MAX_BASS_DB),
+        trebleDb = (trebleScale * SHARE * TREBLE_PER_DB * dropDb).coerceIn(0.0, MAX_TREBLE_DB),
     )
 
     /**
@@ -83,6 +88,9 @@ object VolumeBass {
         val n = defaultCurveDb(now) ?: return null
         return r - n
     }
+
+    /** The volume's attenuation in dB: Android's own figure, else AOSP's default curve; null when unknown. */
+    fun volumeDb(l: ListeningLevel): Double? = l.db ?: defaultCurveDb(l)
 
     /** AOSP's default media volume curve: share of the volume range → attenuation in dB. */
     private val CURVE = arrayOf(0.01 to -58.0, 0.20 to -40.0, 0.60 to -17.0, 1.0 to 0.0)

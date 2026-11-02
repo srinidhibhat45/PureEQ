@@ -205,4 +205,10 @@
     <!-- %1$s: Android's technical message. -->
     <string name="update_error_not_installed_because">Das Update wurde nicht installiert (%1$s).</string>
     <string name="update_error_not_installed">Das Update wurde nicht installiert.</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="editor_mode">Abgestimmt auf</string>
+    <string name="editor_mode_unset">Noch nicht gewählt, daher klingt es wie Musik: dein Sound genau wie abgestimmt. Wähle, wofür du diese Kopfhörer meistens nutzt.</string>
+    <string name="export_mode">Exportiert wie abgestimmt auf %1$s. Wechsle zuerst den Modus, um einen anderen zu exportieren.</string>
+    <string name="export_mode_leveller">Exportiert wie abgestimmt auf %1$s: sein EQ, ohne den Ausgleich lauter und leiser Momente, den nur PureEQs eigener System-Equalizer macht. Wechsle zuerst den Modus, um einen anderen zu exportieren.</string>
 </resources>

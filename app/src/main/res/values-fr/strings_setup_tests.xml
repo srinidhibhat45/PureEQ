@@ -176,4 +176,11 @@
     <string name="taste_tile_playing">En lecture</string>
     <string name="taste_tile_heard">Écoutée · appuyez pour basculer</string>
     <string name="taste_tile_new">Appuyez pour écouter</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="setup_use_title">Votre usage</string>
+    <string name="setup_use_headline">À quoi vont-ils surtout vous servir ?</string>
+    <string name="setup_use_headline_named">À quoi vont surtout vous servir %1$s ?</string>
+    <string name="setup_use_subtitle">PureEQ règle votre son pour cet usage, en plus de vos oreilles et de vos préférences.</string>
+    <string name="setup_use_switch_later">Vous hésitez ? Choisissez Général. Vous pouvez changer à tout moment sur l’écran d’accueil, dans Réglage fin ou depuis le bloc Réglages rapides.</string>
 </resources>

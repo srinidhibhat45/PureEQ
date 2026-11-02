@@ -182,4 +182,11 @@
     <string name="taste_tile_playing">Tocando</string>
     <string name="taste_tile_heard">Ouvido · toque para alternar</string>
     <string name="taste_tile_new">Toque para ouvir</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="setup_use_title">Seu uso</string>
+    <string name="setup_use_headline">Para que você vai usá-los mais?</string>
+    <string name="setup_use_headline_named">Para que você vai usar mais %1$s?</string>
+    <string name="setup_use_subtitle">O PureEQ ajusta seu som para isso, além dos seus ouvidos e da sua preferência.</string>
+    <string name="setup_use_switch_later">Não tem certeza? Escolha Geral. Você pode trocar quando quiser na tela inicial, no Ajuste fino ou pelo bloco de Configurações rápidas.</string>
 </resources>

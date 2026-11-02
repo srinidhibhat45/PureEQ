@@ -24,6 +24,7 @@ import app.pureeq.R
 import app.pureeq.audio.ListeningLevel
 import app.pureeq.audio.OutputDevice
 import app.pureeq.profile.AppSettings
+import app.pureeq.profile.ModeTuning
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
@@ -55,6 +56,12 @@ class EqService : LifecycleService() {
     /** [curves] before the volume's shelves. */
     private var baseCurves: SystemCurves? = null
     private var shelves = VolumeBass.FLAT
+    /** The applied profile's listening mode: its effect frame and leveller, and the profile's preamp. */
+    private var frameMs = ModeTuning.FRAME_MS
+    private var modeLeveller: ModeTuning.Leveller? = null
+    private var preampDb = 0.0
+    /** [modeLeveller] where the effect sees the music ([placeLeveller]). */
+    private var leveller: ModeTuning.Leveller? = null
     /** The media volume, as of the last change or output switch. */
     private var level: ListeningLevel? = null
     private var lastOutput: OutputDevice? = null
@@ -186,10 +193,19 @@ class EqService : LifecycleService() {
         // When only the pause state changed (PureEQ started or stopped its own sound), the effects
         // already carry this profile: just flip them on or off below.
         if (profile != appliedProfile || needsRecreate || modeChanged || !effectsLive) {
-            val base = withContext(Dispatchers.Default) { SystemCurves.of(ProfileEq(profile)) }
+            val eq = withContext(Dispatchers.Default) { ProfileEq(profile) }
+            val base = SystemCurves.of(eq)
             baseCurves = base
-            shelves = VolumeBass.shelves(profile, s.output, level ?: app.route.level()).rounded()
-            if (BuildConfig.DEBUG) Log.d("PureEQ", "apply ${profile.name} on ${s.output.name}: volume bass ${shelves.bassDb} dB, treble ${shelves.trebleDb} dB")
+            // The listening mode's frame is fixed when an effect is made; its leveller isn't.
+            val t = eq.tuning
+            if (t.frameMs != frameMs) needsRecreate = true
+            frameMs = t.frameMs
+            modeLeveller = t.leveller
+            preampDb = eq.preampDb
+            val now = level ?: app.route.level()
+            shelves = VolumeBass.shelves(profile, s.output, now).rounded()
+            leveller = placeLeveller(s.output, now, shelves)
+            if (BuildConfig.DEBUG) Log.d("PureEQ", "apply ${profile.name} (${profile.playMode}) on ${s.output.name}: volume bass ${shelves.bassDb} dB, treble ${shelves.trebleDb} dB, frame $frameMs ms, leveller $leveller")
             val newCurves = base.with(shelves, VolumeBass.needsHeadroom(s.output))
             curves = newCurves
             appliedMode = s.settings.mode
@@ -202,9 +218,10 @@ class EqService : LifecycleService() {
                         if (g == null || needsRecreate || modeChanged) {
                             g?.release()
                             global = null
-                            global = DpEffect(0, newCurves)
+                            global = DpEffect(0, newCurves, frameMs, leveller)
                         } else {
                             g.update(newCurves)
+                            g.setLeveller(leveller)
                         }
                     }
                     SystemEqMode.PER_APP -> {
@@ -214,7 +231,10 @@ class EqService : LifecycleService() {
                             releaseSessions()
                             knownSessions.toList().forEach { openSession(it) }
                         } else {
-                            sessions.values.forEach { it.update(newCurves) }
+                            sessions.values.forEach {
+                                it.update(newCurves)
+                                it.setLeveller(leveller)
+                            }
                         }
                     }
                 }
@@ -238,23 +258,51 @@ class EqService : LifecycleService() {
         if (used != outputs) app.store.updateSettings { it.copy(outputs = it.outputs.used(s.output, profile.id)) }
     }
 
-    /** The volume moved: adds or takes away the bass it calls for, if that changed by a step. */
+    /**
+     * The volume moved: adds or takes away the bass it calls for, if that changed by a step, and
+     * keeps a leveller acting on the music's own level.
+     */
     private fun followVolume() {
         val profile = appliedProfile ?: return
         val output = lastOutput ?: return
         val base = baseCurves ?: return
         if (standby) return
         val next = VolumeBass.shelves(profile, output, level).rounded()
-        if (next == shelves) return
-        if (BuildConfig.DEBUG) Log.d("PureEQ", "volume ${level?.index}/${level?.maxIndex} (${level?.db} dB) on ${output.name}: bass ${next.bassDb} dB, treble ${next.trebleDb} dB")
-        shelves = next
-        val c = base.with(next, VolumeBass.needsHeadroom(output))
-        curves = c
-        runCatching {
-            global?.update(c)
-            sessions.values.forEach { it.update(c) }
+        val placed = placeLeveller(output, level, next)
+        if (next == shelves && placed == leveller) return
+        if (BuildConfig.DEBUG) Log.d("PureEQ", "volume ${level?.index}/${level?.maxIndex} (${level?.db} dB) on ${output.name}: bass ${next.bassDb} dB, treble ${next.trebleDb} dB, leveller $placed")
+        if (next != shelves) {
+            shelves = next
+            val c = base.with(next, VolumeBass.needsHeadroom(output))
+            curves = c
+            runCatching {
+                global?.update(c)
+                sessions.values.forEach { it.update(c) }
+            }
+            EqRuntime.volumeShelves.value = next
         }
-        EqRuntime.volumeShelves.value = next
+        if (placed != leveller) {
+            leveller = placed
+            runCatching {
+                global?.setLeveller(placed)
+                sessions.values.forEach { it.setLeveller(placed) }
+            }
+        }
+    }
+
+    /**
+     * The mode's leveller where the effect sees the music: after the preamp and any headroom the
+     * volume's bass takes, and, on outputs where Android applies the volume before the effect
+     * (all but Bluetooth absolute volume and USB), after the volume too. So it evens out the
+     * music's own loud and quiet moments the same way at any volume. Half-dB steps, so small volume
+     * moves leave it alone.
+     */
+    private fun placeLeveller(output: OutputDevice, now: ListeningLevel?, shelves: VolumeBass.Shelves): ModeTuning.Leveller? {
+        val l = modeLeveller ?: return null
+        val headroom = VolumeBass.needsHeadroom(output)
+        val volume = if (headroom) 0.0 else now?.let { VolumeBass.volumeDb(it) } ?: 0.0
+        val shift = preampDb - SystemCurves.headroomDb(shelves, headroom) + volume
+        return l.shifted(Math.round(shift * 2) / 2.0)
     }
 
     private fun publishStatus(profile: Profile) {
@@ -278,7 +326,7 @@ class EqService : LifecycleService() {
         if (appliedMode != SystemEqMode.PER_APP || standby) return
         val c = curves ?: return
         sessions.remove(session)?.release()
-        runCatching { DpEffect(session, c) }.onSuccess {
+        runCatching { DpEffect(session, c, frameMs, leveller) }.onSuccess {
             it.setEnabled(!paused)
             sessions[session] = it
         }

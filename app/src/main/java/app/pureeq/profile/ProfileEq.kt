@@ -5,6 +5,7 @@ import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FilterSpec
 import app.pureeq.dsp.FilterType
 import app.pureeq.dsp.FreqGrid
+import app.pureeq.dsp.Loudness
 import app.pureeq.dsp.ParametricFit
 import app.pureeq.dsp.Response
 import app.pureeq.dsp.StereoEqSpec
@@ -14,6 +15,7 @@ import app.pureeq.hearing.ReferenceCurve
 import app.pureeq.hearing.ThresholdBelief
 import kotlin.math.abs
 import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.log2
 import kotlin.math.max
@@ -220,11 +222,15 @@ object HearingCompensation {
 /**
  * Everything derived from a [Profile]: per-ear filters and curves, a preamp that keeps music
  * below 0 dBFS, and a stereo-linked version for apps that can't EQ each ear separately.
+ * The profile's [ListeningMode] shapes all of it, except [withTaste]: the taste test compares on
+ * music, so it hears the profile as tuned, without a mode.
  */
 class ProfileEq(val profile: Profile) {
 
     /** The headphone type: the picked model's, else the hearing test's, else a guess from the device name. */
     val headphones: HeadphoneType = profile.headphoneModel?.type ?: profile.hearing?.headphones ?: HeadphoneType.guess(profile.deviceName)
+
+    val tuning: ModeTuning = profile.playMode.tuning
 
     /** The headphones' measured correction (AutoEq), when a model is picked and switched on. */
     val correctionFilters: List<FilterSpec> = profile.headphoneModel?.takeIf { profile.headphoneCorrection }?.filters ?: emptyList()
@@ -234,10 +240,16 @@ class ProfileEq(val profile: Profile) {
     val hearingTargetRight: DoubleArray
     val hearingFiltersLeft: List<FilterSpec>
     val hearingFiltersRight: List<FilterSpec>
-    val tasteFilters: List<FilterSpec> = profile.taste.filters()
+
+    /** Taste as the mode plays it, then the mode's own filters. */
+    val tasteFilters: List<FilterSpec> = tuning.taste(profile.taste).filters()
+    val modeFilters: List<FilterSpec> = tuning.filters
+
+    /** The ear tuning's strength in this mode. */
+    val earTuningStrength: Double = min(1.0, profile.hearingStrength * tuning.earTuning)
 
     private val fitted: HearingCompensation.Fitted? =
-        profile.hearing?.takeIf { profile.hearingStrength > 0.0 }?.let { HearingCompensation.fitted(it, headphones, profile.hearingStrength, correctionFilters) }
+        profile.hearing?.takeIf { earTuningStrength > 0.0 }?.let { HearingCompensation.fitted(it, headphones, earTuningStrength, correctionFilters) }
 
     init {
         if (fitted != null) {
@@ -257,19 +269,25 @@ class ProfileEq(val profile: Profile) {
     val baseFiltersLeft: List<FilterSpec> = correctionFilters + hearingFiltersLeft
     val baseFiltersRight: List<FilterSpec> = correctionFilters + hearingFiltersRight
 
+    /** Taste and the mode's filters, the same for both ears. */
+    private val shared: List<FilterSpec> = tasteFilters + modeFilters
+
     /** Cuts that keep the whole EQ's bass within what it's worth ([BassGuard]); the same for both ears. */
-    val guardFilters: List<FilterSpec> = guard(tasteFilters, profile.fullSubBass)
+    val guardFilters: List<FilterSpec> = guard(shared, profile.fullSubBass)
 
-    val leftFilters: List<FilterSpec> = baseFiltersLeft + tasteFilters + guardFilters
-    val rightFilters: List<FilterSpec> = baseFiltersRight + tasteFilters + guardFilters
+    val leftFilters: List<FilterSpec> = baseFiltersLeft + shared + guardFilters
+    val rightFilters: List<FilterSpec> = baseFiltersRight + shared + guardFilters
 
-    private fun guard(taste: List<FilterSpec>, fullSubBass: Boolean): List<FilterSpec> = BassGuard.filters(
-        listOf(Response.of(baseFiltersLeft + taste, FreqGrid.hz), Response.of(baseFiltersRight + taste, FreqGrid.hz)),
+    private fun guard(extra: List<FilterSpec>, fullSubBass: Boolean): List<FilterSpec> = BassGuard.filters(
+        listOf(Response.of(baseFiltersLeft + extra, FreqGrid.hz), Response.of(baseFiltersRight + extra, FreqGrid.hz)),
         headphones,
         fullSubBass,
     )
 
-    /** Left and right filters for [taste] on this profile's correction and ear tuning, bass-guarded as the profile would be. */
+    /**
+     * Left and right filters for [taste] on this profile's correction and ear tuning, bass-guarded as
+     * the profile would be: what the taste test plays. No mode, since the test compares on music.
+     */
     fun withTaste(taste: List<FilterSpec>): Pair<List<FilterSpec>, List<FilterSpec>> {
         val g = guard(taste, profile.fullSubBass)
         return (baseFiltersLeft + taste + g) to (baseFiltersRight + taste + g)
@@ -283,7 +301,21 @@ class ProfileEq(val profile: Profile) {
     val leftCurve: DoubleArray = Response.of(leftFilters, FreqGrid.hz, leftTrimDb)
     val rightCurve: DoubleArray = Response.of(rightFilters, FreqGrid.hz, rightTrimDb)
 
-    val preampDb: Double = preampFor(leftCurve, rightCurve)
+    /**
+     * In Music, the preamp that keeps music below full scale ([preampFor]). Another mode plays as
+     * loud as Music would (BS.1770 loudness on a typical music spectrum), so switching modes
+     * changes the balance and not the volume, and never louder than its own curves allow: a mode
+     * that takes the bass away would otherwise come out several dB louder, since bass boosts set
+     * most of the preamp.
+     */
+    val preampDb: Double = run {
+        val own = preampFor(leftCurve, rightCurve)
+        if (tuning == ModeTuning.MUSIC) return@run own
+        val music = ProfileEq(profile.copy(mode = ListeningMode.MUSIC))
+        val asLoud = music.preampDb + Loudness.offsetDb(Curves.average(music.leftCurve, music.rightCurve)) -
+            Loudness.offsetDb(Curves.average(leftCurve, rightCurve))
+        min(own, floor(asLoud * 10 + 1e-9) / 10)
+    }
 
     /**
      * Volume that full sub-bass costs over the guarded bass on these headphones (dB, ≥ 0): the
@@ -292,14 +324,14 @@ class ProfileEq(val profile: Profile) {
     val subBassCostDb: Double by lazy {
         if (headphones == HeadphoneType.IN_EAR) return@lazy 0.0
         fun preampWith(fullSubBass: Boolean): Double {
-            val g = guard(tasteFilters, fullSubBass)
-            return preampFor(Response.of(baseFiltersLeft + tasteFilters + g, FreqGrid.hz, leftTrimDb), Response.of(baseFiltersRight + tasteFilters + g, FreqGrid.hz, rightTrimDb))
+            val g = guard(shared, fullSubBass)
+            return preampFor(Response.of(baseFiltersLeft + shared + g, FreqGrid.hz, leftTrimDb), Response.of(baseFiltersRight + shared + g, FreqGrid.hz, rightTrimDb))
         }
         max(0.0, preampWith(false) - preampWith(true))
     }
 
-    /** Stereo-linked filters: headphone correction, the compensation both ears share, plus taste. */
-    val linkedFilters: List<FilterSpec> by lazy { correctionFilters + (fitted?.filtersCommon ?: emptyList()) + tasteFilters + guardFilters }
+    /** Stereo-linked filters: headphone correction, the compensation both ears share, taste and the mode. */
+    val linkedFilters: List<FilterSpec> by lazy { correctionFilters + (fitted?.filtersCommon ?: emptyList()) + shared + guardFilters }
     val linkedCurve: DoubleArray by lazy { Response.of(linkedFilters, FreqGrid.hz) }
     val linkedPreampDb: Double by lazy { preampFor(linkedCurve) }
 

@@ -38,6 +38,14 @@
     <string name="setup_headphones_over_ear">Over-ear / on-ear</string>
     <string name="setup_headphones_type_note">In-ear and over-ear headphones reach the eardrum differently, so each is measured against its own reference.</string>
     <string name="setup_headphones_bluetooth">Bluetooth works, but disable any EQ, \"adaptive\" or \"spatial\" sound in the earbuds\' companion app for the test.</string>
+
+    <!-- ===== Setup: what the headphones are for (the profile's listening mode) ===== -->
+    <string name="setup_use_title">Your use</string>
+    <string name="setup_use_headline">What will you mostly use them for?</string>
+    <!-- %1$s: the headphones, such as "Galaxy Buds2 Pro". -->
+    <string name="setup_use_headline_named">What will you mostly use %1$s for?</string>
+    <string name="setup_use_subtitle">PureEQ fine-tunes your sound for it, on top of your ears and your taste.</string>
+    <string name="setup_use_switch_later">Not sure? Pick General. You can switch any time on the home screen, in Fine-tune or from the Quick Settings tile.</string>
     <!-- The headphone model, picked from AutoEq's database. -->
     <string name="setup_model_title">Model (optional)</string>
     <string name="setup_model_add">Add your model\'s measured correction from AutoEq\'s database of over 6,000 headphones. It brings them to the Harman target, and the listening check fine-tunes the rest.</string>

@@ -4,6 +4,7 @@ import android.media.audiofx.DynamicsProcessing
 import app.pureeq.audio.OutputDevice
 import app.pureeq.dsp.Curves
 import app.pureeq.dsp.FreqGrid
+import app.pureeq.profile.ModeTuning
 import app.pureeq.profile.ProfileEq
 import app.pureeq.profile.VolumeBass
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,7 @@ class SystemCurves(val left: DoubleArray, val right: DoubleArray) {
     fun with(shelves: VolumeBass.Shelves, headroom: Boolean): SystemCurves {
         if (shelves.isFlat) return this
         val add = shelves.curve()
-        val down = if (headroom) maxOf(shelves.bassDb, shelves.trebleDb, 0.0) else 0.0
+        val down = headroomDb(shelves, headroom)
         return SystemCurves(
             DoubleArray(FreqGrid.SIZE) { left[it] + add[it] - down },
             DoubleArray(FreqGrid.SIZE) { right[it] + add[it] - down },
@@ -30,6 +31,10 @@ class SystemCurves(val left: DoubleArray, val right: DoubleArray) {
     }
 
     companion object {
+        /** How far [with] drops the level for [shelves]' boost. */
+        fun headroomDb(shelves: VolumeBass.Shelves, headroom: Boolean): Double =
+            if (headroom && !shelves.isFlat) maxOf(shelves.bassDb, shelves.trebleDb, 0.0) else 0.0
+
         fun of(eq: ProfileEq) = SystemCurves(
             DoubleArray(FreqGrid.SIZE) { eq.leftCurve[it] + eq.preampDb },
             DoubleArray(FreqGrid.SIZE) { eq.rightCurve[it] + eq.preampDb },
@@ -38,33 +43,32 @@ class SystemCurves(val left: DoubleArray, val right: DoubleArray) {
 }
 
 /**
- * Band layout for Android's DynamicsProcessing pre-EQ.
+ * Band layout for Android's DynamicsProcessing pre-EQ, for one frame length.
  * The engine is FFT based: each band's gain is applied to every bin up to its cutoff, as a
- * staircase without interpolation. With 40 ms frames the FFT is 2048 points at 44.1/48 kHz
- * (about 22-23 Hz per bin), so up to about 530 Hz every bin gets its own band and above that
- * bands are 1/16 octave: about 107 bands, inside the 128 that newer Android versions allow.
- * The last edge sits far above Nyquist so every bin is written; the engine bounds its loops
- * to the spectrum size. The block also sets the latency: about 43 ms at 48 kHz.
+ * staircase without interpolation. The FFT is the frame at the sample rate rounded up to a power
+ * of two: 2048 points for 40 ms frames at 44.1/48 kHz (about 22-23 Hz per bin), 1024 for 20 ms
+ * (about 43-47 Hz). Up to where 1/16 octave is wider than a bin (about 530 Hz at 2048 points,
+ * 1 kHz at 1024) every bin gets its own band, and above that bands are 1/16 octave: about 107
+ * bands at 2048 points and 91 at 1024, inside the 128 that newer Android versions allow. The
+ * last edge sits far above Nyquist so every bin is written; the engine bounds its loops to the
+ * spectrum size. The block also sets the latency: about 43 ms at 2048 points, 21 ms at 1024.
  */
-object DpBands {
-    const val FRAME_MS = 40f
-    private const val BIN_HZ = 48000.0 / 2048
-    private val STEP = 2.0.pow(1.0 / 16)
-
-    /**
-     * The DC bin also holds everything below about 12 Hz. A boost there only spends headroom
-     * and driver excursion on sound nobody hears, so it's held well down instead.
-     */
-    private const val DC_GAIN_DB = -12.0
+class DpBands private constructor(fftSize: Int) {
+    private val binHz = 48000.0 / fftSize
 
     /** Bands below this index each own one FFT bin; their gain is the curve at that bin. */
     private val binBands: Int
 
+    /**
+     * Edges a quarter bin above each bin: the engine gives a band every bin up to
+     * (int)(0.5 + cutoff × N / rate), so band k ends exactly at bin k at 48 kHz (DPFrequency.cpp,
+     * computeBinStartStop). Laid out for another bin width, bins would take a neighbour's gain.
+     */
     val edges: DoubleArray = buildList {
         var k = 0
         while (true) {
-            val e = (k + 0.25) * BIN_HZ
-            if (k > 0 && e * (STEP - 1) >= BIN_HZ) break
+            val e = (k + 0.25) * binHz
+            if (k > 0 && e * (STEP - 1) >= binHz) break
             add(e)
             k++
         }
@@ -79,8 +83,8 @@ object DpBands {
 
     /**
      * Gain of each band. Narrow bass bands take the curve at the bin they own (bin k sits at
-     * k × 23.4 Hz at 48 kHz, and lands on almost the same frequency at 44.1 kHz). Wider bands take
-     * the curve averaged over the band in log-frequency.
+     * k × the bin width at 48 kHz, and lands on almost the same frequency at 44.1 kHz). Wider bands
+     * take the curve averaged over the band in log-frequency.
      */
     fun gains(curveDb: DoubleArray): FloatArray {
         var lo = 0.0
@@ -89,7 +93,7 @@ object DpBands {
             val g = if (b == 0) {
                 DC_GAIN_DB
             } else if (b < binBands) {
-                Curves.sample(curveDb, max(b * BIN_HZ, FreqGrid.MIN_HZ))
+                Curves.sample(curveDb, max(b * binHz, FreqGrid.MIN_HZ))
             } else {
                 val a = max(lo, FreqGrid.MIN_HZ)
                 val z = min(hi, FreqGrid.MAX_HZ)
@@ -106,11 +110,39 @@ object DpBands {
             g.toFloat()
         }
     }
+
+    companion object {
+        private val STEP = 2.0.pow(1.0 / 16)
+
+        /**
+         * The DC bin also holds everything below half a bin (about 12 Hz at 2048 points, 23 Hz at
+         * 1024). A boost there only spends headroom and driver excursion on sound nobody hears, so
+         * it's held well down instead.
+         */
+        private const val DC_GAIN_DB = -12.0
+
+        /** The engine's FFT for [frameMs]: the frame at 48 kHz rounded up to a power of two (44.1 kHz gives the same). */
+        fun fftSize(frameMs: Float): Int {
+            val want = (frameMs * 48).toInt()
+            var n = 8
+            while (n < want) n *= 2
+            return n
+        }
+
+        private val layouts = HashMap<Int, DpBands>()
+
+        @Synchronized
+        fun forFrame(frameMs: Float): DpBands = layouts.getOrPut(fftSize(frameMs)) { DpBands(fftSize(frameMs)) }
+    }
 }
 
-/** One DynamicsProcessing instance on an audio session (0 = the global output mix). */
-class DpEffect(val sessionId: Int, curves: SystemCurves) {
-    private val bands = DpBands.edges.size
+/**
+ * One DynamicsProcessing instance on an audio session (0 = the global output mix), with the
+ * frame and leveller of the profile's mode ([ModeTuning]). The frame is fixed at creation.
+ */
+class DpEffect(val sessionId: Int, curves: SystemCurves, frameMs: Float, leveller: ModeTuning.Leveller?) {
+    private val layout = DpBands.forFrame(frameMs)
+    private val bands = layout.edges.size
     private val dp: DynamicsProcessing
 
     init {
@@ -122,12 +154,10 @@ class DpEffect(val sessionId: Int, curves: SystemCurves) {
             false, 0,
             false, 0,
             true,
-        ).setPreferredFrameDuration(DpBands.FRAME_MS).build()
+        ).setPreferredFrameDuration(frameMs).build()
         config.setPreEqByChannelIndex(0, eqFor(curves.left))
         config.setPreEqByChannelIndex(1, eqFor(curves.right))
-        // A ceiling on sustained level only: it follows each frame's RMS (about 21 ms) without
-        // look-ahead, so it can't catch sample peaks. The preamp is what keeps music below full scale.
-        config.setLimiterAllChannelsTo(DynamicsProcessing.Limiter(true, true, 0, 1f, 60f, 10f, -1f, 0f))
+        config.setLimiterAllChannelsTo(limiter(leveller))
         dp = DynamicsProcessing(PRIORITY, sessionId, config)
         dp.enabled = true
     }
@@ -136,6 +166,25 @@ class DpEffect(val sessionId: Int, curves: SystemCurves) {
         dp.setPreEqByChannelIndex(0, eqFor(curves.left))
         dp.setPreEqByChannelIndex(1, eqFor(curves.right))
     }
+
+    /** The mode's leveller, or the plain ceiling; the limiter stage is always in use, so this needs no new effect. */
+    fun setLeveller(l: ModeTuning.Leveller?) {
+        dp.setLimiterAllChannelsTo(limiter(l))
+    }
+
+    /**
+     * Both channels share link group 0, so they always get the same gain and a sound on one side
+     * never pulls the image to the other. Without a leveller it is a ceiling on sustained level
+     * only: it follows each frame's RMS without look-ahead, so it can't catch sample peaks. The
+     * preamp is what keeps music below full scale. A leveller has no make-up gain, so it only ever
+     * turns down, and it turns sustained levels near full scale down further than the ceiling would.
+     */
+    private fun limiter(l: ModeTuning.Leveller?): DynamicsProcessing.Limiter =
+        if (l == null) {
+            DynamicsProcessing.Limiter(true, true, 0, 1f, 60f, 10f, -1f, 0f)
+        } else {
+            DynamicsProcessing.Limiter(true, true, 0, l.attackMs, l.releaseMs, l.ratio, l.thresholdDb, 0f)
+        }
 
     fun setEnabled(on: Boolean) {
         runCatching { dp.enabled = on }
@@ -146,11 +195,11 @@ class DpEffect(val sessionId: Int, curves: SystemCurves) {
     }
 
     private fun eqFor(curve: DoubleArray): DynamicsProcessing.Eq {
-        val gains = DpBands.gains(curve)
+        val gains = layout.gains(curve)
         val eq = DynamicsProcessing.Eq(true, true, bands)
         for (b in 0 until bands) {
             // Keep every band enabled: a disabled band gets the input gain applied twice.
-            eq.setBand(b, DynamicsProcessing.EqBand(true, DpBands.edges[b].toFloat(), gains[b]))
+            eq.setBand(b, DynamicsProcessing.EqBand(true, layout.edges[b].toFloat(), gains[b]))
         }
         return eq
     }

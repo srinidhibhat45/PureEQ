@@ -101,6 +101,14 @@ fun ExportScreen(vm: AppViewModel, profileId: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        // The files carry the mode's EQ; a leveller only exists in PureEQ's own system-wide EQ.
+        e.profile.mode?.let { m ->
+            Text(
+                stringResource(if (e.tuning.leveller != null) R.string.export_mode_leveller else R.string.export_mode, stringResource(m.titleRes)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         Exporters.balanceAdvice(e)?.let { a ->
             Text(
                 stringResource(if (a.ear == Ear.LEFT) R.string.export_balance_left else R.string.export_balance_right, a.db),

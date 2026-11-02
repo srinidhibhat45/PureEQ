@@ -99,4 +99,18 @@
     <string name="notif_failed">No se pudo iniciar el ecualizador</string>
     <string name="status_no_profile">Aún no hay ningún perfil</string>
     <string name="status_refused">Este teléfono rechazó el ecualizador del sistema (%1$s). Prueba el modo \"Apps de música\" en Ajustes.</string>
+
+    <!-- Listening modes (1.7). -->
+    <string name="use_gaming">Juegos</string>
+    <string name="use_gaming_detail">Pasos y señales al frente; las explosiones no los tapan.</string>
+    <string name="use_gaming_does">Graves en −3 dB o menos para que las explosiones no tapen los pasos, +2 dB donde suenan pasos y recargas, agudos nunca recortados para que sepas de dónde viene cada sonido y unos 20 ms menos de retardo. Ningún ecualizador llega a los juegos que usan la vía de baja latencia de Android.</string>
+    <string name="use_music">Música</string>
+    <string name="use_music_detail">Tu sonido tal como lo ajustaste: graves y dinámica completos.</string>
+    <string name="use_music_does">Tu sonido exactamente como lo ajustaste: corrección de auriculares, tus oídos y tus gustos, con graves completos y cada momento fuerte y suave como lo hizo el artista. Los graves siguen al volumen.</string>
+    <string name="use_voice">Voz</string>
+    <string name="use_voice_detail">Pódcasts, audiolibros, notas de voz y vídeos hablados.</string>
+    <string name="use_voice_does">Voces claras y cercanas: menos retumbe en los graves, +2,5 dB de claridad a 2 kHz, sin realce de graves ni agudos, el ajuste a tus oídos con toda su fuerza y un nivelador para quien habla más alto o más bajo. En Android, las llamadas de teléfono y de apps no pasan por ninguna app de ecualizador, así que suenan como las hace el teléfono.</string>
+    <string name="use_general">General</string>
+    <string name="use_general_detail">Un poco de todo: vídeos, redes sociales, pódcasts, música.</string>
+    <string name="use_general_does">Tu sonido con un poco más de claridad en las voces (+1,5 dB hacia 2,5 kHz) y un nivelador lento que baja los momentos fuertes, para tocar menos el volumen al pasar de una app o un vídeo a otro. Tus gustos se quedan como los ajustaste.</string>
 </resources>
