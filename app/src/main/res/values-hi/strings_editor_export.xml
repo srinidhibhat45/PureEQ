@@ -23,7 +23,7 @@
     <string name="editor_pause">रोकें</string>
     <string name="editor_eq_on">EQ चालू</string>
     <string name="editor_eq_off">बंद</string>
-    <string name="editor_loudness_matched">चालू और बंद की लाउडनेस बराबर रखी गई है, ताकि आपको सिर्फ़ वॉल्यूम का फ़र्क नहीं, बल्कि बैलेंस में हुआ बदलाव सुनाई दे।</string>
+    <string name="editor_loudness_matched">चालू और बंद की लाउडनेस बराबर है।</string>
 
     <!-- The Fine-tuning card. -->
     <string name="editor_fine_tuning">फ़ाइन-ट्यूनिंग</string>
@@ -40,10 +40,10 @@
     <string name="editor_changed_treble">ट्रेबल</string>
     <string name="editor_changed_air">एयर</string>
     <string name="editor_changed_balance">बैलेंस</string>
-    <string name="editor_as_suggested_no_taste">कान की ट्यूनिंग और बैलेंस वैसे ही हैं जैसे PureEQ ने सुझाए थे।</string>
-    <string name="editor_as_suggested">सब कुछ वैसा ही है जैसा PureEQ ने आपके टेस्ट के आधार पर सुझाया था।</string>
+    <string name="editor_as_suggested_no_taste">कान की ट्यूनिंग और बैलेंस वैसे ही जैसे PureEQ ने सुझाए।</string>
+    <string name="editor_as_suggested">सब कुछ वैसा ही जैसा PureEQ ने सुझाया।</string>
     <string name="editor_reset">रीसेट करें</string>
-    <string name="editor_legacy_profile">यह प्रोफ़ाइल PureEQ 1.0 से बनी थी, जिसने बेस, गर्माहट, वोकल और ट्रेबल के लिए अपना सुझाव सेव नहीं किया था, इसलिए रीसेट करके उन्हें वापस नहीं लाया जा सकता। पसंद टेस्ट दोबारा करें (लगभग 2 मिनट), फिर PureEQ आगे से अपना सुझाव याद रखेगा।</string>
+    <string name="editor_legacy_profile">PureEQ 1.0 से बनी है, इसलिए \"रीसेट करें\" से बेस, गर्माहट, वोकल और ट्रेबल वापस नहीं आएंगे। इसे ठीक करने के लिए पसंद टेस्ट दोबारा करें।</string>
     <string name="editor_redo_taste_legacy">पसंद टेस्ट दोबारा करें</string>
 
     <!-- The measured correction for the headphone model. -->
@@ -60,21 +60,21 @@
     <!-- The adjustments: a title, then a hint under it. -->
     <string name="editor_ear_tuning">कान की ट्यूनिंग</string>
     <!-- Not a format string: the % is a literal percent sign. -->
-    <string name="editor_ear_tuning_hint" formatted="false">आपके साउंड चेक का कितना हिस्सा लागू करना है। 75% इसका ज़्यादातर हिस्सा लागू करता है और माप की गड़बड़ी के लिए गुंजाइश छोड़ता है; बड़े अंतरों पर हमेशा अनुपात में कम लागू होता है।</string>
-    <string name="editor_treble_legacy_hint">सिंबल और चमक: PureEQ का पुराना 8 kHz ट्रेबल। आज के ज़्यादा चौड़े ट्रेबल के लिए पसंद टेस्ट दोबारा करें।</string>
+    <string name="editor_ear_tuning_hint" formatted="false">साउंड चेक का कितना हिस्सा लागू करना है</string>
+    <string name="editor_treble_legacy_hint">PureEQ का पुराना 8 kHz ट्रेबल। नए ट्रेबल के लिए पसंद टेस्ट दोबारा करें।</string>
     <string name="editor_full_sub_bass">पूरा सब-बेस</string>
     <!-- %1$s: the volume it costs, such as "1.5". -->
-    <string name="editor_full_sub_bass_on">50 Hz से नीचे का बेस पूरी तरह आपकी सेटिंग के हिसाब से चलता है, लगभग %1$s dB कम वॉल्यूम पर।</string>
-    <string name="editor_full_sub_bass_off">50 Hz से नीचे का बेस 50 Hz के लेवल के आस-पास रखा जाता है, जहाँ बहुत कम संगीत होता है। इसे आपकी सेटिंग के हिसाब से चलने देने पर इन हेडफ़ोन पर लगभग %1$s dB वॉल्यूम कम होगा।</string>
+    <string name="editor_full_sub_bass_on">50 Hz से नीचे का बेस आपकी सेटिंग के हिसाब से चलता है, लगभग %1$s dB कम वॉल्यूम पर।</string>
+    <string name="editor_full_sub_bass_off">50 Hz से नीचे का बेस 50 Hz के लेवल के आस-पास रखा जाता है। आपकी सेटिंग के हिसाब से चलने पर लगभग %1$s dB वॉल्यूम कम होगा।</string>
     <string name="editor_volume_bass">वॉल्यूम के हिसाब से बेस</string>
-    <string name="editor_volume_bass_on">जिस वॉल्यूम पर आपने ट्यून किया था, उससे कम पर यह वह बेस वापस जोड़ता है जो धीमी आवाज़ में कानों से छूट जाता है: हर 10 dB धीमा होने पर लगभग 1.5 dB, +6 dB तक, और थोड़ा-सा ट्रेबल। सिर्फ़ सिस्टम-वाइड EQ में।</string>
-    <string name="editor_volume_bass_off">बंद: हर वॉल्यूम पर बेस वैसा ही रहता है जैसा ट्यून किया गया था।</string>
-    <string name="editor_volume_bass_needs_taste">इसके लिए PureEQ 1.5 या उसके बाद के वर्शन के पसंद टेस्ट का वॉल्यूम चाहिए। इसे इस्तेमाल करने के लिए पसंद टेस्ट दोबारा करें।</string>
+    <string name="editor_volume_bass_on">ट्यून किए गए वॉल्यूम से कम पर, कानों से छूटा बेस वापस जोड़ता है। सिर्फ़ सिस्टम-वाइड EQ में।</string>
+    <string name="editor_volume_bass_off">हर वॉल्यूम पर बेस वैसा ही रहता है जैसा ट्यून किया।</string>
+    <string name="editor_volume_bass_needs_taste">इसे इस्तेमाल करने के लिए पसंद टेस्ट दोबारा करें।</string>
     <!-- %1$s and %2$s: signed amounts such as "+3.0" and "+0.8". -->
     <string name="editor_volume_bass_now">इस वॉल्यूम पर: बेस %1$s dB, ट्रेबल %2$s dB।</string>
     <string name="editor_volume_bass_now_flat">इस वॉल्यूम पर यह कुछ नहीं जोड़ता।</string>
     <string name="editor_balance">बैलेंस</string>
-    <string name="editor_balance_hint">सिर्फ़ तब ज़रूरी, जब एक तरफ़ अब भी ज़्यादा तेज़ सुनाई दे</string>
+    <string name="editor_balance_hint">अगर एक तरफ़ अब भी ज़्यादा तेज़ लगे</string>
     <!-- Balance values. %1$s: how much the other side is turned down, such as "1.5". -->
     <string name="editor_balance_centre">बीच में</string>
     <string name="editor_balance_left">बायां +%1$s dB</string>
@@ -88,26 +88,26 @@
     <string name="export_copied">कॉपी किया गया</string>
     <string name="export_saved">सेव किया गया</string>
     <string name="export_save_failed">फ़ाइल सेव नहीं हो सकी</string>
-    <string name="export_intro">आपकी प्रोफ़ाइल, उन फ़ॉर्मैट में जिन्हें दूसरे ऐप समझते हैं। या यह सब छोड़ें और होम स्क्रीन पर \"सभी ऑडियो पर लागू करें\" चालू करें।</string>
+    <string name="export_intro">दूसरे EQ ऐप के लिए आपकी प्रोफ़ाइल।</string>
     <!-- %1$s: how much, such as "2.5". -->
-    <string name="export_balance_left">आपके बाएं कान को लगभग %1$s dB ज़्यादा चाहिए। जिन ऐप में हर कान के लिए अलग EQ नहीं है, उनमें Android का बैलेंस स्लाइडर (सेटिंग &gt; सुलभता &gt; ऑडियो अडजस्टमेंट) थोड़ा बाईं ओर करें।</string>
-    <string name="export_balance_right">आपके दाएं कान को लगभग %1$s dB ज़्यादा चाहिए। जिन ऐप में हर कान के लिए अलग EQ नहीं है, उनमें Android का बैलेंस स्लाइडर (सेटिंग &gt; सुलभता &gt; ऑडियो अडजस्टमेंट) थोड़ा दाईं ओर करें।</string>
+    <string name="export_balance_left">आपके बाएं कान को लगभग %1$s dB ज़्यादा चाहिए। जिन ऐप में हर कान के लिए अलग EQ नहीं है, उनमें Android का बैलेंस (सेटिंग > सुलभता > ऑडियो अडजस्टमेंट) थोड़ा बाईं ओर करें।</string>
+    <string name="export_balance_right">आपके दाएं कान को लगभग %1$s dB ज़्यादा चाहिए। जिन ऐप में हर कान के लिए अलग EQ नहीं है, उनमें Android का बैलेंस (सेटिंग > सुलभता > ऑडियो अडजस्टमेंट) थोड़ा दाईं ओर करें।</string>
     <string name="export_save_file">फ़ाइल सेव करें</string>
     <string name="export_share">शेयर करें</string>
     <string name="export_copy">कॉपी करें</string>
 
     <!-- One card per app or format; its title is the app's name. Other apps' menu names stay in English. -->
-    <string name="export_wavelet">फ़ाइल सेव करें, फिर Wavelet में AutoEq › Import खोलें और उसे चुनें। Wavelet को ठीक यही 127-पॉइंट GraphicEQ फ़ॉर्मैट चाहिए।</string>
-    <string name="export_poweramp">फ़ाइल सेव करें, फिर Poweramp Equalizer में Preset पर टैप करें, देर तक दबाएं, Import चुनें और फ़ाइल चुनें (या फ़ाइल को Poweramp Equalizer से खोलें)। फ़ॉर्मैट वही है जो AutoEq की ParametricEQ.txt का है।</string>
+    <string name="export_wavelet">सेव करें, फिर Wavelet में: AutoEq › Import।</string>
+    <string name="export_poweramp">सेव करें, फिर Poweramp Equalizer में: Preset, देर तक दबाएं, Import।</string>
     <string name="export_jamesdsp">Arbitrary response equalizer › Edit as string › पेस्ट करें।</string>
     <string name="export_apo_title">Equalizer APO / Peace (PC)</string>
-    <string name="export_apo">बाएं और दाएं के लिए अलग फ़िल्टर। .txt के रूप में सेव करें और config.txt में इसे Include करें, या इसे Peace में पेस्ट करें।</string>
+    <string name="export_apo">बाएं और दाएं फ़िल्टर। config.txt में इसे Include करें, या Peace में पेस्ट करें।</string>
     <string name="export_convolution_title">कनवोल्यूशन (JamesDSP, ViPER4Android, Equalizer APO)</string>
-    <string name="export_convolution">हर कान के लिए आपका सटीक कर्व, इंपल्स रिस्पॉन्स के रूप में: बाएं और दाएं कान वाली एक स्टीरियो WAV फ़ाइल, जिसमें बैलेंस और लेवल वैसे ही हैं जैसे PureEQ लागू करता है। इसे कनवॉल्वर में लोड करें; सैंपल रेट आपके संगीत जैसा होना चाहिए।</string>
+    <string name="export_convolution">हर कान का सटीक कर्व, स्टीरियो WAV इंपल्स रिस्पॉन्स के रूप में। सैंपल रेट आपके संगीत जैसा रखें।</string>
 
     <!-- Card listing the filters, for apps where they are typed in by hand. -->
     <string name="export_parametric_title">पैरामीट्रिक वैल्यू</string>
-    <string name="export_parametric">उन ऐप के लिए जिनमें आप फ़िल्टर खुद टाइप करते हैं: Neutron, USB Audio Player Pro, Poweramp का पैरामीट्रिक मोड वगैरह। दोनों कानों का औसत।</string>
+    <string name="export_parametric">उन ऐप के लिए जिनमें आप फ़िल्टर टाइप करते हैं, जैसे Neutron, UAPP और Poweramp का पैरामीट्रिक मोड। दोनों कानों का औसत।</string>
     <string name="export_preamp">प्रीऐम्प %1$s dB</string>
     <!-- One filter. %1$d: its number. %2$s: its type (export_filter_*). %3$s: its frequency, such as "105 Hz".
          %4$s: its gain, such as "+6.4". %5$s: its Q, such as "0.70". -->
@@ -121,7 +121,7 @@
 
     <!-- Card for PureEQ's own backup file. -->
     <string name="export_profile_title">PureEQ प्रोफ़ाइल</string>
-    <string name="export_profile">एक बैकअप, जिसे आप दूसरे फ़ोन पर इंपोर्ट कर सकते हैं (सेटिंग › PureEQ प्रोफ़ाइल इंपोर्ट करें)।</string>
+    <string name="export_profile">दूसरे फ़ोन पर इंपोर्ट करने के लिए बैकअप (सेटिंग › PureEQ प्रोफ़ाइल इंपोर्ट करें)।</string>
     <!-- Subject when sharing the backup. %1$s: the profile's name. -->
     <string name="export_profile_subject">%1$s PureEQ प्रोफ़ाइल</string>
 
@@ -129,11 +129,11 @@
     <string name="export_graphic_title">ग्राफ़िक EQ स्लाइडर</string>
     <!-- %1$d: the app's lowest gain, such as -12. %2$d: its highest, such as 12. -->
     <string name="export_bands_limited">* ऐप की %1$d…+%2$d dB रेंज तक सीमित</string>
-    <string name="export_bands_centred">बीच में रखा गया है, ताकि कुल लाउडनेस वही रहे। स्लाइडर वाले EQ कर्व के बस करीब पहुंच सकते हैं; ऊपर की फ़ाइलें सटीक हैं।</string>
+    <string name="export_bands_centred">लाउडनेस बनाए रखने के लिए बीच में रखा गया। स्लाइडर कर्व के बस करीब हैं; ऊपर की फ़ाइलें सटीक हैं।</string>
 
     <!-- ===== Messages and dialogs (AppViewModel, PureEqRoot) ===== -->
     <string name="msg_default_profile_name">मेरा साउंड</string>
-    <string name="msg_autoeq_unreachable">AutoEq के डेटाबेस से कनेक्ट नहीं हो सका। कनेक्शन देखें और फिर से कोशिश करें, या इसे छोड़ दें: साउंड चेक हर हाल में आपके हेडफ़ोन को ठीक करता है।</string>
+    <string name="msg_autoeq_unreachable">AutoEq से कनेक्ट नहीं हो सका। कनेक्शन देखें, या छोड़ दें: साउंड चेक वैसे भी आपके हेडफ़ोन को ठीक करता है।</string>
     <string name="msg_correction_failed">वह करेक्शन डाउनलोड नहीं हो सका। कनेक्शन देखें और फिर से कोशिश करें।</string>
     <!-- %1$s: the error's technical message. -->
     <string name="msg_cant_play_file">वह फ़ाइल नहीं चल सकी (%1$s)।</string>
@@ -143,7 +143,7 @@
     <!-- ===== Over-the-air updates (GitHub build only) ===== -->
     <!-- %1$s: the version, such as "1.6.0". -->
     <string name="update_ready_title">PureEQ %1$s तैयार है</string>
-    <string name="update_ready_text">इंस्टॉल करने के लिए टैप करें। अपडेट होते समय PureEQ कुछ पल के लिए बंद होता है।</string>
+    <string name="update_ready_text">इंस्टॉल करने के लिए टैप करें। PureEQ कुछ पल के लिए बंद होगा।</string>
     <string name="update_updated_title">PureEQ %1$s पर अपडेट हो गया</string>
     <string name="update_updated_text">खोलने के लिए टैप करें।</string>
 
@@ -189,7 +189,7 @@
 
     <!-- Listening modes (1.7). -->
     <string name="editor_mode">मोड</string>
-    <string name="editor_mode_unset">अभी चुना नहीं गया, इसलिए यह संगीत की तरह बजता है: आपका साउंड ठीक वैसा जैसा ट्यून किया। चुनें कि आप इन हेडफ़ोन को ज़्यादातर किसलिए इस्तेमाल करते हैं।</string>
-    <string name="export_mode">%1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया। कोई दूसरा एक्सपोर्ट करने के लिए पहले मोड बदलें।</string>
-    <string name="export_mode_leveller">%1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया: उसका EQ, तेज़ और धीमे पलों की लेवलिंग के बिना, जो सिर्फ़ PureEQ का अपना सिस्टम-वाइड EQ करता है। कोई दूसरा एक्सपोर्ट करने के लिए पहले मोड बदलें।</string>
+    <string name="editor_mode_unset">अभी चुना नहीं गया, इसलिए यह संगीत की तरह बजता है।</string>
+    <string name="export_mode">%1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया।</string>
+    <string name="export_mode_leveller">%1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया, लेवलर के बिना (वह सिर्फ़ PureEQ में है)।</string>
 </resources>

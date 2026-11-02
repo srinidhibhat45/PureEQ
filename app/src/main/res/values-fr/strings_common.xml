@@ -22,20 +22,20 @@
     </plurals>
 
     <string name="mode_global">Tout l’audio</string>
-    <string name="mode_global_detail">Se branche sur le mixage de sortie d’Android, pour couvrir toutes les applis. Fonctionne sur la plupart des téléphones.</string>
+    <string name="mode_global_detail">Toutes les applis. Fonctionne sur la plupart des téléphones.</string>
     <string name="mode_per_app">Applis de musique</string>
-    <string name="mode_per_app_detail">Se branche sur les lecteurs qui se signalent (Spotify, YouTube Music, Samsung Music, Poweramp…). Utilisez ce mode si « Tout l’audio » est sans effet sur votre téléphone.</string>
+    <string name="mode_per_app_detail">Seulement les lecteurs qui se signalent, comme Spotify et Poweramp. Essayez ce mode si « Tout l’audio » est sans effet.</string>
 
     <string name="band_bass">Basses</string>
-    <string name="band_bass_hint">Poids de la grosse caisse et de la guitare basse</string>
+    <string name="band_bass_hint">Grosse caisse et guitare basse</string>
     <string name="band_warmth">Chaleur</string>
     <string name="band_warmth_hint">Corps des voix et des instruments</string>
     <string name="band_vocals">Voix</string>
-    <string name="band_vocals_hint">Clarté et présence des voix</string>
+    <string name="band_vocals_hint">Présence des voix</string>
     <string name="band_treble">Aigus</string>
-    <string name="band_treble_hint">Brillance : le mordant des voix, les cymbales et les détails</string>
+    <string name="band_treble_hint">Cymbales et détails</string>
     <string name="band_air">Air</string>
-    <string name="band_air_hint">Éclat et espace tout en haut du spectre</string>
+    <string name="band_air_hint">Éclat tout en haut du spectre</string>
 
     <string name="headphones_in_ear">Intra-auriculaire</string>
     <string name="headphones_over_ear">Circum-auriculaire</string>
@@ -87,15 +87,15 @@
 
     <!-- Listening modes (1.7). -->
     <string name="use_gaming">Jeux</string>
-    <string name="use_gaming_detail">Les pas et les indices passent devant, les explosions ne les couvrent plus.</string>
-    <string name="use_gaming_does">Basses à −3 dB ou moins pour que les explosions ne masquent pas les pas, +2 dB là où sonnent les pas et les rechargements, aigus jamais réduits pour savoir d’où viennent les sons, et environ 20 ms de délai en moins. Aucun égaliseur n’atteint les jeux qui passent par la voie basse latence d’Android.</string>
+    <string name="use_gaming_detail">Les pas et les indices ressortent.</string>
+    <string name="use_gaming_does">Basses contenues, bruits de pas en avant, réponse plus rapide.</string>
     <string name="use_music">Musique</string>
-    <string name="use_music_detail">Votre son tel que réglé : basses et dynamique complètes.</string>
-    <string name="use_music_does">Votre son exactement tel que vous l’avez réglé : correction des écouteurs, vos oreilles et vos préférences, avec toutes les basses et chaque moment fort ou doux tel que l’artiste l’a voulu. Les basses suivent toujours le volume.</string>
+    <string name="use_music_detail">Votre son exactement tel que réglé.</string>
+    <string name="use_music_does">Votre son exactement tel que réglé, avec basses et dynamique complètes.</string>
     <string name="use_voice">Voix</string>
-    <string name="use_voice_detail">Podcasts, livres audio, messages vocaux et vidéos parlées.</string>
-    <string name="use_voice_does">Des voix claires et proches : moins de grondement dans le grave, +2,5 dB de clarté à 2 kHz, aucune hausse des basses ni des aigus, votre adaptation aux oreilles à pleine force et un niveleur pour les voix plus fortes ou plus faibles. Sur Android, les appels téléphoniques et ceux des applis échappent à toute appli d’égaliseur : ils sonnent comme le téléphone les produit.</string>
+    <string name="use_voice_detail">Podcasts, livres audio et vidéos parlées.</string>
+    <string name="use_voice_does">Moins de grondement, voix plus claires, volume plus régulier.</string>
     <string name="use_general">Général</string>
-    <string name="use_general_detail">Un peu de tout : vidéos, réseaux sociaux, podcasts, musique.</string>
-    <string name="use_general_does">Votre son avec un peu plus de clarté pour les voix (+1,5 dB autour de 2,5 kHz) et un niveleur lent qui baisse les moments forts, pour moins toucher au volume d’une appli ou d’une vidéo à l’autre. Vos préférences restent telles que réglées.</string>
+    <string name="use_general_detail">Un peu de tout.</string>
+    <string name="use_general_does">Un peu plus de clarté, et les moments forts atténués.</string>
 </resources>

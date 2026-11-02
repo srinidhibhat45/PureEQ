@@ -27,21 +27,21 @@
 
     <!-- How the system-wide EQ attaches (Settings). -->
     <string name="mode_global">Alle Apps</string>
-    <string name="mode_global_detail">Setzt am Ausgabemix von Android an, sodass jede App erfasst wird. Funktioniert auf den meisten Handys.</string>
+    <string name="mode_global_detail">Jede App. Funktioniert auf den meisten Handys.</string>
     <string name="mode_per_app">Musik-Apps</string>
-    <string name="mode_per_app_detail">Setzt an Playern an, die sich beim System melden (Spotify, YouTube Music, Samsung Music, Poweramp…). Nutze diese Option, wenn „Alle Apps“ auf deinem Handy nichts bewirkt.</string>
+    <string name="mode_per_app_detail">Nur Player, die sich beim System melden, etwa Spotify und Poweramp. Probier das, wenn „Alle Apps“ nichts bewirkt.</string>
 
     <!-- The taste controls in Fine-tune. -->
     <string name="band_bass">Bass</string>
-    <string name="band_bass_hint">Wucht von Bassdrum und Bassgitarre</string>
+    <string name="band_bass_hint">Bassdrum und Bassgitarre</string>
     <string name="band_warmth">Wärme</string>
     <string name="band_warmth_hint">Fülle von Stimmen und Instrumenten</string>
     <string name="band_vocals">Stimmen</string>
-    <string name="band_vocals_hint">Klarheit und Präsenz von Stimmen</string>
+    <string name="band_vocals_hint">Präsenz von Stimmen</string>
     <string name="band_treble">Höhen</string>
-    <string name="band_treble_hint">Helligkeit: Kontur von Stimmen, Becken und Details</string>
+    <string name="band_treble_hint">Becken und Details</string>
     <string name="band_air">Luft</string>
-    <string name="band_air_hint">Glanz und Weite ganz oben</string>
+    <string name="band_air_hint">Glanz ganz oben</string>
 
     <!-- Kinds of headphones. -->
     <string name="headphones_in_ear">In-Ear</string>
@@ -104,15 +104,15 @@
 
     <!-- Listening modes (1.7). -->
     <string name="use_gaming">Gaming</string>
-    <string name="use_gaming_detail">Schritte und Hinweise rücken nach vorn, Explosionen überdecken sie nicht.</string>
-    <string name="use_gaming_does">Bass bei −3 dB oder darunter, damit Explosionen keine Schritte überdecken, +2 dB dort, wo Schritte und Nachladen klingen, Höhen nie abgesenkt, damit du hörst, woher ein Geräusch kommt, und etwa 20 ms weniger Verzögerung. Spiele auf Androids Low-Latency-Weg erreicht kein EQ.</string>
+    <string name="use_gaming_detail">Schritte und Hinweise rücken nach vorn.</string>
+    <string name="use_gaming_does">Bass gedämpft, Schritte im Vordergrund, kürzere Verzögerung.</string>
     <string name="use_music">Musik</string>
-    <string name="use_music_detail">Dein Sound genau wie abgestimmt: voller Bass, volle Dynamik.</string>
-    <string name="use_music_does">Dein Sound genau so, wie du ihn abgestimmt hast: Kopfhörerkorrektur, deine Ohren und dein Geschmack, mit vollem Bass und jedem lauten und leisen Moment, wie ihn die Künstler gemacht haben. Der Bass folgt weiter der Lautstärke.</string>
+    <string name="use_music_detail">Dein Sound genau wie abgestimmt.</string>
+    <string name="use_music_does">Dein Sound genau wie abgestimmt, mit vollem Bass und voller Dynamik.</string>
     <string name="use_voice">Stimme</string>
-    <string name="use_voice_detail">Podcasts, Hörbücher, Sprachnachrichten und Talk-Videos.</string>
-    <string name="use_voice_does">Klare, nahe Stimmen: weniger Dröhnen im Bass, +2,5 dB Klarheit bei 2 kHz, keine Anhebung von Bass oder Höhen, deine Ohranpassung mit voller Stärke und ein Pegelausgleich für lautere und leisere Sprecher. Telefon- und App-Anrufe umgehen unter Android jede EQ-App und klingen so, wie das Handy sie macht.</string>
+    <string name="use_voice_detail">Podcasts, Hörbücher und Talk-Videos.</string>
+    <string name="use_voice_does">Weniger Dröhnen, klarere Stimmen, gleichmäßigere Lautstärke.</string>
     <string name="use_general">Allgemein</string>
-    <string name="use_general_detail">Von allem etwas: Videos, Social-Apps, Podcasts, Musik.</string>
-    <string name="use_general_does">Dein Sound mit etwas mehr Stimmklarheit (+1,5 dB um 2,5 kHz) und einem langsamen Pegelausgleich, der laute Momente absenkt, damit du zwischen Apps und Videos seltener die Lautstärke ändern musst. Dein Geschmack bleibt, wie du ihn abgestimmt hast.</string>
+    <string name="use_general_detail">Von allem etwas.</string>
+    <string name="use_general_does">Etwas mehr Klarheit, laute Momente werden ausgeglichen.</string>
 </resources>

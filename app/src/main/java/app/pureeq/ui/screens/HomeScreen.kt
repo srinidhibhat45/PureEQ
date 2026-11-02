@@ -382,7 +382,7 @@ private fun ActiveProfileCard(
             text = {
                 Text(
                     if (successor != null) {
-                        stringResource(R.string.home_delete_active_text, successor.name, profileSubtitle(successor))
+                        stringResource(R.string.home_delete_active_text, successor.name)
                     } else {
                         stringResource(R.string.home_delete_only_text)
                     },

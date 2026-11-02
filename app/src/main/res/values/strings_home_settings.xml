@@ -14,21 +14,21 @@
     <string name="home_update_downloading">Downloading PureEQ %1$s</string>
     <string name="home_update_ready">PureEQ %1$s is ready</string>
     <string name="home_update_install">Install now</string>
-    <string name="home_update_note">PureEQ closes for a moment while it updates. Your profiles stay.</string>
+    <string name="home_update_note">PureEQ closes briefly while it updates. Your profiles stay.</string>
     <string name="home_update_installing">Installing PureEQ %1$s…</string>
 
     <!-- Home: asks once for Android's "Install unknown apps" switch (GitHub build only). -->
     <string name="home_allow_updates_title">Get updates automatically</string>
     <!-- Android 12 and later. -->
-    <string name="home_allow_updates_text">Allow PureEQ to install its own updates. New versions then install by themselves while the app is closed.</string>
+    <string name="home_allow_updates_text">Let PureEQ install its own updates while it\'s closed.</string>
     <!-- Android 11 and earlier. -->
-    <string name="home_allow_updates_text_older">Allow PureEQ to install its own updates, so each new version is one tap away.</string>
+    <string name="home_allow_updates_text_older">Let PureEQ install its own updates with one tap.</string>
     <string name="home_allow">Allow</string>
     <string name="home_not_now">Not now</string>
 
     <!-- Home: the welcome card, before the first profile. -->
     <string name="home_welcome_title">Find your sound</string>
-    <string name="home_welcome_text">A short listening check plays beeps in each ear and asks if you heard them. Then a few A/B rounds on music learn what you like. PureEQ turns both into an EQ for your headphones that you can apply to all audio or export to your EQ app.</string>
+    <string name="home_welcome_text">A short listening check and a few A/B rounds on music become an EQ for your headphones.</string>
     <string name="home_start">Start</string>
 
     <!-- Home: the profile in use and the other profiles. -->
@@ -45,25 +45,24 @@
     <string name="home_made_for">Made for %1$s; you\'re listening on %2$s.</string>
     <!-- The switch for the system-wide EQ on the output playing now. -->
     <string name="home_apply_all_audio">Apply to all audio</string>
-    <!-- Heading above the four listening modes (Gaming, Music, Calls, General). -->
+    <!-- Heading above the four listening modes (Gaming, Music, Voice, General). -->
     <string name="home_mode_title">Tuned for</string>
     <!-- Shown once for a profile made before modes existed, until one is picked. -->
     <string name="home_mode_ask_title">New: tune it for what you do</string>
     <!-- %1$s: the profile's headphones, such as "Galaxy Buds2 Pro". -->
-    <string name="home_mode_ask_text">What do you mostly use %1$s for? PureEQ fine-tunes this profile for it. Until you pick, it plays as Music, exactly as you tuned it.</string>
+    <string name="home_mode_ask_text">What do you mostly use %1$s for? Until you pick, it plays as Music.</string>
     <!-- What a profile was made from, in its description: "Galaxy Buds2 Pro · Ears + taste · 30 Oct 2026". -->
     <string name="home_made_with_ears">Ears + taste</string>
     <string name="home_made_with_taste">Taste only</string>
 
     <!-- Home: deleting a profile. %1$s: the profile's name. -->
     <string name="home_delete_title">Delete %1$s?</string>
-    <!-- Deleting the profile in use while there are others. %1$s: the profile that takes over;
-         %2$s: its description, such as "Galaxy Buds2 Pro · Ears + taste · 30 Oct 2026". -->
-    <string name="home_delete_active_text">This is the profile PureEQ is using right now. Its listening results and taste choices will be removed from this phone. PureEQ will switch to %1$s (%2$s).</string>
+    <!-- Deleting the profile in use while there are others. %1$s: the profile that takes over. -->
+    <string name="home_delete_active_text">Its results will be removed from this phone. PureEQ will switch to %1$s.</string>
     <!-- Deleting the only profile. -->
-    <string name="home_delete_only_text">This is the profile PureEQ is using right now. Its listening results and taste choices will be removed from this phone. It\'s your only profile, so the system-wide EQ turns off until you make a new one.</string>
+    <string name="home_delete_only_text">Its results will be removed from this phone, and the system-wide EQ turns off until you make a new profile.</string>
     <!-- Deleting a profile that isn't in use. -->
-    <string name="home_delete_text">The listening results and taste choices in this profile will be removed from this phone.</string>
+    <string name="home_delete_text">Its results will be removed from this phone.</string>
 
     <!-- Home: under "Apply to all audio" while it's on. -->
     <string name="home_on_all_audio">On for all audio</string>
@@ -78,14 +77,14 @@
          playing now. %1$s: that output in a sentence, such as "the phone speaker" or "Galaxy Buds2";
          %2$s: the outputs it's on for, such as "Galaxy Buds2 and WH-1000XM4". -->
     <string name="home_off_elsewhere">Off for %1$s. On for %2$s.</string>
-    <string name="home_off_speaker">Off for the phone speaker. Connect your headphones to turn it on for them.</string>
-    <string name="home_off">Off. Turn on to hear this profile in every app.</string>
+    <string name="home_off_speaker">Off for the phone speaker.</string>
+    <string name="home_off">Off</string>
 
     <!-- The Quick Settings tile's long-press menu. -->
     <string name="tile_menu_no_profile">No profile yet</string>
     <!-- %1$s: the output playing now in a sentence, such as "the phone speaker" or "Galaxy Buds2". -->
     <string name="tile_menu_on_for">On for %1$s</string>
-    <string name="tile_menu_no_profile_text">Make a profile in PureEQ first: a short listening check and taste test for your headphones.</string>
+    <string name="tile_menu_no_profile_text">Make a profile in PureEQ first.</string>
     <!-- Heading above the profiles to choose from. -->
     <string name="tile_menu_profile">Profile</string>
     <!-- Heading above the four listening modes of the profile in use. -->
@@ -98,11 +97,11 @@
     <!-- Settings. -->
     <string name="settings_title">Settings</string>
     <string name="settings_system_eq">System-wide equalizer</string>
-    <string name="settings_other_eqs">Turn off other equalizers (Wavelet, Dolby Atmos, Samsung\'s own EQ/Adapt Sound) while PureEQ\'s is on, or the effects stack.</string>
+    <string name="settings_other_eqs">Turn off other EQs (Wavelet, Dolby Atmos, Samsung\'s EQ) while PureEQ\'s is on, or the effects stack.</string>
 
     <!-- Settings: on or off for each output. -->
     <string name="settings_where_on">Where it\'s on</string>
-    <string name="settings_where_on_text">PureEQ keeps on or off for each output and switches by itself when you connect or disconnect. Profiles are made for headphones, so the phone speaker starts off.</string>
+    <string name="settings_where_on_text">Remembered for each output. The phone speaker starts off.</string>
     <!-- Under an output's name, before the profile it plays: "Playing now · My profile". -->
     <string name="settings_playing_now">Playing now</string>
     <!-- Under an output's name when the EQ is off there. -->
@@ -110,21 +109,21 @@
 
     <!-- Settings: the Quick Settings tile. -->
     <string name="settings_tile">Quick Settings tile</string>
-    <string name="settings_tile_text">Turn the system-wide equalizer on and off from the swipe-down panel. The tile shows the profile in use.</string>
+    <string name="settings_tile_text">Turn PureEQ on and off from the swipe-down panel.</string>
     <string name="settings_tile_add">Add to the panel</string>
     <string name="settings_tile_added">Added. Swipe down to find PureEQ.</string>
-    <string name="settings_tile_not_added">Not added. You can also swipe down twice, tap the pencil and drag PureEQ into your tiles.</string>
+    <string name="settings_tile_not_added">Not added. Swipe down twice, tap the pencil and drag PureEQ in.</string>
     <!-- Android 12 and earlier, which can't add the tile on request. -->
-    <string name="settings_tile_how_to_add">To add it, swipe down twice, tap the pencil (Edit) and drag PureEQ into your tiles.</string>
+    <string name="settings_tile_how_to_add">Swipe down twice, tap the pencil and drag PureEQ into your tiles.</string>
 
     <!-- Settings: switches, each with a line under it. -->
     <string name="settings_auto_switch">Switch profile with headphones</string>
-    <string name="settings_auto_switch_detail">When headphones connect, use the profile you last used with them, or the one you made with them.</string>
+    <string name="settings_auto_switch_detail">When headphones connect, use their last profile.</string>
     <string name="settings_start_on_boot">Start after restart</string>
-    <string name="settings_start_on_boot_detail">Turn the system equalizer back on after the phone restarts.</string>
+    <string name="settings_start_on_boot_detail">Turn PureEQ back on after a restart.</string>
     <string name="settings_warble">Warble test tones</string>
     <!-- "±5 %" is a literal percent (formatted="false": no placeholders). -->
-    <string name="settings_warble_detail" formatted="false">Beeps sweep ±5 % around each frequency, so one narrow earbud resonance can\'t skew a band. Turn off for pure tones.</string>
+    <string name="settings_warble_detail" formatted="false">Beeps wobble ±5 % so one earbud resonance can\'t skew a band.</string>
 
     <!-- Settings: the app's name and version. %1$s: the version, such as 1.6.0. -->
     <string name="settings_version">PureEQ %1$s</string>
@@ -138,16 +137,16 @@
     <!-- %1$s: the new version, such as 1.6.0. -->
     <string name="settings_install_version">Install %1$s</string>
     <string name="settings_auto_update">Install updates automatically</string>
-    <string name="settings_auto_update_detail">New versions install by themselves while PureEQ is closed and nothing is playing. Off: you get a notification instead. PureEQ checks when you open it, every 30 minutes while the phone charges on Wi-Fi, and once a day otherwise.</string>
+    <string name="settings_auto_update_detail">New versions install while PureEQ is closed and nothing plays. Off: you get a notification.</string>
     <!-- Android 11 and earlier. %1$s: the Android version, such as 11. -->
-    <string name="settings_update_asks">Android %1$s asks before every app update, so PureEQ sends a notification when one is ready.</string>
-    <string name="settings_install_not_allowed">PureEQ isn\'t allowed to install updates yet, so Android will ask first.</string>
+    <string name="settings_update_asks">Android %1$s asks before each update, so PureEQ notifies you when one is ready.</string>
+    <string name="settings_install_not_allowed">PureEQ can\'t install updates yet, so Android will ask first.</string>
     <string name="settings_allow">Allow</string>
     <!-- %1$s: a web address, such as github.com/owner/pureeq. -->
     <string name="settings_update_source">Updates come from %1$s.</string>
 
     <!-- Settings: update status, under the version. -->
-    <string name="settings_update_disabled">This copy wasn\'t built with an update address, so it can\'t update itself.</string>
+    <string name="settings_update_disabled">This copy has no update address, so it can\'t update itself.</string>
     <!-- %1$s: when, such as "5 minutes ago" (worded by Android) or "just now" (settings_just_now). -->
     <string name="settings_update_checked">Checked %1$s</string>
     <string name="settings_update_not_checked">Not checked yet</string>
@@ -167,29 +166,29 @@
     <!-- How PureEQ works (About, opened from Settings): a title and one paragraph per section. -->
     <string name="about_title">How PureEQ works</string>
     <string name="about_check_title">The listening check</string>
-    <string name="about_check_text">Pulsed beeps (two per presentation, 25 ms soft edges) play in one ear at a time, 500 Hz to 8 kHz. PureEQ keeps one statistical model of your thresholds in every band and both ears, linked across frequency and between the ears. Each beep is played at the level expected to teach it the most, and a band is finished as soon as its threshold is known well enough. Silent beeps measure guessing, and the model allows for the odd slip. Missed a beep? Play it again once; the answer then counts as heard on either listen. About 2 minutes instead of 6.</string>
+    <string name="about_check_text">Pulsed beeps play in one ear at a time, 500 Hz to 8 kHz. One statistical model of your thresholds covers every band and both ears: each beep plays at the level that teaches it most, and a band ends once its threshold is known well enough. Silent beeps measure guessing. About 2 minutes instead of 6.</string>
     <string name="about_eq_title">From the listening check to EQ</string>
     <!-- "75 %" is a literal percent (formatted="false": no placeholders). -->
-    <string name="about_eq_text" formatted="false">Your thresholds are compared with a reference listener\'s through well-tuned headphones of your type (ISO 389-7 thresholds, Harman target). The difference covers your ears and your headphones together, which is what an EQ can fix. PureEQ corrects the smooth trend, not every point, measured from your low mids (500 Hz to 1.5 kHz), and only what the answers clearly show: small differences at 75 % (usually the headphones\' own sound), larger ones at about a third, so the sound stays natural. Bass below 400 Hz is left to your taste and treble boosts stop at +6 dB. Both ears share one filter set, and a difference between your ears counts only when the answers clearly show it, so voices stay centred.</string>
+    <string name="about_eq_text" formatted="false">Your thresholds are compared with a reference listener\'s on well-tuned headphones of your type (ISO 389-7, Harman target). PureEQ corrects the smooth trend from your low mids (500 Hz to 1.5 kHz), and only what the answers clearly show: small differences at 75 %, larger ones at about a third. Bass below 400 Hz is left to your taste, treble boosts stop at +6 dB, and the ears differ only where the answers clearly show it.</string>
     <string name="about_measured_title">Your headphones\' measured response</string>
-    <string name="about_measured_text">Optionally, pick your model from AutoEq\'s database (over 6,000 headphones measured by oratory1990, crinacle, Rtings and others; AutoEq by Jaakko Pasanen, MIT licence). PureEQ downloads the model\'s measurement and corrects it the way AutoEq does: compared with the Harman target as measured on the same rig, smoothed and inverted, with gentle slopes, boosts limited to +6 dB, narrow notches left alone, and the target\'s own bass added back. Above about 5 kHz, where people\'s ears differ by 5 to 30 dB, only half of it applies. crinacle publishes only finished corrections, so those use AutoEq\'s own. The listening check\'s reference allows for the correction, so the measured response isn\'t corrected twice: the listening check then only fixes your ears and how the headphones sit. PureEQ remembers the model you picked for each pair of headphones.</string>
+    <string name="about_measured_text">Optionally, pick your model from AutoEq\'s database (over 6,000 headphones measured by oratory1990, crinacle, Rtings and others). PureEQ corrects its measurement to the Harman target the way AutoEq does: smoothed, with gentle slopes, boosts up to +6 dB, and half strength above 5 kHz, where ears differ most. The listening check then only fixes your ears and the fit.</string>
     <string name="about_bass_title">Bass within reason</string>
-    <string name="about_bass_text">The whole EQ\'s bass, from the correction, the listening check and your taste together, is kept within what it\'s worth. Over-ear headphones hold bass below 50 Hz near the 50 Hz level: little music lives down there, and a boost costs as much volume. Full sub-bass in Fine-tuning lifts this and says what it costs on your headphones. Sealed earbuds keep their deep bass. No headphones get more than +12 dB (over-ear) or +15 dB (in-ear) of bass over the mids.</string>
+    <string name="about_bass_text">The EQ\'s total bass is kept within what it\'s worth. Over-ear headphones hold bass below 50 Hz near the 50 Hz level, since a boost there costs as much volume; Full sub-bass in Fine-tune lifts this. No headphones get more than +12 dB (over-ear) or +15 dB (in-ear) of bass over the mids.</string>
     <string name="about_taste_title">The taste test</string>
     <!-- "Same" is the taste test's answer button of that name. -->
-    <string name="about_taste_text">Bass (a 105 Hz shelf, as in Harman\'s headphone research) and treble (a broad shelf from 2.5 kHz, the shape Harman\'s listeners adjusted) are tuned by blind A/B comparisons, each pair loudness-matched with the ITU BS.1770 weighting so louder never wins by default. PureEQ starts from Harman\'s three groups of listeners (most like the target, some want more bass, some less with a little more treble), learns from every answer, \"Same\" included, and picks each next pair to learn the most: usually 5 to 7 rounds. Each new pair is marked and waits until you\'ve heard both. Air (above 10 kHz), warmth and vocals are yours to set by hand.</string>
+    <string name="about_taste_text">Bass (a 105 Hz shelf) and treble (a broad shelf from 2.5 kHz) are tuned by blind A/B pairs, loudness-matched (ITU BS.1770) so louder never wins. PureEQ starts from Harman\'s three groups of listeners, learns from every answer, \"Same\" included, and picks each next pair to learn the most: usually 5 to 7 rounds. Air, warmth and vocals are yours to set.</string>
     <string name="about_volume_bass_title">Bass that follows the volume</string>
-    <string name="about_volume_bass_text">Ears lose bass faster than mids as sound gets quieter (ISO 226: about 0.3 dB at 100 Hz for every dB the level drops), so a balance chosen at one volume sounds thin below it. PureEQ remembers the volume of your taste test, and below it the system-wide EQ adds back half of what the ears lose: a bass shelf at 105 Hz of about 1.5 dB per 10 dB quieter, up to +6 dB, and a little treble at 10 kHz, up to +2 dB. Half, because full loudness compensation overshoots and only the change from the volume you tuned at counts (Holman and Kampmann). Above that volume the bass eases off slightly. It follows the volume keys as you press them, only on the kind of output the profile was tuned on, and Fine-tune has the switch.</string>
+    <string name="about_volume_bass_text">Ears lose bass faster than mids as sound gets quieter (ISO 226). Below the volume of your taste test, the system-wide EQ adds back half of that loss: about 1.5 dB of bass at 105 Hz for every 10 dB quieter, up to +6 dB, and up to +2 dB of treble. It follows the volume keys, and Fine-tune has the switch.</string>
     <string name="about_modes_title">Modes</string>
-    <string name="about_modes_text">Each profile is tuned for what its headphones are mostly for, and you can switch any time. The mode reshapes your tuning; it never replaces it, and it shapes both ears alike. Every mode plays as loud as Music would, so switching changes the balance, not the volume. Music is your sound exactly as tuned: everything in it was chosen on music, and listeners rate unprocessed, uncompressed sound best for music (Kirchberger and Russo 2016; Moore and Sęk 2016). General adds +1.5 dB around 2.5 kHz for voices and a slow leveller (2:1, 3 s release) that brings loud sources down toward quiet ones: music and videos are made about 13 dB louder than film dialogue. Gaming holds bass at −3 dB or less, since loud low sounds mask what sits above them, lifts 2 kHz by 2 dB where footsteps sit, never cuts the 4 to 16 kHz range your ears use to tell direction, and halves the EQ\'s delay to about 21 ms. Voice cuts boom below about 100 Hz and adds +2.5 dB at 2 kHz (the 1 to 4 kHz octaves carry most of what makes speech intelligible), applies your ear tuning at full strength and evens out talkers with a leveller (2:1, 0.4 s release). Levellers here only ever turn down, both ears together, so they can\'t clip or shift the stereo image. Android keeps phone calls, app calls and games on its low-latency path away from every app\'s effects, so modes shape everything else.</string>
+    <string name="about_modes_text">Each profile is tuned for what its headphones are mostly for; switch any time. A mode reshapes your tuning, shapes both ears alike and plays as loud as Music. Music: exactly as tuned. General: +1.5 dB around 2.5 kHz and a slow leveller (2:1, 3 s release). Gaming: bass at −3 dB or less, +2 dB at 2 kHz, treble never cut, and about 21 ms of delay instead of 43. Voice: less boom below 100 Hz, +2.5 dB at 2 kHz, full ear tuning and a leveller (2:1, 0.4 s release). Levellers only turn down. Android keeps calls and low-latency games away from every app\'s effects.</string>
     <string name="about_applying_title">Applying it</string>
     <!-- "All audio" is the Settings choice of that name (mode_global). -->
-    <string name="about_applying_text">PureEQ keeps on or off for each output: the phone speaker, each pair of headphones, a car or speaker. A profile is tuned for headphones, so the phone speaker starts off and plays untouched; switch it on there and that\'s kept too. Back on headphones it comes back on, with the profile you last used with them. \"All audio\" uses Android\'s DynamicsProcessing effect on the output mix with a separate curve for each ear, in fine bands (each FFT bin below 530 Hz, 1/16 octave above). The level is lowered only as much as music needs: treble boosts barely raise a mix\'s peaks, so they cost almost no loudness; a bass boost costs about its own size. Exports use AutoEq\'s formats, so Wavelet, Poweramp Equalizer, JamesDSP and Equalizer APO read them directly.</string>
+    <string name="about_applying_text">PureEQ keeps on or off for each output; the phone speaker starts off. \"All audio\" uses Android\'s DynamicsProcessing on the output mix, with a curve for each ear in fine bands (each FFT bin in the bass, 1/16 octave above). The level drops only as much as the music needs. Exports use AutoEq\'s formats, read by Wavelet, Poweramp Equalizer, JamesDSP and Equalizer APO.</string>
     <string name="about_privacy_title">Privacy</string>
     <!-- GitHub build, which checks for its own updates. -->
-    <string name="about_privacy_text_updates">Your profiles and results stay on this phone, and in your Google account\'s encrypted backup if Android backup is on. The optional room check listens for 3 seconds to measure noise level and stores nothing. PureEQ only goes online to check for its own updates (a small update notice, then the new version when there is one) and, if you look up your headphones, to download AutoEq\'s public list and that model\'s correction from the jsDelivr or GitHub servers. Nothing about you or your results is sent.</string>
+    <string name="about_privacy_text_updates">Profiles and results stay on this phone, and in Android\'s encrypted backup if it\'s on. The room check listens for 3 seconds and stores nothing. PureEQ goes online only to check for its own updates and, if you look up your headphones, to download AutoEq\'s public data from jsDelivr or GitHub. Nothing about you is sent.</string>
     <!-- Google Play build, which Play updates. -->
-    <string name="about_privacy_text">Your profiles and results stay on this phone, and in your Google account\'s encrypted backup if Android backup is on. The optional room check listens for 3 seconds to measure noise level and stores nothing. PureEQ only goes online if you look up your headphones, to download AutoEq\'s public list and that model\'s correction from the jsDelivr or GitHub servers. Nothing about you or your results is sent.</string>
+    <string name="about_privacy_text">Profiles and results stay on this phone, and in Android\'s encrypted backup if it\'s on. The room check listens for 3 seconds and stores nothing. PureEQ goes online only if you look up your headphones, to download AutoEq\'s public data from jsDelivr or GitHub. Nothing about you is sent.</string>
     <string name="about_medical_title">Not a medical device</string>
     <string name="about_medical_text">PureEQ tunes sound to your ears and taste. It is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. A hearing care professional can help with any questions about your hearing.</string>
     <string name="about_licences_title">Open-source licences</string>
@@ -204,17 +203,17 @@
     <string name="picker_remove">Remove %1$s</string>
     <string name="picker_skip">Skip, mine isn\'t listed</string>
     <string name="picker_headline">Find your model</string>
-    <string name="picker_headline_text">PureEQ corrects your model from its lab measurement to the Harman target most listeners prefer. Your listening check then only fixes what\'s left: your ears and how the headphones sit on them.</string>
+    <string name="picker_headline_text">PureEQ corrects your model to the Harman target from its lab measurement. The listening check fixes the rest.</string>
     <!-- Label of the search field. -->
     <string name="picker_search_label">Brand and model</string>
-    <string name="picker_loading">Loading AutoEq\'s database of over 6,000 headphones (about 850 KB, only the first time)…</string>
+    <string name="picker_loading">Loading AutoEq\'s database (about 850 KB, first time only)…</string>
     <string name="picker_try_again">Try again</string>
     <!-- "Buds2 Pro" and "HD 650" are model names. -->
-    <string name="picker_no_match">No match. Try just the model name, for example \"Buds2 Pro\" or \"HD 650\".</string>
+    <string name="picker_no_match">No match. Try just the model, such as \"Buds2 Pro\" or \"HD 650\".</string>
     <!-- The form of headphones in a search result, after who measured them: "oratory1990 · in-ear". -->
     <string name="picker_in_ear">in-ear</string>
     <string name="picker_over_ear">over-ear</string>
-    <string name="picker_data_note">Headphone data via AutoEq (Jaakko Pasanen, MIT licence), measured by oratory1990, Rtings, crinacle and others. PureEQ computes the correction from the measurement with AutoEq\'s method; crinacle publishes only finished corrections, so those are AutoEq\'s own, to AutoEq\'s target. The same model can be listed by several measurers; the first is usually the most trusted. Pick a variant (ANC on, passive…) if it matches how you listen.</string>
+    <string name="picker_data_note">Data via AutoEq (Jaakko Pasanen, MIT licence), measured by oratory1990, Rtings, crinacle and others. When a model is listed more than once, the first is usually the most trusted.</string>
 
     <!-- Shared components. -->
     <!-- Content description of the back arrow at the top of a screen. -->

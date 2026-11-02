@@ -28,37 +28,37 @@
 
     <!-- How the system-wide EQ attaches (Settings). -->
     <string name="mode_global">All audio</string>
-    <string name="mode_global_detail">Attaches to Android\'s output mix, so every app is covered. Works on most phones.</string>
+    <string name="mode_global_detail">Every app. Works on most phones.</string>
     <string name="mode_per_app">Music apps</string>
-    <string name="mode_per_app_detail">Attaches to players that announce themselves (Spotify, YouTube Music, Samsung Music, Poweramp…). Use this if \"All audio\" has no effect on your phone.</string>
+    <string name="mode_per_app_detail">Only players that announce themselves, such as Spotify and Poweramp. Try this if \"All audio\" has no effect.</string>
 
     <!-- Listening modes: what a profile's headphones are mostly used for. A short name (shown under
          an icon in a row of four, so keep it to one short word if possible), a line saying what
          it is for (the new-profile question), and what it changes in the sound (home and Fine-tune). -->
     <string name="use_gaming">Gaming</string>
-    <string name="use_gaming_detail">Footsteps and cues come forward, explosions don\'t bury them.</string>
-    <string name="use_gaming_does">Bass held at −3 dB or less so explosions don\'t mask footsteps, +2 dB where footsteps and reloads sit, treble never cut so you can tell where sounds come from, and about 20 ms less delay. Games on Android\'s low-latency path aren\'t reached by any EQ.</string>
+    <string name="use_gaming_detail">Footsteps and cues stand out.</string>
+    <string name="use_gaming_does">Bass held down, footsteps forward, quicker response.</string>
     <string name="use_music">Music</string>
-    <string name="use_music_detail">Your sound exactly as tuned: full bass and dynamics.</string>
-    <string name="use_music_does">Your sound exactly as you tuned it: headphone correction, your ears and your taste, with full bass and every loud and quiet moment as the artist made it. Bass still follows the volume.</string>
+    <string name="use_music_detail">Your sound exactly as tuned.</string>
+    <string name="use_music_does">Your sound exactly as tuned, with full bass and dynamics.</string>
     <string name="use_voice">Voice</string>
-    <string name="use_voice_detail">Podcasts, audiobooks, voice notes and talk videos.</string>
-    <string name="use_voice_does">Clear, close voices: less boom in the low end, +2.5 dB of clarity at 2 kHz, no bass or treble boosts, your ear tuning at full strength, and a leveller for talkers who are louder or quieter. Phone and app calls bypass every EQ app on Android, so they play as the phone makes them.</string>
+    <string name="use_voice_detail">Podcasts, audiobooks and talk videos.</string>
+    <string name="use_voice_does">Less boom, clearer voices, steadier volume.</string>
     <string name="use_general">General</string>
-    <string name="use_general_detail">A bit of everything: videos, social apps, podcasts, music.</string>
-    <string name="use_general_does">Your sound with a touch more voice clarity (+1.5 dB around 2.5 kHz) and a slow leveller that brings loud moments down, so moving between apps and videos needs fewer volume changes. Your taste stays as tuned.</string>
+    <string name="use_general_detail">A bit of everything.</string>
+    <string name="use_general_does">A touch more clarity, with loud moments evened out.</string>
 
     <!-- The taste controls in Fine-tune. -->
     <string name="band_bass">Bass</string>
-    <string name="band_bass_hint">Kick drum and bass guitar weight</string>
+    <string name="band_bass_hint">Kick drum and bass guitar</string>
     <string name="band_warmth">Warmth</string>
     <string name="band_warmth_hint">Body of voices and instruments</string>
     <string name="band_vocals">Vocals</string>
-    <string name="band_vocals_hint">Clarity and presence of voices</string>
+    <string name="band_vocals_hint">Presence of voices</string>
     <string name="band_treble">Treble</string>
-    <string name="band_treble_hint">Brightness: the edge of voices, cymbals and detail</string>
+    <string name="band_treble_hint">Cymbals and detail</string>
     <string name="band_air">Air</string>
-    <string name="band_air_hint">Sparkle and space at the very top</string>
+    <string name="band_air_hint">Sparkle at the very top</string>
 
     <!-- Kinds of headphones. -->
     <string name="headphones_in_ear">In-ear</string>

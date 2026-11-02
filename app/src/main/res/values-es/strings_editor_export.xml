@@ -25,7 +25,7 @@
     <!-- Switch between the music with the EQ and without it. -->
     <string name="editor_eq_on">Con EQ</string>
     <string name="editor_eq_off">Sin EQ</string>
-    <string name="editor_loudness_matched">Con y sin EQ tienen la misma sonoridad, así que oyes el cambio de equilibrio y no solo un salto de volumen.</string>
+    <string name="editor_loudness_matched">Con y sin EQ tienen la misma sonoridad.</string>
 
     <!-- The Fine-tuning card. -->
     <string name="editor_fine_tuning">Ajuste fino</string>
@@ -43,10 +43,10 @@
     <string name="editor_changed_treble">agudos</string>
     <string name="editor_changed_air">aire</string>
     <string name="editor_changed_balance">balance</string>
-    <string name="editor_as_suggested_no_taste">El ajuste a tus oídos y el balance están como los sugirió PureEQ.</string>
-    <string name="editor_as_suggested">Todo está como lo sugirió PureEQ a partir de tus pruebas.</string>
+    <string name="editor_as_suggested_no_taste">Ajuste a tus oídos y balance como los sugirió PureEQ.</string>
+    <string name="editor_as_suggested">Todo como lo sugirió PureEQ.</string>
     <string name="editor_reset">Restablecer</string>
-    <string name="editor_legacy_profile">Este perfil se creó con PureEQ 1.0, que no guardaba su sugerencia de graves, calidez, voces y agudos, así que Restablecer no puede recuperarlos. Repite la prueba de gustos (unos 2 minutos) y PureEQ recordará su sugerencia a partir de entonces.</string>
+    <string name="editor_legacy_profile">Creado con PureEQ 1.0, así que Restablecer no puede recuperar los graves, la calidez, las voces y los agudos. Repite la prueba de gustos para solucionarlo.</string>
     <string name="editor_redo_taste_legacy">Repetir prueba de gustos</string>
 
     <!-- The measured correction for the headphone model. -->
@@ -62,21 +62,21 @@
     <!-- The adjustments: a title, then a hint under it. -->
     <string name="editor_ear_tuning">Ajuste a tus oídos</string>
     <!-- Not a format string: the % is a literal percent sign. -->
-    <string name="editor_ear_tuning_hint" formatted="false">Cuánto aplicar de tu prueba de escucha. El 75 % aplica la mayor parte y deja margen para el ruido de medición; las diferencias grandes siempre reciben proporcionalmente menos.</string>
-    <string name="editor_treble_legacy_hint">Platillos y brillo: los agudos anteriores de PureEQ, a 8 kHz. Repite la prueba de gustos para usar el control actual, más amplio.</string>
+    <string name="editor_ear_tuning_hint" formatted="false">Cuánto aplicar de tu prueba de escucha</string>
+    <string name="editor_treble_legacy_hint">Los agudos anteriores de PureEQ, a 8 kHz. Repite la prueba de gustos para usar los nuevos.</string>
     <string name="editor_full_sub_bass">Subgraves completos</string>
     <!-- %1$s: the volume it costs, such as "1.5". -->
-    <string name="editor_full_sub_bass_on">Los graves por debajo de 50 Hz siguen tu ecualización hasta lo más grave, con unos %1$s dB menos de volumen.</string>
-    <string name="editor_full_sub_bass_off">Los graves por debajo de 50 Hz se mantienen cerca del nivel de 50 Hz, donde hay poca música. Dejar que sigan tu ecualización costaría unos %1$s dB de volumen en estos auriculares.</string>
+    <string name="editor_full_sub_bass_on">Los graves por debajo de 50 Hz siguen tus ajustes, con unos %1$s dB menos de volumen.</string>
+    <string name="editor_full_sub_bass_off">Los graves por debajo de 50 Hz se mantienen cerca del nivel de 50 Hz. Seguir tus ajustes costaría unos %1$s dB de volumen.</string>
     <string name="editor_volume_bass">Graves según el volumen</string>
-    <string name="editor_volume_bass_on">Por debajo del volumen en que afinaste, repone los graves que tus oídos pierden a niveles más bajos: unos 1,5 dB por cada 10 dB menos, hasta +6 dB, y un toque de agudos. Solo en el EQ de todo el sistema.</string>
-    <string name="editor_volume_bass_off">Desactivado: los graves se quedan como los afinaste, a cualquier volumen.</string>
-    <string name="editor_volume_bass_needs_taste">Necesita el volumen de una prueba de gustos de PureEQ 1.5 o posterior. Repite la prueba de gustos para usarlo.</string>
+    <string name="editor_volume_bass_on">Repone los graves que tus oídos pierden por debajo del volumen en que afinaste. Solo en el EQ de todo el sistema.</string>
+    <string name="editor_volume_bass_off">Los graves se quedan como los afinaste, a cualquier volumen.</string>
+    <string name="editor_volume_bass_needs_taste">Repite la prueba de gustos para usarlo.</string>
     <!-- %1$s and %2$s: signed amounts such as "+3.0" and "+0.8". -->
     <string name="editor_volume_bass_now">A este volumen: graves %1$s dB, agudos %2$s dB.</string>
     <string name="editor_volume_bass_now_flat">A este volumen no añade nada.</string>
     <string name="editor_balance">Balance</string>
-    <string name="editor_balance_hint">Solo hace falta si un lado sigue sonando más fuerte</string>
+    <string name="editor_balance_hint">Si un lado sigue sonando más fuerte</string>
     <!-- Balance values. %1$s: how much the other side is turned down, such as "1.5". -->
     <string name="editor_balance_centre">Centro</string>
     <string name="editor_balance_left">Izquierda +%1$s dB</string>
@@ -90,27 +90,27 @@
     <string name="export_copied">Copiado</string>
     <string name="export_saved">Guardado</string>
     <string name="export_save_failed">No se pudo guardar el archivo</string>
-    <string name="export_intro">Tu perfil en los formatos que entienden otras apps. O sáltate todo esto y activa \"Aplicar a todo el audio\" en la pantalla de inicio.</string>
+    <string name="export_intro">Tu perfil para otras apps de EQ.</string>
     <!-- When one ear needs more level than the other. %1$s: how much, such as "2.5". -->
-    <string name="export_balance_left">Tu oído izquierdo necesita unos %1$s dB más. En apps sin EQ por oído, mueve ligeramente hacia la izquierda el control de balance de Android (Ajustes &gt; Accesibilidad &gt; Ajuste de audio).</string>
-    <string name="export_balance_right">Tu oído derecho necesita unos %1$s dB más. En apps sin EQ por oído, mueve ligeramente hacia la derecha el control de balance de Android (Ajustes &gt; Accesibilidad &gt; Ajuste de audio).</string>
+    <string name="export_balance_left">Tu oído izquierdo necesita unos %1$s dB más. En apps sin EQ por oído, mueve el balance de Android (Ajustes &gt; Accesibilidad &gt; Ajuste de audio) un poco a la izquierda.</string>
+    <string name="export_balance_right">Tu oído derecho necesita unos %1$s dB más. En apps sin EQ por oído, mueve el balance de Android (Ajustes &gt; Accesibilidad &gt; Ajuste de audio) un poco a la derecha.</string>
     <string name="export_save_file">Guardar archivo</string>
     <string name="export_share">Compartir</string>
     <string name="export_copy">Copiar</string>
 
     <!-- One card per app or format; its title is the app's name. -->
-    <string name="export_wavelet">Guarda el archivo y, en Wavelet, abre AutoEq › Importar y elígelo. Wavelet necesita exactamente este formato GraphicEQ de 127 puntos.</string>
-    <string name="export_poweramp">Guarda el archivo y, en Poweramp Equalizer, toca Preset, mantén presionado, elige Importar y selecciónalo (o abre el archivo con Poweramp Equalizer). Mismo formato que el ParametricEQ.txt de AutoEq.</string>
+    <string name="export_wavelet">Guárdalo y luego, en Wavelet: AutoEq › Importar.</string>
+    <string name="export_poweramp">Guárdalo y luego, en Poweramp Equalizer: Preset, mantén presionado, Importar.</string>
     <!-- Where to paste it in JamesDSP. -->
     <string name="export_jamesdsp">Ecualizador de respuesta arbitraria › Editar como cadena › pegar.</string>
     <string name="export_apo_title">Equalizer APO / Peace (PC)</string>
-    <string name="export_apo">Filtros separados para izquierda y derecha. Guárdalo como .txt e inclúyelo desde config.txt, o pégalo en Peace.</string>
+    <string name="export_apo">Filtros para izquierda y derecha. Inclúyelo desde config.txt o pégalo en Peace.</string>
     <string name="export_convolution_title">Convolución (JamesDSP, ViPER4Android, Equalizer APO)</string>
-    <string name="export_convolution">Tu curva exacta para cada oído como respuesta al impulso: un WAV estéreo con el oído izquierdo y el derecho, el balance y el nivel tal como los aplica PureEQ. Cárgalo en el módulo de convolución con la misma frecuencia de muestreo que tu música.</string>
+    <string name="export_convolution">La curva exacta de cada oído como respuesta al impulso en un WAV estéreo. Usa la frecuencia de muestreo de tu música.</string>
 
     <!-- Card listing the filters, for apps where they are typed in by hand. -->
     <string name="export_parametric_title">Valores paramétricos</string>
-    <string name="export_parametric">Para apps en las que introduces los filtros a mano: Neutron, USB Audio Player Pro, el modo paramétrico de Poweramp y otras. Promedio de ambos oídos.</string>
+    <string name="export_parametric">Para apps en las que introduces los filtros a mano, como Neutron, UAPP y el modo paramétrico de Poweramp. Promedio de ambos oídos.</string>
     <string name="export_preamp">Preamp %1$s dB</string>
     <!-- One filter. %1$d: its number. %2$s: its type (export_filter_*). %3$s: its frequency, such as "105 Hz".
          %4$s: its gain, such as "+6.4". %5$s: its Q, such as "0.70". -->
@@ -124,7 +124,7 @@
 
     <!-- Card for PureEQ's own backup file. -->
     <string name="export_profile_title">Perfil de PureEQ</string>
-    <string name="export_profile">Una copia de seguridad que puedes importar en otro teléfono (Ajustes › Importar un perfil de PureEQ).</string>
+    <string name="export_profile">Una copia de seguridad para importar en otro teléfono (Ajustes › Importar un perfil de PureEQ).</string>
     <!-- Subject when sharing the backup. %1$s: the profile's name. -->
     <string name="export_profile_subject">Perfil de PureEQ: %1$s</string>
 
@@ -132,11 +132,11 @@
     <string name="export_graphic_title">Controles de EQ gráfico</string>
     <!-- %1$d: the app's lowest gain, such as -12. %2$d: its highest, such as 12. -->
     <string name="export_bands_limited">* limitado al rango de %1$d…+%2$d dB de la app</string>
-    <string name="export_bands_centred">Centrado para que el volumen general no cambie. Los EQ de controles deslizantes solo pueden aproximar la curva; los archivos de arriba son exactos.</string>
+    <string name="export_bands_centred">Centrado para mantener la sonoridad. Los controles deslizantes aproximan la curva; los archivos de arriba son exactos.</string>
 
     <!-- ===== Messages and dialogs (AppViewModel, PureEqRoot) ===== -->
     <string name="msg_default_profile_name">Mi sonido</string>
-    <string name="msg_autoeq_unreachable">No se pudo acceder a la base de datos de AutoEq. Comprueba la conexión y vuelve a intentarlo, u omite este paso: la prueba de escucha corrige tus auriculares de todos modos.</string>
+    <string name="msg_autoeq_unreachable">No se pudo acceder a AutoEq. Comprueba la conexión u omite este paso: la prueba de escucha corrige tus auriculares de todos modos.</string>
     <string name="msg_correction_failed">No se pudo descargar esa corrección. Comprueba la conexión y vuelve a intentarlo.</string>
     <!-- %1$s: the error's technical message. -->
     <string name="msg_cant_play_file">No se pudo reproducir ese archivo (%1$s).</string>
@@ -145,7 +145,7 @@
 
     <!-- ===== Over-the-air updates (GitHub build only) ===== -->
     <string name="update_ready_title">PureEQ %1$s está listo</string>
-    <string name="update_ready_text">Toca para instalar. PureEQ se cierra un momento mientras se actualiza.</string>
+    <string name="update_ready_text">Toca para instalar. PureEQ se cierra un momento.</string>
     <string name="update_updated_title">PureEQ se actualizó a %1$s</string>
     <string name="update_updated_text">Toca para abrir.</string>
 
@@ -191,7 +191,7 @@
 
     <!-- Listening modes (1.7). -->
     <string name="editor_mode">Ajustado para</string>
-    <string name="editor_mode_unset">Aún sin elegir, así que suena como Música: tu sonido tal como lo ajustaste. Elige para qué usas más estos auriculares.</string>
-    <string name="export_mode">Exportado tal como está ajustado para %1$s. Cambia antes de modo para exportar otro.</string>
-    <string name="export_mode_leveller">Exportado tal como está ajustado para %1$s: su ecualización, sin la nivelación de momentos fuertes y suaves, que solo hace el ecualizador del sistema de PureEQ. Cambia antes de modo para exportar otro.</string>
+    <string name="editor_mode_unset">Aún sin elegir, así que suena como Música.</string>
+    <string name="export_mode">Exportado tal como está ajustado para %1$s.</string>
+    <string name="export_mode_leveller">Exportado tal como está ajustado para %1$s, sin su nivelador (solo en PureEQ).</string>
 </resources>

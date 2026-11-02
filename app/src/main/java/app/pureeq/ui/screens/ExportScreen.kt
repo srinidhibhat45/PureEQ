@@ -45,6 +45,7 @@ import app.pureeq.dsp.FilterType
 import app.pureeq.profile.BandSet
 import app.pureeq.profile.Exporters
 import app.pureeq.profile.FilterRow
+import app.pureeq.profile.ListeningMode
 import app.pureeq.profile.ProfileEq
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.components.SectionCard
@@ -102,7 +103,7 @@ fun ExportScreen(vm: AppViewModel, profileId: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         // The files carry the mode's EQ; a leveller only exists in PureEQ's own system-wide EQ.
-        e.profile.mode?.let { m ->
+        e.profile.mode?.takeIf { it != ListeningMode.MUSIC }?.let { m ->
             Text(
                 stringResource(if (e.tuning.leveller != null) R.string.export_mode_leveller else R.string.export_mode, stringResource(m.titleRes)),
                 style = MaterialTheme.typography.bodySmall,

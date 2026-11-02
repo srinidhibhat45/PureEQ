@@ -2,6 +2,9 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.7.1
+- Less to read: every screen now says what it needs in a line or two, from setup and the listening check to Fine-tune, Export and Settings. Each mode gets a one-line description. How PureEQ works keeps its figures in half the words.
+
 ## 1.7.0
 - Modes: tell PureEQ what you mostly use your headphones for, Gaming, Music, Voice or General, and it fine-tunes your profile for it. New profiles ask; switch any time on the home screen, in Fine-tune or from the Quick Settings tile's menu.
 - Gaming holds bass at −3 dB or less so explosions don't bury footsteps, lifts footsteps and reloads (+2 dB at 2 kHz), never cuts the treble your ears tell direction with, and halves the EQ's delay to about 21 ms.

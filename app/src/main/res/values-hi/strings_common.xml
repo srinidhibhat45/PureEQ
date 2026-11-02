@@ -26,21 +26,21 @@
 
     <!-- How the system-wide EQ attaches (Settings). -->
     <string name="mode_global">सभी ऑडियो</string>
-    <string name="mode_global_detail">Android के आउटपुट मिक्स से जुड़ता है, इसलिए हर ऐप कवर होता है। ज़्यादातर फ़ोन पर काम करता है।</string>
+    <string name="mode_global_detail">हर ऐप। ज़्यादातर फ़ोन पर काम करता है।</string>
     <string name="mode_per_app">म्यूज़िक ऐप</string>
-    <string name="mode_per_app_detail">उन प्लेयर से जुड़ता है जो अपनी मौजूदगी की जानकारी देते हैं (Spotify, YouTube Music, Samsung Music, Poweramp…)। अगर आपके फ़ोन पर \"सभी ऑडियो\" का कोई असर नहीं होता, तो इसका इस्तेमाल करें।</string>
+    <string name="mode_per_app_detail">सिर्फ़ वे प्लेयर जो अपनी मौजूदगी बताते हैं, जैसे Spotify और Poweramp। अगर \"सभी ऑडियो\" का कोई असर न हो, तो इसे आज़माएं।</string>
 
     <!-- The taste controls in Fine-tune. -->
     <string name="band_bass">बेस</string>
-    <string name="band_bass_hint">किक ड्रम और बेस गिटार का भारीपन</string>
+    <string name="band_bass_hint">किक ड्रम और बेस गिटार</string>
     <string name="band_warmth">गर्माहट</string>
     <string name="band_warmth_hint">आवाज़ों और वाद्यों का भरापन</string>
     <string name="band_vocals">वोकल</string>
-    <string name="band_vocals_hint">आवाज़ों की स्पष्टता और मौजूदगी</string>
+    <string name="band_vocals_hint">आवाज़ों की मौजूदगी</string>
     <string name="band_treble">ट्रेबल</string>
-    <string name="band_treble_hint">चमक: आवाज़ों की धार, सिंबल और बारीकियां</string>
+    <string name="band_treble_hint">सिंबल और बारीकियां</string>
     <string name="band_air">एयर</string>
-    <string name="band_air_hint">सबसे ऊंची फ़्रीक्वेंसी पर चमक और खुलापन</string>
+    <string name="band_air_hint">सबसे ऊपर की चमक</string>
 
     <!-- Kinds of headphones. -->
     <string name="headphones_in_ear">इन-ईयर</string>
@@ -97,15 +97,15 @@
 
     <!-- Listening modes (1.7). -->
     <string name="use_gaming">गेमिंग</string>
-    <string name="use_gaming_detail">कदमों की आहट और संकेत उभरकर आएं, धमाके उन्हें न दबाएं।</string>
-    <string name="use_gaming_does">बेस −3 dB या उससे कम, ताकि धमाके कदमों की आहट न दबाएं; जहां कदम और रीलोड सुनाई देते हैं वहां +2 dB; ट्रेबल कभी कम नहीं, ताकि पता चले कि आवाज़ किस तरफ़ से आ रही है; और लगभग 20 ms कम देरी। Android के लो-लेटेंसी रास्ते वाले गेम तक कोई भी EQ नहीं पहुंचता।</string>
+    <string name="use_gaming_detail">कदमों की आहट और संकेत उभरकर आते हैं।</string>
+    <string name="use_gaming_does">बेस काबू में, कदमों की आहट आगे, और कम देरी।</string>
     <string name="use_music">संगीत</string>
-    <string name="use_music_detail">आपका साउंड ठीक वैसा जैसा ट्यून किया: पूरा बेस, पूरी डायनैमिक्स।</string>
-    <string name="use_music_does">आपका साउंड ठीक वैसा, जैसा आपने ट्यून किया: हेडफ़ोन करेक्शन, आपके कान और आपकी पसंद, पूरे बेस के साथ, और हर तेज़ और धीमा पल वैसा ही जैसा कलाकार ने बनाया। बेस अब भी वॉल्यूम के हिसाब से बदलता है।</string>
+    <string name="use_music_detail">आपका साउंड ठीक वैसा जैसा ट्यून किया।</string>
+    <string name="use_music_does">आपका साउंड ठीक वैसा जैसा ट्यून किया, पूरे बेस और पूरी डायनैमिक्स के साथ।</string>
     <string name="use_voice">वॉइस</string>
-    <string name="use_voice_detail">पॉडकास्ट, ऑडियोबुक, वॉइस नोट और बातचीत वाले वीडियो।</string>
-    <string name="use_voice_does">साफ़, पास लगती आवाज़ें: बेस में कम गूंज, 2 kHz पर +2.5 dB स्पष्टता, बेस या ट्रेबल में कोई बढ़ोतरी नहीं, पूरी ताकत पर आपकी कान की ट्यूनिंग, और ज़्यादा तेज़ या धीमे बोलने वालों के लिए लेवलर। Android पर फ़ोन कॉल और ऐप कॉल किसी भी EQ ऐप से होकर नहीं गुज़रतीं, इसलिए वे वैसी ही बजती हैं जैसी फ़ोन उन्हें बनाता है।</string>
+    <string name="use_voice_detail">पॉडकास्ट, ऑडियोबुक और बातचीत वाले वीडियो।</string>
+    <string name="use_voice_does">कम गूंज, साफ़ आवाज़ें, ज़्यादा स्थिर वॉल्यूम।</string>
     <string name="use_general">सामान्य</string>
-    <string name="use_general_detail">थोड़ा-थोड़ा सब कुछ: वीडियो, सोशल ऐप, पॉडकास्ट, संगीत।</string>
-    <string name="use_general_does">आपका साउंड, आवाज़ों के लिए थोड़ी ज़्यादा स्पष्टता के साथ (2.5 kHz के आसपास +1.5 dB), और एक धीमा लेवलर जो तेज़ पलों को कम करता है, ताकि ऐप और वीडियो बदलते समय वॉल्यूम कम बार बदलना पड़े। आपकी पसंद वैसी ही रहती है जैसी ट्यून की थी।</string>
+    <string name="use_general_detail">थोड़ा-थोड़ा सब कुछ।</string>
+    <string name="use_general_does">थोड़ी ज़्यादा स्पष्टता, और तेज़ पल बराबर किए जाते हैं।</string>
 </resources>

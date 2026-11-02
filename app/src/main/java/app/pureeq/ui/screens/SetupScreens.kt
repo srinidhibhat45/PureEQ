@@ -193,11 +193,6 @@ fun HeadphonesScreen(vm: AppViewModel) {
                         ) { Text(stringResource(if (t == HeadphoneType.IN_EAR) R.string.setup_headphones_in_ear else R.string.setup_headphones_over_ear)) }
                     }
                 }
-                Text(
-                    stringResource(R.string.setup_headphones_type_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
         }
         SectionCard {
@@ -235,11 +230,6 @@ fun HeadphonesScreen(vm: AppViewModel) {
                 Text(stringResource(R.string.setup_model_attribution, model.source), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Text(
-            stringResource(R.string.setup_headphones_bluetooth),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
