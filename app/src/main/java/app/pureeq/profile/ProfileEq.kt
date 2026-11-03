@@ -42,7 +42,14 @@ import kotlin.math.truncate
  *    fully. Beyond the knee only [ABOVE_KNEE] of that applies, 0.35 dB per dB at the default
  *    strength: larger differences are the ears themselves, where full gain sounds harsh. NAL-R
  *    gives 0.31 dB per dB, and listeners fitting themselves choose about 0.29 (Sabin 2020).
- *    Bands heard better than the reference (usually a headphone peak) are cut by the strength.
+ *    Bands heard better than the reference are cut by the strength, but where both ears share
+ *    the advantage only [CUT_SHARE] of it counts. A broad shared advantage is seldom a headphone
+ *    peak (the deviation is smoothed, and a measured model already takes the headphones out): it
+ *    is room noise masking the low beeps, which raises the 500 Hz-1.5 kHz zero line, or ears
+ *    keener than the reference, and neither is quieter at listening level. Counted in full, both
+ *    dulled the treble (FitSimulationTest: 6-8 kHz 2.0 and 2.9 dB down on average, up to 5.9 dB;
+ *    now 1.0 and 1.5, up to 2.9). A difference between the ears still counts in full, so a better
+ *    ear is turned down as far as a worse one is turned up.
  * 3. Range: full between 400 Hz and 8 kHz, fading out by 200 Hz and 16 kHz, where thresholds say
  *    little about music. Boosts are capped ([maxBoost]): +2 dB in the bass, +8 dB in the mids,
  *    +6 dB in the treble. Cuts stop at −6 dB.
@@ -63,6 +70,7 @@ object HearingCompensation {
      */
     const val DIFFERENCE_SHRINK = 0.75
     const val MAX_CUT_DB = -6.0
+    const val CUT_SHARE = 0.5
 
     class EarCurves(val left: DoubleArray, val right: DoubleArray)
 
@@ -101,7 +109,13 @@ object HearingCompensation {
 
     fun curves(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec> = emptyList()): EarCurves {
         val d = deviations(result, type, correction)
-        return EarCurves(gain(d.left, strength), gain(d.right, strength))
+        // What both ears share, with only part of a shared advantage; then each ear's half of the difference.
+        val common = DoubleArray(FreqGrid.SIZE) { ((d.left[it] + d.right[it]) / 2).let { c -> if (c < 0) CUT_SHARE * c else c } }
+        val half = DoubleArray(FreqGrid.SIZE) { (d.left[it] - d.right[it]) / 2 }
+        return EarCurves(
+            gain(DoubleArray(FreqGrid.SIZE) { common[it] + half[it] }, strength),
+            gain(DoubleArray(FreqGrid.SIZE) { common[it] - half[it] }, strength),
+        )
     }
 
     private fun gain(dev: DoubleArray, strength: Double) = DoubleArray(FreqGrid.SIZE) { i ->

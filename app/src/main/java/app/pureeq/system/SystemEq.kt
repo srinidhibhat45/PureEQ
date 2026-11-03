@@ -51,8 +51,10 @@ class SystemCurves(val left: DoubleArray, val right: DoubleArray) {
  * (about 43-47 Hz). Up to where 1/16 octave is wider than a bin (about 530 Hz at 2048 points,
  * 1 kHz at 1024) every bin gets its own band, and above that bands are 1/16 octave: about 107
  * bands at 2048 points and 91 at 1024, inside the 128 that newer Android versions allow. The
- * last edge sits far above Nyquist so every bin is written; the engine bounds its loops to the
- * spectrum size. The block also sets the latency: about 43 ms at 2048 points, 21 ms at 1024.
+ * last edge is the highest cutoff the engine accepts (192 kHz), above Nyquist at every output
+ * rate up to 384 kHz, so every bin is written (at 48 kHz an edge would leave bins above it at
+ * 0 dB, without the preamp); the engine bounds its loops to the spectrum size. The block also
+ * sets the latency: about 43 ms at 2048 points, 21 ms at 1024.
  */
 class DpBands private constructor(fftSize: Int) {
     private val binHz = 48000.0 / fftSize
@@ -79,20 +81,24 @@ class DpBands private constructor(fftSize: Int) {
             add(f)
             f *= STEP
         }
-        add(48000.0)
+        add(LAST_EDGE_HZ)
     }.toDoubleArray()
 
     /**
      * Gain of each band. Narrow bass bands take the curve at the bin they own (bin k sits at
      * k × the bin width at 48 kHz, and lands on almost the same frequency at 44.1 kHz). Wider bands
-     * take the curve averaged over the band in log-frequency.
+     * take the curve averaged over the band in log-frequency. The DC band takes the first bin's
+     * gain, never above 0 dB: the engine has no zero padding, so a step between neighbouring bins
+     * is a long filter folded into each 43 ms block. Holding DC 12 dB under its neighbour (1.5 to
+     * 1.7.2) left an error 30 dB under the music, most of it below 25 Hz; following the curve, 47
+     * to 53 dB under (simulated against AOSP DPFrequency.cpp).
      */
     fun gains(curveDb: DoubleArray): FloatArray {
         var lo = 0.0
         return FloatArray(edges.size) { b ->
             val hi = edges[b]
             val g = if (b == 0) {
-                DC_GAIN_DB
+                min(Curves.sample(curveDb, max(binHz, FreqGrid.MIN_HZ)), 0.0)
             } else if (b < binBands) {
                 Curves.sample(curveDb, max(b * binHz, FreqGrid.MIN_HZ))
             } else {
@@ -115,12 +121,8 @@ class DpBands private constructor(fftSize: Int) {
     companion object {
         private val STEP = 2.0.pow(1.0 / 16)
 
-        /**
-         * The DC bin also holds everything below half a bin (about 12 Hz at 2048 points, 23 Hz at
-         * 1024). A boost there only spends headroom and driver excursion on sound nobody hears, so
-         * it's held well down instead.
-         */
-        private const val DC_GAIN_DB = -12.0
+        /** The highest band cutoff Android's DynamicsProcessing accepts (AIDL range 0-192000 Hz). */
+        private const val LAST_EDGE_HZ = 192000.0
 
         /** The engine's FFT for [frameMs]: the frame at 48 kHz rounded up to a power of two (44.1 kHz gives the same). */
         fun fftSize(frameMs: Float): Int {

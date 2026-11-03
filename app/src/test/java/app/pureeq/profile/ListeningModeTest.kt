@@ -21,6 +21,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
+import kotlin.math.pow
 
 /** Listening modes: the same personal tuning, reshaped for what the headphones are mostly used for. */
 class ListeningModeTest {
@@ -210,11 +211,63 @@ class ListeningModeTest {
             // Low ratios and releases over 200 ms sound least pumped (Souza; Moore & Sęk).
             assertTrue(l.ratio in 1.5f..3f)
             assertTrue(l.releaseMs >= 300f)
-            assertTrue(l.thresholdDb <= -18f)
+            assertTrue(l.thresholdDb <= -10f)
         }
         assertNull(ModeTuning.MUSIC.leveller)
-        // Placed where the effect sees the music: after a −5 dB preamp, −24 becomes −29.
-        assertEquals(-29f, ModeTuning.GENERAL.leveller!!.shifted(-5.0).thresholdDb, 0f)
+        // Placed where the effect sees the music: after a −5 dB preamp, −10 becomes −15.
+        assertEquals(-15f, ModeTuning.GENERAL.leveller!!.shifted(-5.0).thresholdDb, 0f)
+    }
+
+    /**
+     * The limiter stage as AOSP DPFrequency runs it at 48 kHz with 40 ms frames: every 1024 samples
+     * the RMS of the √Hann-windowed 2048-sample frame, a one-pole envelope (θ = exp(−1/(t × blocks/s))),
+     * and (1/ratio − 1) × the excess over the threshold. Returns the mean reduction in dB.
+     */
+    private fun meanReduction(l: ModeTuning.Leveller, mono: DoubleArray): Double {
+        val n = 2048
+        val hop = n / 2
+        val window = DoubleArray(n) { kotlin.math.sqrt(0.5 - 0.5 * kotlin.math.cos(2 * Math.PI * it / n)) }
+        val windowRms = kotlin.math.sqrt(window.sumOf { it * it } / n)
+        val blocksPerSecond = 48000.0 / hop
+        val attack = kotlin.math.exp(-1 / (l.attackMs / 1000 * blocksPerSecond))
+        val release = kotlin.math.exp(-1 / (l.releaseMs / 1000 * blocksPerSecond))
+        var env = 0.0
+        var sum = 0.0
+        var count = 0
+        var s = 0
+        while (s + n <= mono.size) {
+            var e = 0.0
+            for (i in 0 until n) e += (mono[s + i] * window[i]).let { it * it }
+            val rms = kotlin.math.sqrt(e / n) / windowRms
+            val theta = if (rms > env) attack else release
+            env = (1 - theta) * rms + theta * env
+            val db = 20 * kotlin.math.log10(maxOf(env, 1e-9))
+            // Count only after the envelope has settled on the music (the loop plays on repeat).
+            if (s >= 48000 * 4) {
+                sum += if (db > l.thresholdDb) (1 / l.ratio - 1) * (db - l.thresholdDb) else 0.0
+                count++
+            }
+            s += hop
+        }
+        return -sum / count
+    }
+
+    @Test
+    fun generalLeavesNormalMusicAloneAndEasesOnlyTheLoudest() {
+        val pcm = app.pureeq.dsp.MusicSynth.render(48000)
+        val loop = DoubleArray(pcm.size / 2) { (pcm[2 * it] + pcm[2 * it + 1]) / 2.0 }
+        val mono = DoubleArray(loop.size * 3) { loop[it % loop.size] }
+        val rms = kotlin.math.sqrt(mono.sumOf { it * it } / mono.size)
+        fun at(dbfs: Double) = DoubleArray(mono.size) { mono[it] / rms * 10.0.pow(dbfs / 20) }
+        val l = ModeTuning.GENERAL.leveller!!
+        val stream = meanReduction(l, at(-14.0))
+        val loud = meanReduction(l, at(-8.0))
+        // 1.7.0-1.7.2's leveller (−24 dB, 50 ms attack) on the same music.
+        val old = ModeTuning.Leveller(-24f, 2f, 50f, 3000f)
+        println("General's leveller: −14 dBFS RMS music %.1f dB, −8 dBFS %.1f dB (1.7.2: %.1f and %.1f)".format(
+            stream, loud, meanReduction(old, at(-14.0)), meanReduction(old, at(-8.0))))
+        assertTrue("normalised music turned down $stream dB", stream < 0.5)
+        assertTrue("loud master turned down $loud dB", loud in 0.3..3.0)
     }
 
     @Test

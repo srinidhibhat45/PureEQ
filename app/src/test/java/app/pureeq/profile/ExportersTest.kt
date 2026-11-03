@@ -82,14 +82,18 @@ class ExportersTest {
         val curve = Curves.add(ProfileEq(profile).leftCurve, DoubleArray(FreqGrid.SIZE))
         // 40 ms frames (2048 points) as Music, General and Voice play; 20 ms (1024) as Gaming does.
         for (frameMs in listOf(40f, 20f)) {
-            val n = DpBands.fftSize(frameMs)
             val layout = DpBands.forFrame(frameMs)
             val edges = layout.edges
             assertTrue(edges.size <= 128)
             for (i in 1 until edges.size) assertTrue(edges[i] > edges[i - 1])
-            assertEquals(48000.0, edges.last(), 0.0)
+            assertEquals(192000.0, edges.last(), 0.0)
             val gains = layout.gains(curve)
-            for (rate in listOf(44100.0, 48000.0)) {
+            // The DC band follows the first bin, never boosting: no step for the block to fold.
+            assertEquals(minOf(gains[1], 0f), gains[0], 0f)
+            for (rate in listOf(44100.0, 48000.0, 96000.0, 192000.0)) {
+                // The engine's FFT at this rate: the frame rounded up to a power of two.
+                var n = 8
+                while (n < (frameMs * rate / 1000).toInt()) n *= 2
                 // Mirror DPFrequency: bin stop = (int)(0.5 + cutoff * N / rate), bands are contiguous.
                 val perBin = DoubleArray(n / 2 + 1) { Double.NaN }
                 var start = 0

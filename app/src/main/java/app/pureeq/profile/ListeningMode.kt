@@ -80,14 +80,17 @@ data class ModeTuning(
          * A bit of everything: videos, social apps, podcasts, some music and games.
          * - A touch of clarity for voices: +1.5 dB at 2.5 kHz, broad. In noise listeners move
          *   speech energy into 1-4 kHz; kept small because broad tilts cost naturalness.
-         * - A slow leveller (2:1 above −24 dB, 50 ms attack, 3 s release, Moore & Sęk's slow
-         *   setting) narrows the gap between loud and quiet sources: music and videos are
-         *   normalised to about −14 LUFS, film dialogue to −27, so a −14 track comes down about
-         *   5 dB while dialogue below the threshold is untouched. Linked, so the image stays put.
+         * - A slow leveller for the loudest sources only (2:1 above −10 dB, 1 s attack, 3 s
+         *   release): very loud masters and videos come down a little, music normalised to about
+         *   −14 LUFS and film dialogue are left alone. The detector follows each 21 ms frame, so a
+         *   short attack rides the drum hits: 1.7.0-1.7.2 (−24 dB, 50 ms) turned a −14 track down
+         *   about 7 dB and a loud master 10, halving their dynamics. Now, modelled on the AOSP
+         *   limiter: a −8 dBFS RMS master about 1.3 dB, a −11 one 0.3, −14 and below 0. Linked,
+         *   so the image stays put.
          */
         val GENERAL = ModeTuning(
             filters = listOf(FilterSpec(FilterType.PEAK, 2500.0, 1.5, 0.7)),
-            leveller = Leveller(thresholdDb = -24f, ratio = 2f, attackMs = 50f, releaseMs = 3000f),
+            leveller = Leveller(thresholdDb = -10f, ratio = 2f, attackMs = 1000f, releaseMs = 3000f),
         )
 
         /**

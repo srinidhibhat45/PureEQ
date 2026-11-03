@@ -85,9 +85,33 @@ class FitSimulationTest {
             lr += rms(DoubleArray(FreqGrid.SIZE) { (c.left[it] - c.right[it]) / 2 })
         }
         println("normal: common RMS %.2f dB (tonal %.2f), left/right half-difference RMS %.2f dB".format(common / runs, shape / runs, lr / runs))
-        // 1.4's fit: tonal 0.42 dB, left/right 0.39 dB.
-        assertTrue("tonal ${shape / runs}", shape / runs < 0.5)
+        // 1.4's fit: tonal 0.42 dB, left/right 0.39 dB; 1.7.2's (shared cuts in full) tonal 0.45 dB.
+        assertTrue("tonal ${shape / runs}", shape / runs < 0.4)
         assertTrue("left/right ${lr / runs}", lr / runs < 0.2)
+    }
+
+    @Test
+    fun noisyRoomsAndKeenTrebleDontDullTheSound() {
+        // Treble heard better than the reference, against the 500 Hz-1.5 kHz zero line, is rarely
+        // the headphones: room noise masking the low beeps raises the zero line, or the ears beat
+        // the reference. Neither carries to listening level, so it mustn't turn into a treble cut.
+        val noisy = { _: Ear, f: Double -> if (f <= 500.0) 6.0 else if (f <= 1000.0) 4.0 else if (f <= 2000.0) 1.5 else 0.0 }
+        val keen = { _: Ear, f: Double -> if (f >= 4000.0) -5.0 else 0.0 }
+        for ((name, dev, seed) in listOf(Triple("room noise on the low beeps", noisy, 400), Triple("treble 5 dB keener", keen, 500))) {
+            var mean = 0.0
+            var worst = 0.0
+            repeat(runs) { i ->
+                val c = HearingCompensation.curves(test(seed + i, dev = dev), type, strength)
+                val avg = Curves.average(c.left, c.right)
+                val treble = (at(avg, 6000.0) + at(avg, 8000.0)) / 2 - at(avg, 1000.0)
+                mean += treble
+                worst = minOf(worst, treble)
+            }
+            println("%s: 6-8 kHz against 1 kHz %.1f dB on average, worst %.1f dB".format(name, mean / runs, worst))
+            // 1.7.2 counted a shared advantage in full: noise −2.0 dB (worst −5.9), keener −2.9 (worst −5.4).
+            assertTrue("$name: mean ${mean / runs}", mean / runs > -1.6)
+            assertTrue("$name: worst $worst", worst > -3.5)
+        }
     }
 
     @Test

@@ -2,6 +2,11 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.7.3
+- Clearer treble. If room noise covered the quieter beeps of your listening check, or your treble hearing is keener than average, PureEQ used to dull the treble to match. Cuts both ears share are now half as deep. A difference between your ears is still corrected in full. Every profile gets this without a new check.
+- General no longer squeezes music: its leveller now eases only very loud sound, so music keeps its level and dynamics.
+- Cleaner deep bass from the system-wide EQ: the lowest band now follows your curve instead of dropping steeply, which left a faint distortion in the deepest bass.
+
 ## 1.7.2
 - Auto: a fifth mode that follows what's playing. Music plays as Music, podcasts and audiobooks as Voice, videos as General and games as Gaming, going by what each app tells Android it plays. It waits until something new has played for 3 seconds, so pauses and short clips don't flip the sound. Apps that don't say what they play get Music, and so do most games, which rarely say so: pick Gaming for those.
 - Gaming keeps your two ears' tuning within 3 dB of each other above 4 kHz, where you hear which way footsteps come from.

@@ -114,7 +114,7 @@
     <string name="use_voice_does">Weniger Dröhnen, klarere Stimmen, gleichmäßigere Lautstärke.</string>
     <string name="use_general">Allgemein</string>
     <string name="use_general_detail">Von allem etwas.</string>
-    <string name="use_general_does">Etwas mehr Klarheit, laute Momente werden ausgeglichen.</string>
+    <string name="use_general_does">Etwas mehr Klarheit, nur sehr Lautes wird abgemildert.</string>
     <string name="use_auto">Auto</string>
     <string name="use_auto_detail">Passt sich dem an, was gerade läuft.</string>
     <string name="use_auto_does">Folgt dem, was gerade läuft.</string>

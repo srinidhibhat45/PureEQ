@@ -112,7 +112,7 @@
     <string name="use_voice_does">Menos retumbe, voces más claras, volumen más estable.</string>
     <string name="use_general">General</string>
     <string name="use_general_detail">Un poco de todo.</string>
-    <string name="use_general_does">Un toque más de claridad, con los momentos fuertes nivelados.</string>
+    <string name="use_general_does">Un toque más de claridad; solo se suaviza el sonido muy fuerte.</string>
     <string name="use_auto">Auto</string>
     <string name="use_auto_detail">Se adapta a lo que suena.</string>
     <string name="use_auto_does">Sigue lo que suena.</string>

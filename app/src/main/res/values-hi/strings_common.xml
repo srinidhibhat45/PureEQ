@@ -107,7 +107,7 @@
     <string name="use_voice_does">कम गूंज, साफ़ आवाज़ें, ज़्यादा स्थिर वॉल्यूम।</string>
     <string name="use_general">सामान्य</string>
     <string name="use_general_detail">थोड़ा-थोड़ा सब कुछ।</string>
-    <string name="use_general_does">थोड़ी ज़्यादा स्पष्टता, और तेज़ पल बराबर किए जाते हैं।</string>
+    <string name="use_general_does">थोड़ी ज़्यादा स्पष्टता, और सिर्फ़ बहुत तेज़ आवाज़ नरम की जाती है।</string>
     <string name="use_auto">ऑटो</string>
     <string name="use_auto_detail">जो बज रहा है, उसके हिसाब से मोड बदलता है।</string>
     <string name="use_auto_does">जो बज रहा है, उसके साथ बदलता है।</string>

@@ -46,7 +46,7 @@
     <string name="use_voice_does">Less boom, clearer voices, steadier volume.</string>
     <string name="use_general">General</string>
     <string name="use_general_detail">A bit of everything.</string>
-    <string name="use_general_does">A touch more clarity, with loud moments evened out.</string>
+    <string name="use_general_does">A touch more clarity, with only very loud sound eased.</string>
     <!-- Auto: the mode follows what's playing. A short name (a tile in the same row as the modes),
          a line for the new-profile question, and a line for home and Fine-tune. -->
     <string name="use_auto">Auto</string>
