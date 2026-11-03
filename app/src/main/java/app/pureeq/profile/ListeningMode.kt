@@ -8,7 +8,8 @@ import app.pureeq.taste.TasteSettings
 /**
  * What a profile's headphones are mostly used for. Each mode reshapes the same personal tuning
  * (headphone correction, ear tuning, taste) for its use; [ModeTuning] says how, and why.
- * Every mode's own filters are the same for both ears, so where a sound sits stays where it was.
+ * Every mode's own filters are the same for both ears, so where a sound sits stays where it was;
+ * Gaming also limits how differently the ear tuning treats the ears in the treble.
  */
 enum class ListeningMode {
     GAMING,
@@ -34,6 +35,11 @@ data class ModeTuning(
     val tasteLimits: Map<TasteBand, ClosedFloatingPointRange<Double>> = emptyMap(),
     /** Share of the ear tuning's strength that applies (capped at 100 %). */
     val earTuning: Double = 1.0,
+    /**
+     * Largest left/right difference the ear tuning may make from 4 kHz up, where the ears tell
+     * direction ([HearingCompensation.DIRECTION_HZ], dB); null for no limit.
+     */
+    val maxEarDifferenceDb: Double? = null,
     /** Shares of the volume-linked bass and treble that apply ([VolumeBass]). */
     val volumeBass: Double = 1.0,
     val volumeTreble: Double = 1.0,
@@ -95,6 +101,12 @@ data class ModeTuning(
          * - Direction comes from 4-16 kHz: treble is never cut here (a taste for less plays at
          *   0), at most +3 dB, and a little air (+1.5 dB at 10 kHz, broad). Broad shapes only,
          *   since narrow peaks and notches up there move where sounds seem to come from.
+         * - The ear tuning makes the ears differ by 3 dB at most from 4 kHz up (1.7.0's research
+         *   suggested ±3 dB, inferred). A level difference of about 1 dB between the ears is
+         *   audible and moves a sound sideways, and up there a measured one is least certain:
+         *   re-seating headphones moves their response 8-15 dB. In simulation (FitSimulationTest)
+         *   a one-sided 20 dB treble loss gets 6.2 dB up there on average, held to 2.9, while a
+         *   listener with no real difference gets 0.2 dB and is left as is.
          * - No compression: whether it helps hear quiet cues is unproven, and the effect has no
          *   per-band linking.
          * - 20 ms frames: about 21 ms of delay instead of 43; changes of 27-49 ms are noticeable.
@@ -110,6 +122,7 @@ data class ModeTuning(
                 TasteBand.WARMTH to TasteBand.WARMTH.minDb..0.0,
                 TasteBand.TREBLE to 0.0..3.0,
             ),
+            maxEarDifferenceDb = 3.0,
             volumeBass = 0.0,
             frameMs = 20f,
         )

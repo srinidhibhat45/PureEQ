@@ -23,6 +23,7 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sign
+import kotlin.math.truncate
 
 /**
  * Turns a hearing test into a compensation curve per ear.
@@ -153,6 +154,63 @@ object HearingCompensation {
     /** A level change from about 40 Hz up: a shelf far below the music, so no phase shift where it matters. */
     fun levelFilter(db: Double) = FilterSpec(FilterType.HIGH_SHELF, 20.0, db, 0.7)
 
+    /** Mirrored filters for [half] the left/right difference: a plain level for 300 Hz-1.5 kHz, then [slots]. */
+    private fun mirrored(half: DoubleArray, slots: List<ParametricFit.Slot>): List<FilterSpec> {
+        val level = round(mean(half, 300.0, 1500.0) * 10) / 10
+        val rest = DoubleArray(half.size) { half[it] - level }
+        return listOf(levelFilter(level)).filter { abs(level) >= 0.1 } + fit(rest, slots)
+    }
+
+    /**
+     * From here up the ears tell direction by level differences and each ear's spectral shape
+     * (4-16 kHz), and a left/right difference measured with headphones is least certain: re-seating
+     * them moves the response 8-15 dB here, against under 5 dB below 2 kHz.
+     */
+    const val DIRECTION_HZ = 4000.0
+
+    /** Overshoot of a limited difference that's let through: a tenth of the smallest audible one (~1 dB). */
+    private const val LIMIT_SLACK_DB = 0.1
+
+    /** A mirrored shelf (2-4 kHz once refined) for a limited difference: it turns down within about an octave, which the peaks can't. */
+    private val limitSlot = ParametricFit.Slot(FilterType.HIGH_SHELF, 2800.0, 0.7, -6.0, 6.0, minQ = 0.5, maxQ = 1.0)
+
+    /** Largest left/right difference (dB) that [mirrored] filters make from [DIRECTION_HZ] up. */
+    private fun highDifference(mirrored: List<FilterSpec>): Double {
+        if (mirrored.isEmpty()) return 0.0
+        val l = Response.of(mirrored, FreqGrid.hz)
+        val r = Response.of(mirrored.map { it.copy(gainDb = -it.gainDb) }, FreqGrid.hz)
+        return FreqGrid.hz.indices.filter { FreqGrid.hz[it] >= DIRECTION_HZ }.maxOf { abs(l[it] - r[it]) }
+    }
+
+    /** [half] a left/right difference held within [maxDb] from [DIRECTION_HZ] up, easing in over the octave below. */
+    private fun limitHalf(half: DoubleArray, maxDb: Double) = DoubleArray(half.size) { i ->
+        val w = log2(FreqGrid.hz[i] / (DIRECTION_HZ / 2)).coerceIn(0.0, 1.0)
+        half[i] + w * (half[i].coerceIn(-maxDb / 2, maxDb / 2) - half[i])
+    }
+
+    /**
+     * Mirrored filters for [half] whose difference stays within [maxDb] from [DIRECTION_HZ] up. While
+     * the fit overshoots, what it aims at tightens; failing that, the filters are scaled down.
+     */
+    private fun limited(half: DoubleArray, maxDb: Double): List<FilterSpec> {
+        var aim = maxDb
+        var filters = mirrored(limitHalf(half, aim), residualSlots + limitSlot)
+        var over = highDifference(filters) - maxDb
+        var tries = 0
+        while (over > LIMIT_SLACK_DB && aim > 0.0 && tries++ < 3) {
+            aim = max(aim - over, 0.0)
+            filters = mirrored(limitHalf(half, aim), residualSlots + limitSlot)
+            over = highDifference(filters) - maxDb
+        }
+        tries = 0
+        while (over > LIMIT_SLACK_DB && tries++ < 4) {
+            val scale = maxDb / (maxDb + over)
+            filters = filters.map { it.copy(gainDb = truncate(it.gainDb * scale * 10) / 10) }.filter { it.gainDb != 0.0 }
+            over = highDifference(filters) - maxDb
+        }
+        return filters
+    }
+
     /** Mean of [c] over [from]..[to] Hz on [FreqGrid]. */
     private fun mean(c: DoubleArray, from: Double, to: Double): Double {
         val idx = FreqGrid.hz.indices.filter { FreqGrid.hz[it] in from..to }
@@ -183,25 +241,28 @@ object HearingCompensation {
      * Compensation targets and filters for one result. Both ears share one filter set for what
      * they have in common, so a centred voice stays centred (separate per-ear filters would also
      * shift the timing between the ears). Only a real left/right difference adds a small
-     * mirrored set on top.
+     * mirrored set on top. Where that set makes the ears differ by more than [maxDifferenceDb] from
+     * [DIRECTION_HZ] up, both ears meet towards their average there: what they share, and with it
+     * the loudness, stays.
      */
-    class Fitted(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec>) {
+    class Fitted(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec>, maxDifferenceDb: Double? = null) {
         private val targets = curves(result, type, strength, correction)
-        val targetLeft: DoubleArray = targets.left
-        val targetRight: DoubleArray = targets.right
-        val filtersCommon: List<FilterSpec> = fit(Curves.average(targetLeft, targetRight), commonSlots)
-        private val residual: List<FilterSpec> = run {
-            val half = DoubleArray(FreqGrid.SIZE) { (targetLeft[it] - targetRight[it]) / 2 }
-            if (Curves.max(DoubleArray(half.size) { abs(half[it]) }, 300.0, 12000.0) < MIN_DIFFERENCE_DB) return@run emptyList()
-            val level = round(mean(half, 300.0, 1500.0) * 10) / 10
-            val rest = DoubleArray(half.size) { half[it] - level }
-            listOf(levelFilter(level)).filter { abs(level) >= 0.1 } + fit(rest, residualSlots)
+        val filtersCommon: List<FilterSpec> = fit(Curves.average(targets.left, targets.right), commonSlots)
+        private val half = DoubleArray(FreqGrid.SIZE) { (targets.left[it] - targets.right[it]) / 2 }
+        private val free: List<FilterSpec> =
+            if (Curves.max(DoubleArray(half.size) { abs(half[it]) }, 300.0, 12000.0) < MIN_DIFFERENCE_DB) emptyList() else mirrored(half, residualSlots)
+        private val limit: Double? = maxDifferenceDb?.takeIf { highDifference(free) > it + LIMIT_SLACK_DB }
+        private val residual: List<FilterSpec> = if (limit == null) free else limited(half, limit)
+        private val aimed: EarCurves = if (limit == null) targets else limitHalf(half, limit).let { h ->
+            EarCurves(DoubleArray(FreqGrid.SIZE) { targets.left[it] - half[it] + h[it] }, DoubleArray(FreqGrid.SIZE) { targets.right[it] + half[it] - h[it] })
         }
+        val targetLeft: DoubleArray = aimed.left
+        val targetRight: DoubleArray = aimed.right
         val filtersLeft: List<FilterSpec> = filtersCommon + residual
         val filtersRight: List<FilterSpec> = filtersCommon + residual.map { it.copy(gainDb = -it.gainDb) }
     }
 
-    private data class Key(val result: HearingTestResult, val type: HeadphoneType, val strength: Double, val correction: List<FilterSpec>)
+    private data class Key(val result: HearingTestResult, val type: HeadphoneType, val strength: Double, val correction: List<FilterSpec>, val maxDifferenceDb: Double?)
 
     private val cache = object : LinkedHashMap<Key, Fitted>(8, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Key, Fitted>?) = size > 8
@@ -209,8 +270,8 @@ object HearingCompensation {
 
     /** Fitting takes tens of milliseconds, so slider moves that don't touch hearing reuse the last fit. */
     @Synchronized
-    fun fitted(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec> = emptyList()): Fitted =
-        cache.getOrPut(Key(result, type, strength, correction)) { Fitted(result, type, strength, correction) }
+    fun fitted(result: HearingTestResult, type: HeadphoneType, strength: Double, correction: List<FilterSpec> = emptyList(), maxDifferenceDb: Double? = null): Fitted =
+        cache.getOrPut(Key(result, type, strength, correction, maxDifferenceDb)) { Fitted(result, type, strength, correction, maxDifferenceDb) }
 
     private const val MID_LOW_HZ = 500.0
     private const val MID_HIGH_HZ = 1500.0
@@ -249,7 +310,9 @@ class ProfileEq(val profile: Profile) {
     val earTuningStrength: Double = min(1.0, profile.hearingStrength * tuning.earTuning)
 
     private val fitted: HearingCompensation.Fitted? =
-        profile.hearing?.takeIf { earTuningStrength > 0.0 }?.let { HearingCompensation.fitted(it, headphones, earTuningStrength, correctionFilters) }
+        profile.hearing?.takeIf { earTuningStrength > 0.0 }?.let {
+            HearingCompensation.fitted(it, headphones, earTuningStrength, correctionFilters, tuning.maxEarDifferenceDb)
+        }
 
     init {
         if (fitted != null) {

@@ -25,17 +25,19 @@ import kotlin.math.abs
 /** Listening modes: the same personal tuning, reshaped for what the headphones are mostly used for. */
 class ListeningModeTest {
 
-    /** A listener whose treble is 10 dB down in the left ear and 4 dB in the right, from 2 kHz up. */
-    private val result: HearingTestResult = run {
+    /** A result given as point estimates: -60 dBFS + reference + [loss] (dB, by ear and band). */
+    private fun hearing(loss: (Ear, Double) -> Double): HearingTestResult {
         val points = mutableListOf<ThresholdPoint>()
         for (ear in listOf(Ear.LEFT, Ear.RIGHT)) {
             for (f in HearingTestConfig.BANDS) {
-                val loss = if (f >= 2000.0) (if (ear == Ear.LEFT) 10.0 else 4.0) else 0.0
-                points += ThresholdPoint(f, ear, -60.0 + ReferenceCurve.at(f, HeadphoneType.IN_EAR) + loss, 2.0, ThresholdFlag.OK)
+                points += ThresholdPoint(f, ear, -60.0 + ReferenceCurve.at(f, HeadphoneType.IN_EAR) + loss(ear, f), 2.0, ThresholdFlag.OK)
             }
         }
-        HearingTestResult(points, 10, 0, null, null, 120, 300, true, -40.0, headphones = HeadphoneType.IN_EAR)
+        return HearingTestResult(points, 10, 0, null, null, 120, 300, true, -40.0, headphones = HeadphoneType.IN_EAR)
     }
+
+    /** A listener whose treble is 10 dB down in the left ear and 4 dB in the right, from 2 kHz up. */
+    private val result: HearingTestResult = hearing { ear, f -> if (f >= 2000.0) (if (ear == Ear.LEFT) 10.0 else 4.0) else 0.0 }
 
     private val bt = AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
     private val tuned = Profile(
@@ -85,10 +87,18 @@ class ListeningModeTest {
         }
     }
 
+    /** Left minus right (dB) on [FreqGrid]. */
+    private fun difference(e: ProfileEq) = DoubleArray(FreqGrid.SIZE) { e.leftCurve[it] - e.rightCurve[it] }
+
+    private fun maxAbs(c: DoubleArray, from: Double, to: Double = FreqGrid.MAX_HZ) =
+        FreqGrid.hz.indices.filter { FreqGrid.hz[it] in from..to }.maxOf { abs(c[it]) }
+
     @Test
     fun modesShapeBothEarsAlike() {
-        // A mode is a shared reshaping: the difference between the ears is the ear tuning's.
+        // A mode is a shared reshaping: the difference between the ears is the ear tuning's. This
+        // listener's ears differ by less than Gaming's treble limit, so Gaming leaves it as is too.
         val music = ProfileEq(tuned.copy(mode = ListeningMode.MUSIC))
+        assertTrue(maxAbs(difference(music), HearingCompensation.DIRECTION_HZ) < ModeTuning.GAMING.maxEarDifferenceDb!!)
         ListeningMode.entries.filter { it.tuning.earTuning == 1.0 }.forEach { m ->
             val eq = ProfileEq(tuned.copy(mode = m))
             for (i in FreqGrid.hz.indices) {
@@ -99,6 +109,39 @@ class ListeningModeTest {
     }
 
     private fun eq(m: ListeningMode, p: Profile = tuned) = ProfileEq(p.copy(mode = m))
+
+    @Test
+    fun gamingLimitsHowDifferentlyTheEarsAreTunedInTheTreble() {
+        // Only Gaming limits the ear difference; the other modes play the ear tuning as fitted.
+        assertEquals(listOf(ListeningMode.GAMING), ListeningMode.entries.filter { it.tuning.maxEarDifferenceDb != null })
+        val limit = ModeTuning.GAMING.maxEarDifferenceDb!!
+        assertEquals(3.0, limit, 0.0)
+        // One ear's treble 20 dB down from 4 kHz (10 at 3 kHz): Music tunes the ears well over 3 dB apart up there.
+        for (worse in listOf(Ear.LEFT, Ear.RIGHT)) {
+            val sign = if (worse == Ear.LEFT) 1.0 else -1.0
+            val p = tuned.copy(hearing = hearing { ear, f -> if (ear == worse) (if (f >= 4000.0) 20.0 else if (f >= 3000.0) 10.0 else 0.0) else 0.0 })
+            val music = eq(ListeningMode.MUSIC, p)
+            val gaming = eq(ListeningMode.GAMING, p)
+            val dm = difference(music)
+            val dg = difference(gaming)
+            assertTrue("$worse: Music ${maxAbs(dm, HearingCompensation.DIRECTION_HZ)}", maxAbs(dm, HearingCompensation.DIRECTION_HZ) > limit + 1.5)
+            // Gaming holds it to 3 dB from 4 kHz up, still favouring the worse ear.
+            for (i in FreqGrid.hz.indices) {
+                if (FreqGrid.hz[i] >= HearingCompensation.DIRECTION_HZ) assertTrue("$worse at ${FreqGrid.hz[i]} Hz: ${dg[i]}", abs(dg[i]) <= limit + 0.1)
+            }
+            assertTrue("$worse at 6 kHz: ${at(dg, 6000.0)}", sign * at(dg, 6000.0) > 2.0)
+            // Below 1.5 kHz the difference stays within half a dB: only the filters' lower skirts move.
+            assertTrue("$worse below 1.5 kHz", maxAbs(DoubleArray(FreqGrid.SIZE) { dg[it] - dm[it] }, 20.0, 1500.0) < 0.5)
+            // Both ears meet at their average, so what they share is untouched...
+            val shared = { e: ProfileEq -> Curves.average(app.pureeq.dsp.Response.of(e.hearingFiltersLeft, FreqGrid.hz), app.pureeq.dsp.Response.of(e.hearingFiltersRight, FreqGrid.hz)) }
+            assertArrayEquals(shared(music), shared(gaming), 1e-6)
+            assertArrayEquals(Curves.average(music.hearingTargetLeft, music.hearingTargetRight), Curves.average(gaming.hearingTargetLeft, gaming.hearingTargetRight), 1e-9)
+            // ...and Gaming still plays as loud as Music.
+            fun loudness(e: ProfileEq) = e.preampDb + app.pureeq.dsp.Loudness.offsetDb(Curves.average(e.leftCurve, e.rightCurve))
+            assertEquals(loudness(music), loudness(gaming), 0.15)
+            assertTrue(gaming.preampDb <= ProfileEq.preampFor(gaming.leftCurve, gaming.rightCurve))
+        }
+    }
 
     @Test
     fun gamingHoldsBassDownKeepsTrebleAndBringsFootstepsForward() {

@@ -3,6 +3,7 @@ package app.pureeq.profile
 import app.pureeq.dsp.Curves
 import app.pureeq.dsp.Ear
 import app.pureeq.dsp.FreqGrid
+import app.pureeq.dsp.Response
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.HearingSession
 import app.pureeq.hearing.HearingTestConfig
@@ -10,6 +11,7 @@ import app.pureeq.hearing.HearingTestResult
 import app.pureeq.hearing.Presentation
 import app.pureeq.hearing.ReferenceCurve
 import app.pureeq.hearing.TestLength
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
@@ -121,6 +123,50 @@ class FitSimulationTest {
         // 1.4's fit: −10.5 / −8.6 / −9.4 dB, EQ 5.6 dB (the treble boost cap limits the EQ either way).
         assertTrue("6 kHz bias ${bias[1] / runs}", bias[1] / runs > -7.0)
         assertTrue("EQ ${eqDiff / runs}", eqDiff / runs > 5.0)
+    }
+
+    @Test
+    fun gamingHoldsTheTrebleDifferenceToItsLimit() {
+        // Gaming's limit on the ear difference from 4 kHz up, on whole simulated tests: where the
+        // filters stay within it they are left alone, and where they don't, they're brought within.
+        val limit = ModeTuning.GAMING.maxEarDifferenceDb!!
+        fun difference(f: HearingCompensation.Fitted, hz: DoubleArray): DoubleArray {
+            val l = Response.of(f.filtersLeft, hz)
+            val r = Response.of(f.filtersRight, hz)
+            return DoubleArray(hz.size) { l[it] - r[it] }
+        }
+        val above = FreqGrid.hz.filter { it >= HearingCompensation.DIRECTION_HZ }.toDoubleArray()
+        fun high(f: HearingCompensation.Fitted) = difference(f, above).maxOf { abs(it) }
+        val oneSided = mapOf(500.0 to 0.0, 1000.0 to 0.0, 2000.0 to 0.0, 3000.0 to 10.0, 4000.0 to 20.0, 6000.0 to 20.0, 8000.0 to 20.0)
+        val cases = listOf<Pair<String, (Ear, Double) -> Double>>(
+            "no real difference" to { _, _ -> 0.0 },
+            "left treble +20 dB" to { ear, f -> if (ear == Ear.LEFT) oneSided.getValue(f) else 0.0 },
+            "left +15 dB everywhere" to { ear, _ -> if (ear == Ear.LEFT) 15.0 else 0.0 },
+        )
+        for ((name, dev) in cases) {
+            var before = 0.0
+            var after = 0.0
+            var worstBefore = 0.0
+            var worst = 0.0
+            var low = 0.0
+            repeat(runs) { i ->
+                val r = test(700 + i, dev = dev)
+                val free = HearingCompensation.Fitted(r, type, strength, emptyList())
+                val held = HearingCompensation.Fitted(r, type, strength, emptyList(), limit)
+                val b = high(free)
+                val a = high(held)
+                before += b
+                after += a
+                worstBefore = maxOf(worstBefore, b)
+                worst = maxOf(worst, a)
+                if (b <= limit) assertTrue(name, held.filtersLeft == free.filtersLeft && held.filtersRight == free.filtersRight)
+                assertTrue("$name: $a", a <= limit + 0.1)
+                assertEquals(name, free.filtersCommon, held.filtersCommon)
+                low += difference(held, doubleArrayOf(1000.0))[0] - difference(free, doubleArrayOf(1000.0))[0]
+            }
+            println("Gaming, %s: EQ L−R from 4 kHz up %.1f (worst %.1f) → %.1f dB (worst %.2f), change at 1 kHz %.2f dB".format(name, before / runs, worstBefore, after / runs, worst, low / runs))
+            assertTrue("$name at 1 kHz ${low / runs}", abs(low / runs) < 0.5)
+        }
     }
 
     @Test
