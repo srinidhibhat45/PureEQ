@@ -2,6 +2,9 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.7.2
+- Auto: a fifth mode that follows what's playing. Music plays as Music, podcasts and audiobooks as Voice, videos as General and games as Gaming, going by what each app tells Android it plays. It waits until something new has played for 3 seconds, so pauses and short clips don't flip the sound. Apps that don't say what they play get Music, and so do most games, which rarely say so: pick Gaming for those.
+
 ## 1.7.1
 - Less to read: every screen now says what it needs in a line or two, from setup and the listening check to Fine-tune, Export and Settings. Each mode gets a one-line description. How PureEQ works keeps its figures in half the words.
 

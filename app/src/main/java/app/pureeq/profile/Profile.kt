@@ -57,9 +57,14 @@ data class Profile(
      * PureEQ 1.7, which play as [ListeningMode.MUSIC] (the sound they were tuned with) until asked.
      */
     val mode: ListeningMode? = null,
+    /** Auto: the mode follows what's playing ([AutoMode]); [mode] is ignored while it's on. */
+    val auto: Boolean = false,
 ) {
-    /** The mode this profile plays in. */
-    val playMode: ListeningMode get() = mode ?: ListeningMode.MUSIC
+    /** The mode this profile plays in; with Auto, the one it plays until anything is heard. */
+    val playMode: ListeningMode get() = if (auto) AutoMode.FALLBACK else mode ?: ListeningMode.MUSIC
+
+    /** This profile as it plays while Auto's pick is [heard] (null: nothing heard yet): a profile with that mode. */
+    fun playing(heard: ListeningMode?): Profile = if (auto) copy(mode = heard ?: AutoMode.FALLBACK, auto = false) else this
 
     /** This profile with corrections, taste and balance as the tests recommended; name and results unchanged. */
     fun recommended(): Profile = copy(
@@ -90,6 +95,7 @@ data class Profile(
         if (fullSubBass) put("fullSubBass", true)
         if (!volumeBass) put("volumeBass", false)
         mode?.let { put("mode", it.name) }
+        if (auto) put("auto", true)
         if (checkLevel != null || tasteLevel != null) {
             put("levels", JSONObject().apply {
                 checkLevel?.let { put("check", levelJson(it)) }
@@ -196,6 +202,7 @@ data class Profile(
                 tasteLevel = o.optJSONObject("levels")?.optJSONObject("taste")?.let(::levelFrom),
                 volumeBass = o.optBoolean("volumeBass", true),
                 mode = o.optString("mode").let { m -> ListeningMode.entries.firstOrNull { it.name == m } },
+                auto = o.optBoolean("auto", false),
             )
         }
 

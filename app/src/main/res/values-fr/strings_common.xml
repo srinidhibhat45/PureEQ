@@ -98,4 +98,7 @@
     <string name="use_general">Général</string>
     <string name="use_general_detail">Un peu de tout.</string>
     <string name="use_general_does">Un peu plus de clarté, et les moments forts atténués.</string>
+    <string name="use_auto">Auto</string>
+    <string name="use_auto_detail">S’adapte à ce qui joue.</string>
+    <string name="use_auto_does">Suit ce qui joue.</string>
 </resources>

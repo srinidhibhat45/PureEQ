@@ -311,7 +311,7 @@ class ProfileEq(val profile: Profile) {
     val preampDb: Double = run {
         val own = preampFor(leftCurve, rightCurve)
         if (tuning == ModeTuning.MUSIC) return@run own
-        val music = ProfileEq(profile.copy(mode = ListeningMode.MUSIC))
+        val music = ProfileEq(profile.copy(mode = ListeningMode.MUSIC, auto = false))
         val asLoud = music.preampDb + Loudness.offsetDb(Curves.average(music.leftCurve, music.rightCurve)) -
             Loudness.offsetDb(Curves.average(leftCurve, rightCurve))
         min(own, floor(asLoud * 10 + 1e-9) / 10)

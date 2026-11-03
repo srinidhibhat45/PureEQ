@@ -8,13 +8,16 @@ import android.media.AudioAttributes
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioFocusRequest
+import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioPlaybackConfiguration
+import android.media.AudioTrack
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import app.pureeq.BuildConfig
+import app.pureeq.profile.AutoMode
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +27,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.sin
 
 /** The output device media is playing through. */
 data class OutputDevice(val name: String, val type: Int) {
@@ -168,6 +173,22 @@ class AudioRoute(context: Context) {
     }.distinctUntilChanged()
 
     /**
+     * The players playing now and after every change, as Android shows them to any app: each one's
+     * usage and content type, without the app's name ([AutoMode]).
+     */
+    fun players(): Flow<List<AutoMode.Player>> = callbackFlow {
+        fun send(configs: List<AudioPlaybackConfiguration>) {
+            trySend(configs.map { AutoMode.Player(it.audioAttributes.usage, it.audioAttributes.contentType) })
+        }
+        val cb = object : AudioManager.AudioPlaybackCallback() {
+            override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>?) = send(configs.orEmpty())
+        }
+        send(am.activePlaybackConfigurations)
+        am.registerAudioPlaybackCallback(cb, handler)
+        awaitClose { am.unregisterAudioPlaybackCallback(cb) }
+    }.distinctUntilChanged()
+
+    /**
      * Debug builds only: `adb shell am broadcast -a app.pureeq.debug.OUTPUT --es name "Galaxy Buds2"
      * --ei type 8` pretends media plays there (type: an AudioDeviceInfo type, Bluetooth if left
      * out); the same without a name goes back to the real output.
@@ -180,6 +201,37 @@ class AudioRoute(context: Context) {
             }
         }
         ContextCompat.registerReceiver(context, receiver, IntentFilter("app.pureeq.debug.OUTPUT"), ContextCompat.RECEIVER_EXPORTED)
+    }
+
+    /**
+     * Debug builds only: `adb shell am broadcast -a app.pureeq.debug.PLAY --ei usage 14 --ei content 0
+     * --ei secs 10` plays a quiet tone with those audio attributes (AudioAttributes constants), the
+     * way another app's player looks to Auto.
+     */
+    fun listenForTestPlayers(context: Context) {
+        if (!BuildConfig.DEBUG) return
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(c: Context, i: Intent) {
+                val rate = 48000
+                val tone = ShortArray(rate) { (sin(2 * PI * 440 * it / rate) * 1000).toInt().toShort() }
+                val track = AudioTrack.Builder()
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(i.getIntExtra("usage", AudioAttributes.USAGE_MEDIA))
+                            .setContentType(i.getIntExtra("content", AudioAttributes.CONTENT_TYPE_UNKNOWN))
+                            .build(),
+                    )
+                    .setAudioFormat(AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_16BIT).setSampleRate(rate).setChannelMask(AudioFormat.CHANNEL_OUT_MONO).build())
+                    .setTransferMode(AudioTrack.MODE_STATIC)
+                    .setBufferSizeInBytes(tone.size * 2)
+                    .build()
+                track.write(tone, 0, tone.size)
+                track.setLoopPoints(0, tone.size, -1)
+                track.play()
+                handler.postDelayed({ track.stop(); track.release() }, i.getIntExtra("secs", 10) * 1000L)
+            }
+        }
+        ContextCompat.registerReceiver(context, receiver, IntentFilter("app.pureeq.debug.PLAY"), ContextCompat.RECEIVER_EXPORTED)
     }
 
     /** Asks other apps to pause while a test or preview runs. */

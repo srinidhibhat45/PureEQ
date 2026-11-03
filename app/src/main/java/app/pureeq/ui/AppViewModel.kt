@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -115,6 +116,8 @@ data class Draft(
     val fullSubBass: Boolean = false,
     /** What the headphones will mostly be used for; null until the listener answers. */
     val mode: ListeningMode? = null,
+    /** Auto picked instead: the mode follows what's playing. */
+    val auto: Boolean = false,
 )
 
 /**
@@ -326,7 +329,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         go(Screen.Use)
     }
 
-    fun setDraftMode(m: ListeningMode) = _draft.update { it.copy(mode = m) }
+    fun setDraftMode(m: ListeningMode) = _draft.update { it.copy(mode = m, auto = false) }
+
+    fun setDraftAuto() = _draft.update { it.copy(auto = true) }
 
     fun afterUse() {
         if (_draft.value.includeHearing) go(Screen.Quiet) else go(Screen.TasteIntro)
@@ -337,16 +342,22 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      * profile for the same pair needs one tap less. Nothing is picked for a new pair.
      */
     private fun suggestMode() {
-        if (_draft.value.mode != null) return
+        if (_draft.value.mode != null || _draft.value.auto) return
         val name = _draft.value.device?.takeIf { it.isHeadphones }?.name ?: return
-        store.profiles.value.filter { it.deviceName == name && it.mode != null }.maxByOrNull { it.createdAt }
-            ?.let { p -> _draft.update { it.copy(mode = p.mode) } }
+        store.profiles.value.filter { it.deviceName == name && (it.mode != null || it.auto) }.maxByOrNull { it.createdAt }
+            ?.let { p -> _draft.update { it.copy(mode = p.mode, auto = p.auto) } }
     }
 
-    /** Switches a saved profile's mode; the system-wide EQ follows at once when it's the one in use. */
+    /** Picks a saved profile's mode (Auto off); the system-wide EQ follows at once when it's the one in use. */
     fun setMode(id: String, m: ListeningMode) {
         val p = store.profile(id) ?: return
-        if (p.mode != m) store.upsert(p.copy(mode = m))
+        if (p.mode != m || p.auto) store.upsert(p.copy(mode = m, auto = false))
+    }
+
+    /** Lets what's playing pick a saved profile's mode ([app.pureeq.profile.AutoMode]). */
+    fun setAuto(id: String) {
+        val p = store.profile(id) ?: return
+        if (!p.auto) store.upsert(p.copy(auto = true))
     }
 
     /** Follows the connected headphones; the type follows their name until the listener picks one. */
@@ -774,7 +785,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val track = _music.value
         if (tastePreparedFor == Triple(d.hearing, d.headphoneModel, track) && hearingBase != null) return
         // Taste is chosen on music, with the profile as tuned: Music adds nothing of its own.
-        val base = withContext(Dispatchers.Default) { ProfileEq(draftProfile().copy(taste = TasteSettings(), mode = ListeningMode.MUSIC)) }
+        val base = withContext(Dispatchers.Default) { ProfileEq(draftProfile().copy(taste = TasteSettings(), mode = ListeningMode.MUSIC, auto = false)) }
         hearingBase = base
         if (track != null) {
             val extreme = TasteSession.extreme(d.taste).filters()
@@ -896,6 +907,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val editor: StateFlow<EditorUi?> = _editor.asStateFlow()
     private var editorJob: Job? = null
 
+    init {
+        // Fine-tune shows an Auto profile in the mode Auto plays, so it follows Auto's next pick.
+        viewModelScope.launch {
+            EqRuntime.autoMode.drop(1).collect { if (_editor.value?.profile?.auto == true) recompute(save = false) }
+        }
+    }
+
     private fun draftProfile(): Profile {
         val d = _draft.value
         val app = getApplication<Application>()
@@ -914,7 +932,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             checkLevel = d.checkLevel,
             tasteLevel = d.tasteLevel,
             fullSubBass = d.fullSubBass,
-            mode = d.mode ?: ListeningMode.GENERAL,
+            mode = if (d.auto) d.mode else d.mode ?: ListeningMode.GENERAL,
+            auto = d.auto,
         )
     }
 
@@ -943,7 +962,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun editProfile(change: (Profile) -> Profile) {
         _editor.update { it?.copy(profile = change(it.profile)) }
         // A draft's taste and mode live in the flow, so a redone taste test starts from the tweaked values.
-        _editor.value?.takeIf { it.isDraft }?.let { ui -> _draft.update { it.copy(taste = ui.profile.taste, mode = ui.profile.mode) } }
+        _editor.value?.takeIf { it.isDraft }?.let { ui -> _draft.update { it.copy(taste = ui.profile.taste, mode = ui.profile.mode, auto = ui.profile.auto) } }
         recompute(save = true)
     }
 
@@ -966,7 +985,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         editorJob = viewModelScope.launch {
             delay(40)
             val ui = _editor.value ?: return@launch
-            val eq = withContext(Dispatchers.Default) { ProfileEq(ui.profile) }
+            // An Auto profile is shown and previewed in the mode Auto plays right now.
+            val eq = withContext(Dispatchers.Default) { ProfileEq(ui.profile.playing(EqRuntime.autoMode.value)) }
             debugLog {
                 fun at(c: DoubleArray) = DEBUG_HZ.joinToString(" ") { "%.0f:%.1f".format(it, Curves.sample(c, it)) }
                 "eq model=${ui.profile.headphoneModel?.path} on=${ui.profile.headphoneCorrection} preamp=${eq.preampDb} " +

@@ -33,7 +33,7 @@
     <string name="mode_per_app_detail">Only players that announce themselves, such as Spotify and Poweramp. Try this if \"All audio\" has no effect.</string>
 
     <!-- Listening modes: what a profile's headphones are mostly used for. A short name (shown under
-         an icon in a row of four, so keep it to one short word if possible), a line saying what
+         an icon in a row of five with Auto, so keep it to one short word if possible), a line saying what
          it is for (the new-profile question), and what it changes in the sound (home and Fine-tune). -->
     <string name="use_gaming">Gaming</string>
     <string name="use_gaming_detail">Footsteps and cues stand out.</string>
@@ -47,6 +47,11 @@
     <string name="use_general">General</string>
     <string name="use_general_detail">A bit of everything.</string>
     <string name="use_general_does">A touch more clarity, with loud moments evened out.</string>
+    <!-- Auto: the mode follows what's playing. A short name (a tile in the same row as the modes),
+         a line for the new-profile question, and a line for home and Fine-tune. -->
+    <string name="use_auto">Auto</string>
+    <string name="use_auto_detail">Switches to suit what\'s playing.</string>
+    <string name="use_auto_does">Follows what\'s playing.</string>
 
     <!-- The taste controls in Fine-tune. -->
     <string name="band_bass">Bass</string>

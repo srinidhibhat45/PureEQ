@@ -211,4 +211,5 @@
     <string name="editor_mode_unset">Noch nicht gewählt, daher klingt es wie Musik.</string>
     <string name="export_mode">Exportiert wie abgestimmt auf %1$s.</string>
     <string name="export_mode_leveller">Exportiert wie abgestimmt auf %1$s, ohne seinen Pegelausgleich (nur in PureEQ).</string>
+    <string name="export_mode_auto">Eine Datei kann dem, was läuft, nicht folgen: exportiert wie abgestimmt auf %1$s.</string>
 </resources>

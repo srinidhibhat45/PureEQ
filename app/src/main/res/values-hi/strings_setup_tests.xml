@@ -194,5 +194,5 @@
     <string name="setup_use_headline">आप इन्हें ज़्यादातर किसलिए इस्तेमाल करेंगे?</string>
     <string name="setup_use_headline_named">आप %1$s को ज़्यादातर किसलिए इस्तेमाल करेंगे?</string>
     <string name="setup_use_subtitle">PureEQ आपके साउंड को इसके लिए ट्यून करता है।</string>
-    <string name="setup_use_switch_later">पक्का नहीं पता? सामान्य चुनें। आप कभी भी बदल सकते हैं।</string>
+    <string name="setup_use_switch_later">पक्का नहीं पता? ऑटो चुनें। आप कभी भी बदल सकते हैं।</string>
 </resources>

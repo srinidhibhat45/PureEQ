@@ -34,6 +34,7 @@ import app.pureeq.PureEqApp
 import app.pureeq.R
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
+import app.pureeq.system.EqRuntime
 import app.pureeq.system.EqService
 import app.pureeq.ui.components.AdaptiveButtons
 import app.pureeq.ui.components.ModeSelector
@@ -85,7 +86,12 @@ fun TileMenuSheet(app: PureEqApp, onFineTune: (String) -> Unit, onOpenApp: () ->
             }
             if (current != null) {
                 Text(stringResource(R.string.tile_menu_mode), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                ModeSelector(current.mode, onSelect = { m -> if (current.mode != m) store.upsert(current.copy(mode = m)) })
+                val live by EqRuntime.autoMode.collectAsStateWithLifecycle()
+                ModeSelector(
+                    current.mode, current.auto, live,
+                    onSelect = { m -> if (current.mode != m || current.auto) store.upsert(current.copy(mode = m, auto = false)) },
+                    onAuto = { if (!current.auto) store.upsert(current.copy(auto = true)) },
+                )
             }
             if (profiles.isEmpty()) {
                 Text(

@@ -146,9 +146,14 @@ fun EditorScreen(vm: AppViewModel) {
         }
         SectionCard {
             Text(stringResource(R.string.editor_mode), style = MaterialTheme.typography.titleMedium)
-            ModeSelector(p.mode, onSelect = { m -> vm.editProfile { it.copy(mode = m) } })
+            val live by EqRuntime.autoMode.collectAsStateWithLifecycle()
+            ModeSelector(
+                p.mode, p.auto, live,
+                onSelect = { m -> vm.editProfile { it.copy(mode = m, auto = false) } },
+                onAuto = { vm.editProfile { it.copy(auto = true) } },
+            )
             Text(
-                stringResource(p.mode?.doesRes ?: R.string.editor_mode_unset),
+                stringResource(if (p.auto) R.string.use_auto_does else p.mode?.doesRes ?: R.string.editor_mode_unset),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

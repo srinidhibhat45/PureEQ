@@ -79,6 +79,7 @@ import app.pureeq.profile.ListeningMode
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
 import app.pureeq.profile.ProfileEq
+import app.pureeq.system.EqRuntime
 import app.pureeq.system.SystemEqStatus
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
@@ -118,6 +119,7 @@ fun HomeScreen(vm: AppViewModel) {
     val activeId by vm.store.activeId.collectAsStateWithLifecycle()
     val settings by vm.store.settings.collectAsStateWithLifecycle()
     val status by vm.systemStatus.collectAsStateWithLifecycle()
+    val live by EqRuntime.autoMode.collectAsStateWithLifecycle()
     val output by vm.output.collectAsStateWithLifecycle()
     val update by vm.updates.collectAsStateWithLifecycle()
     val installAllowed by vm.installAllowed.collectAsStateWithLifecycle()
@@ -173,7 +175,9 @@ fun HomeScreen(vm: AppViewModel) {
                     offText = offText(output, settings.outputs, profiles),
                     status = status,
                     onToggle = { if (it) enableSystemEq() else vm.setSystemEq(false) },
+                    live = live,
                     onMode = { vm.setMode(active.id, it) },
+                    onAuto = { vm.setAuto(active.id) },
                     onEdit = { vm.go(Screen.Editor(active.id)) },
                     onExport = { vm.go(Screen.Export(active.id)) },
                     successor = vm.store.successorOf(active.id),
@@ -303,14 +307,17 @@ private fun ActiveProfileCard(
     offText: String,
     status: SystemEqStatus,
     onToggle: (Boolean) -> Unit,
+    /** Auto's pick for what's playing, when it has one. */
+    live: ListeningMode?,
     onMode: (ListeningMode) -> Unit,
+    onAuto: () -> Unit,
     onEdit: () -> Unit,
     onExport: () -> Unit,
     /** The profile that takes over if this one is deleted; null if it's the only one. */
     successor: Profile?,
     onDelete: () -> Unit,
 ) {
-    val eq by produceState<ProfileEq?>(null, profile) { value = withContext(Dispatchers.Default) { ProfileEq(profile) } }
+    val eq by produceState<ProfileEq?>(null, profile, live) { value = withContext(Dispatchers.Default) { ProfileEq(profile.playing(live)) } }
     var menu by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     SectionCard {
@@ -340,7 +347,7 @@ private fun ActiveProfileCard(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         // Profiles from before modes are asked once; until then they play as they always did (Music).
         val mode = profile.mode
-        if (mode == null) {
+        if (mode == null && !profile.auto) {
             Text(stringResource(R.string.home_mode_ask_title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
             Text(
                 stringResource(R.string.home_mode_ask_text, profile.deviceName?.let { outputName(it) } ?: profile.name),
@@ -350,9 +357,10 @@ private fun ActiveProfileCard(
         } else {
             Text(stringResource(R.string.home_mode_title), style = MaterialTheme.typography.titleSmall)
         }
-        ModeSelector(mode, onMode)
-        if (mode != null) {
-            Text(stringResource(mode.doesRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        ModeSelector(mode, profile.auto, live, onMode, onAuto)
+        val does = if (profile.auto) R.string.use_auto_does else mode?.doesRes
+        if (does != null) {
+            Text(stringResource(does), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Row(Modifier.switchRow(enabled, onChange = onToggle), verticalAlignment = Alignment.CenterVertically) {
@@ -456,7 +464,8 @@ internal fun profileSubtitle(p: Profile): String {
         p.hearing != null -> stringResource(R.string.home_made_with_ears)
         else -> stringResource(R.string.home_made_with_taste)
     }
-    return listOfNotNull(p.deviceName?.let { outputName(it) }, p.mode?.let { stringResource(it.titleRes) }, kind, date).joinToString(" · ")
+    val mode = if (p.auto) stringResource(R.string.use_auto) else p.mode?.let { stringResource(it.titleRes) }
+    return listOfNotNull(p.deviceName?.let { outputName(it) }, mode, kind, date).joinToString(" · ")
 }
 
 @Composable

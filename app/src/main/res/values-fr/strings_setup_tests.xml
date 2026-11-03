@@ -180,5 +180,5 @@
     <string name="setup_use_headline">À quoi vont-ils surtout vous servir ?</string>
     <string name="setup_use_headline_named">À quoi vont surtout vous servir %1$s ?</string>
     <string name="setup_use_subtitle">PureEQ règle votre son pour cet usage.</string>
-    <string name="setup_use_switch_later">Vous hésitez ? Choisissez Général. Vous pouvez changer à tout moment.</string>
+    <string name="setup_use_switch_later">Vous hésitez ? Choisissez Auto. Vous pouvez changer à tout moment.</string>
 </resources>

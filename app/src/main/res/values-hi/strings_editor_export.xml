@@ -192,4 +192,5 @@
     <string name="editor_mode_unset">अभी चुना नहीं गया, इसलिए यह संगीत की तरह बजता है।</string>
     <string name="export_mode">%1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया।</string>
     <string name="export_mode_leveller">%1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया, लेवलर के बिना (वह सिर्फ़ PureEQ में है)।</string>
+    <string name="export_mode_auto">फ़ाइल यह नहीं देख सकती कि क्या बज रहा है: %1$s के लिए ट्यूनिंग के साथ एक्सपोर्ट किया गया।</string>
 </resources>

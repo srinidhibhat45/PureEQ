@@ -43,7 +43,7 @@
     <!-- %1$s: the headphones, such as "Galaxy Buds2 Pro". -->
     <string name="setup_use_headline_named">What will you mostly use %1$s for?</string>
     <string name="setup_use_subtitle">PureEQ tunes your sound for it.</string>
-    <string name="setup_use_switch_later">Not sure? Pick General. You can switch any time.</string>
+    <string name="setup_use_switch_later">Not sure? Pick Auto. You can switch any time.</string>
     <!-- The headphone model, picked from AutoEq's database. -->
     <string name="setup_model_title">Model (optional)</string>
     <string name="setup_model_add">Add your model\'s lab-measured correction from AutoEq (over 6,000 headphones).</string>

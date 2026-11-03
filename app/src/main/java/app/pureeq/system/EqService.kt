@@ -12,6 +12,7 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.media.audiofx.AudioEffect
 import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -24,6 +25,9 @@ import app.pureeq.R
 import app.pureeq.audio.ListeningLevel
 import app.pureeq.audio.OutputDevice
 import app.pureeq.profile.AppSettings
+import app.pureeq.profile.AutoMode
+import app.pureeq.profile.AutoSwitch
+import app.pureeq.profile.ListeningMode
 import app.pureeq.profile.ModeTuning
 import app.pureeq.profile.OutputStates
 import app.pureeq.profile.Profile
@@ -32,8 +36,10 @@ import app.pureeq.profile.SystemEqMode
 import app.pureeq.profile.VolumeBass
 import app.pureeq.ui.Labels
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -81,6 +87,8 @@ class EqService : LifecycleService() {
         val settings: AppSettings,
         val suspended: Boolean,
         val output: OutputDevice,
+        /** Auto's pick for what's playing; null until anything is heard. */
+        val heard: ListeningMode?,
     )
 
     private val sessionReceiver = object : BroadcastReceiver() {
@@ -108,9 +116,24 @@ class EqService : LifecycleService() {
                 app.store.activeId,
                 app.store.settings,
                 EqRuntime.suspended,
-                app.route.outputChanges(),
-            ) { profiles, activeId, settings, suspended, output -> State(profiles, activeId, settings, suspended, output) }
+                combine(app.route.outputChanges(), EqRuntime.autoMode, ::Pair),
+            ) { profiles, activeId, settings, suspended, (output, heard) -> State(profiles, activeId, settings, suspended, output, heard) }
                 .collectLatest { apply(it) }
+        }
+        lifecycleScope.launch {
+            // Auto: what's playing picks the mode once it has asked for it for a few seconds. PureEQ's
+            // own beeps and previews (its player stays open a few seconds after) say nothing about it.
+            val auto = AutoSwitch()
+            combine(app.route.players(), EqRuntime.suspended, app.engine.streamOpen) { players, held, open ->
+                val own = held || open
+                val heard = if (own) null else AutoMode.modeFor(players)
+                if (BuildConfig.DEBUG) Log.d("PureEQ", "playing ${players.joinToString { "${it.usage}/${it.contentType}" }}${if (own) " (PureEQ's own)" else ""}: $heard")
+                heard
+            }.distinctUntilChanged().collectLatest { heard ->
+                auto.heard(heard, SystemClock.elapsedRealtime())
+                auto.waitMs(SystemClock.elapsedRealtime())?.let { delay(it) }
+                auto.take(SystemClock.elapsedRealtime())?.let { EqRuntime.autoMode.value = it }
+            }
         }
         lifecycleScope.launch {
             app.route.volumeChanges(this@EqService).collect {
@@ -136,6 +159,7 @@ class EqService : LifecycleService() {
         runCatching { unregisterReceiver(sessionReceiver) }
         releaseAll()
         EqRuntime.status.value = SystemEqStatus.Off
+        EqRuntime.autoMode.value = null
         super.onDestroy()
     }
 
@@ -164,7 +188,8 @@ class EqService : LifecycleService() {
                 return
             }
         }
-        val profile = s.profiles.firstOrNull { it.id == s.activeId } ?: s.profiles.firstOrNull()
+        // With Auto, the profile plays in the mode it picked for what's playing.
+        val profile = (s.profiles.firstOrNull { it.id == s.activeId } ?: s.profiles.firstOrNull())?.playing(s.heard)
         if (profile == null) {
             releaseAll()
             EqRuntime.status.value = SystemEqStatus.Failed(getString(R.string.status_no_profile))
@@ -216,9 +241,11 @@ class EqService : LifecycleService() {
                         releaseSessions()
                         val g = global
                         if (g == null || needsRecreate || modeChanged) {
+                            // The new effect is ready before the old one goes, so nothing plays
+                            // unequalised (and louder, without the preamp) in between.
+                            val next = DpEffect(0, newCurves, frameMs, leveller, enabled = false)
                             g?.release()
-                            global = null
-                            global = DpEffect(0, newCurves, frameMs, leveller)
+                            global = next
                         } else {
                             g.update(newCurves)
                             g.setLeveller(leveller)
@@ -228,7 +255,6 @@ class EqService : LifecycleService() {
                         global?.release()
                         global = null
                         if (needsRecreate || modeChanged) {
-                            releaseSessions()
                             knownSessions.toList().forEach { openSession(it) }
                         } else {
                             sessions.values.forEach {
@@ -325,11 +351,11 @@ class EqService : LifecycleService() {
         knownSessions += session
         if (appliedMode != SystemEqMode.PER_APP || standby) return
         val c = curves ?: return
-        sessions.remove(session)?.release()
-        runCatching { DpEffect(session, c, frameMs, leveller) }.onSuccess {
+        // As with the global effect, the new one is ready before the old one goes.
+        runCatching { DpEffect(session, c, frameMs, leveller, enabled = false) }.onSuccess {
+            sessions.put(session, it)?.release()
             it.setEnabled(!paused)
-            sessions[session] = it
-        }
+        }.onFailure { sessions.remove(session)?.release() }
         app.store.profile(appliedProfileId)?.let { publishStatus(it) }
     }
 

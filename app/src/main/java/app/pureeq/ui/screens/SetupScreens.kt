@@ -241,14 +241,14 @@ fun UseScreen(vm: AppViewModel) {
         title = stringResource(R.string.setup_use_title),
         onBack = { vm.back() },
         step = 2,
-        bottom = { PrimaryButton(stringResource(R.string.setup_continue), vm::afterUse, enabled = draft.mode != null) },
+        bottom = { PrimaryButton(stringResource(R.string.setup_continue), vm::afterUse, enabled = draft.mode != null || draft.auto) },
     ) {
         val device = draft.device?.takeIf { it.isHeadphones }?.name
         Headline(
             if (device != null) stringResource(R.string.setup_use_headline_named, outputName(device)) else stringResource(R.string.setup_use_headline),
             stringResource(R.string.setup_use_subtitle),
         )
-        ModeChoices(draft.mode, vm::setDraftMode)
+        ModeChoices(draft.mode, draft.auto, vm::setDraftMode, vm::setDraftAuto)
         Text(
             stringResource(R.string.setup_use_switch_later),
             style = MaterialTheme.typography.bodySmall,

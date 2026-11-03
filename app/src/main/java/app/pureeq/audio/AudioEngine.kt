@@ -51,6 +51,10 @@ class AudioEngine(context: Context) {
     @Volatile private var keepAlive = false
     private var thread: Thread? = null
 
+    private val _streamOpen = MutableStateFlow(false)
+    /** True while PureEQ's own output is open: beeps, previews and the few silent seconds before it closes. */
+    val streamOpen: StateFlow<Boolean> = _streamOpen.asStateFlow()
+
     private val _toneActive = MutableStateFlow(false)
     /** True while a beep (or a silent catch trial) is being rendered. */
     val toneActive: StateFlow<Boolean> = _toneActive.asStateFlow()
@@ -66,6 +70,7 @@ class AudioEngine(context: Context) {
     fun start() {
         if (running) return
         running = true
+        _streamOpen.value = true
         thread = Thread(::loop, "PureEQ-audio").apply { start() }
     }
 
@@ -81,6 +86,7 @@ class AudioEngine(context: Context) {
         running = false
         thread = null
         _toneActive.value = false
+        _streamOpen.value = false
         if (commands.isNotEmpty() || musicPlaying || keepAlive) start()
     }
 

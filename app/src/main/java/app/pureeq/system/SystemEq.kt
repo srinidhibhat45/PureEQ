@@ -4,6 +4,7 @@ import android.media.audiofx.DynamicsProcessing
 import app.pureeq.audio.OutputDevice
 import app.pureeq.dsp.Curves
 import app.pureeq.dsp.FreqGrid
+import app.pureeq.profile.ListeningMode
 import app.pureeq.profile.ModeTuning
 import app.pureeq.profile.ProfileEq
 import app.pureeq.profile.VolumeBass
@@ -139,8 +140,9 @@ class DpBands private constructor(fftSize: Int) {
 /**
  * One DynamicsProcessing instance on an audio session (0 = the global output mix), with the
  * frame and leveller of the profile's mode ([ModeTuning]). The frame is fixed at creation.
+ * [enabled] false makes it ready but silent, so it can take over from another at once ([EqService]).
  */
-class DpEffect(val sessionId: Int, curves: SystemCurves, frameMs: Float, leveller: ModeTuning.Leveller?) {
+class DpEffect(val sessionId: Int, curves: SystemCurves, frameMs: Float, leveller: ModeTuning.Leveller?, enabled: Boolean = true) {
     private val layout = DpBands.forFrame(frameMs)
     private val bands = layout.edges.size
     private val dp: DynamicsProcessing
@@ -159,7 +161,7 @@ class DpEffect(val sessionId: Int, curves: SystemCurves, frameMs: Float, levelle
         config.setPreEqByChannelIndex(1, eqFor(curves.right))
         config.setLimiterAllChannelsTo(limiter(leveller))
         dp = DynamicsProcessing(PRIORITY, sessionId, config)
-        dp.enabled = true
+        dp.enabled = enabled
     }
 
     fun update(curves: SystemCurves) {
@@ -238,4 +240,7 @@ object EqRuntime {
 
     /** What the volume adds to the system-wide EQ right now ([VolumeBass]); null while it isn't applied. */
     val volumeShelves = MutableStateFlow<VolumeBass.Shelves?>(null)
+
+    /** Auto's pick for what's playing ([app.pureeq.profile.AutoSwitch]); null while the service isn't running or hasn't heard anything. */
+    val autoMode = MutableStateFlow<ListeningMode?>(null)
 }

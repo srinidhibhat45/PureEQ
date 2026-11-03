@@ -186,5 +186,5 @@
     <string name="setup_use_headline">Para que você vai usá-los mais?</string>
     <string name="setup_use_headline_named">Para que você vai usar mais %1$s?</string>
     <string name="setup_use_subtitle">O PureEQ ajusta seu som para isso.</string>
-    <string name="setup_use_switch_later">Não tem certeza? Escolha Geral. Você pode trocar quando quiser.</string>
+    <string name="setup_use_switch_later">Não tem certeza? Escolha Auto. Você pode trocar quando quiser.</string>
 </resources>

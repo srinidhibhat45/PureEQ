@@ -158,4 +158,5 @@
     <string name="editor_mode_unset">Pas encore choisi : il sonne donc comme Musique.</string>
     <string name="export_mode">Exporté tel que réglé pour %1$s.</string>
     <string name="export_mode_leveller">Exporté tel que réglé pour %1$s, sans son niveleur (PureEQ uniquement).</string>
+    <string name="export_mode_auto">Un fichier ne peut pas suivre ce qui joue : exporté tel que réglé pour %1$s.</string>
 </resources>

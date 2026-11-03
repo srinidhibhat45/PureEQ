@@ -33,7 +33,7 @@
     <string name="editor_eq_off">Off</string>
     <string name="editor_loudness_matched">On and off are loudness-matched.</string>
 
-    <!-- The listening mode card: a heading above the four modes (Gaming, Music, Voice, General). -->
+    <!-- The listening mode card: a heading above Auto and the four modes (Gaming, Music, Voice, General). -->
     <string name="editor_mode">Tuned for</string>
     <!-- Under the modes, for a profile made before modes existed. -->
     <string name="editor_mode_unset">Not picked yet, so it plays as Music.</string>
@@ -119,6 +119,8 @@
     <string name="export_mode">Exported as tuned for %1$s.</string>
     <!-- As above, for a mode that also evens out loud and quiet moments, which only PureEQ itself can do. -->
     <string name="export_mode_leveller">Exported as tuned for %1$s, without its leveller (PureEQ only).</string>
+    <!-- For an Auto profile: a file can't switch modes. %1$s: the mode it is exported in, such as "Music". -->
+    <string name="export_mode_auto">Files can\'t follow what\'s playing: exported as tuned for %1$s.</string>
     <!-- When one ear needs more level than the other. %1$s: how much, such as "2.5". -->
     <string name="export_balance_left">Your left ear needs about %1$s dB more. In apps without per-ear EQ, nudge Android\'s balance (Settings > Accessibility > Audio adjustment) left.</string>
     <string name="export_balance_right">Your right ear needs about %1$s dB more. In apps without per-ear EQ, nudge Android\'s balance (Settings > Accessibility > Audio adjustment) right.</string>

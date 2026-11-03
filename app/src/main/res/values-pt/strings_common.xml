@@ -111,4 +111,7 @@
     <string name="use_general">Geral</string>
     <string name="use_general_detail">Um pouco de tudo.</string>
     <string name="use_general_does">Um pouco mais de clareza, com os momentos altos nivelados.</string>
+    <string name="use_auto">Auto</string>
+    <string name="use_auto_detail">Se adapta ao que está tocando.</string>
+    <string name="use_auto_does">Acompanha o que está tocando.</string>
 </resources>

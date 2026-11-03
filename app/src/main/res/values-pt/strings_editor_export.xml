@@ -163,4 +163,5 @@
     <string name="editor_mode_unset">Ainda não escolhido, então toca como Música.</string>
     <string name="export_mode">Exportado como ajustado para %1$s.</string>
     <string name="export_mode_leveller">Exportado como ajustado para %1$s, sem o nivelador (só no PureEQ).</string>
+    <string name="export_mode_auto">Um arquivo não acompanha o que está tocando: exportado como ajustado para %1$s.</string>
 </resources>
