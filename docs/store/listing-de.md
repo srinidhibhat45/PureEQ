@@ -23,6 +23,7 @@ Erstelle dein persönliches Klangprofil in etwa fünf Minuten:
 • Geschmackstest: Blinde A/B-Vergleiche, auf gleiche Lautheit abgeglichen, finden den Bass und die Höhen, die du bevorzugst, mit dem integrierten Track oder einem eigenen Song.
 • Dein Klang: Aus beidem wird eine glatte EQ-Kurve pro Ohr. Passe in der Feinabstimmung Bass, Wärme, Stimmen, Höhen und Balance an und vergleiche EQ an und aus bei gleicher Lautheit.
 • Bass folgt der Lautstärke: Hörst du leiser als bei der Abstimmung, fügt PureEQ den Bass wieder hinzu, den deine Ohren bei leiserem Pegel verlieren.
+• Modi für das, was du hörst: Musik klingt genau wie abgestimmt, Stimme macht Podcasts und Hörbücher klarer, Gaming holt Schritte nach vorn und verzögert weniger, Allgemein passt für ein bisschen von allem, und Auto wechselt von selbst passend zu dem, was gerade läuft.
 
 Wähle optional dein Kopfhörermodell aus der Open-Source-Datenbank von AutoEq mit über 6.000 gemessenen Kopfhörern, dann korrigiert PureEQ auch den gemessenen Frequenzgang dieses Modells.
 

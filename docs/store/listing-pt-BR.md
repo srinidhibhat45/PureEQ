@@ -23,6 +23,7 @@ Crie seu perfil de som pessoal em cerca de cinco minutos:
 • Teste de preferência: comparações A/B às cegas, com o mesmo volume percebido, encontram os graves e agudos que você prefere, com a faixa integrada ou com uma música sua.
 • Seu som: as duas coisas viram uma curva de EQ suave para cada ouvido. Faça o ajuste fino de graves, calor, vocais, agudos e balanço e compare com EQ e sem EQ no mesmo volume percebido.
 • Graves que seguem o volume: abaixo do volume em que você ajustou, o PureEQ devolve os graves que seus ouvidos perdem em níveis mais baixos.
+• Modos para o que você ouve: Música toca seu som exatamente como ajustado, Voz deixa podcasts e audiolivros mais claros, Jogos traz os passos para a frente com menos atraso, Geral serve para um pouco de tudo e Auto muda sozinho conforme o que está tocando.
 
 Se quiser, escolha o modelo dos seus fones no banco de dados de código aberto do AutoEq, com mais de 6.000 fones medidos, e o PureEQ também corrige a resposta medida desse modelo.
 

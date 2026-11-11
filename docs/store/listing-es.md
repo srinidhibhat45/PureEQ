@@ -23,6 +23,7 @@ Crea tu perfil de sonido personal en unos cinco minutos:
 • Prueba de gustos: comparaciones A/B a ciegas, igualadas en sonoridad, encuentran los graves y los agudos que prefieres, con la pista integrada o con una canción tuya.
 • Tu sonido: ambas cosas se combinan en una curva de EQ suave para cada oído. Haz un ajuste fino de graves, calidez, voces, agudos y balance, y compara con EQ y sin EQ a la misma sonoridad.
 • Graves según el volumen: por debajo del volumen en que afinaste, PureEQ repone los graves que tus oídos pierden a niveles más bajos.
+• Modos para lo que escuchas: Música suena exactamente como lo ajustaste, Voz aclara pódcasts y audiolibros, Juegos adelanta los pasos con menos retardo, General sirve para un poco de todo y Auto cambia por sí solo según lo que suena.
 
 Si quieres, elige tu modelo de auriculares en la base de datos de código abierto de AutoEq, con más de 6000 auriculares medidos, y PureEQ corregirá también la respuesta medida de ese modelo.
 

@@ -16,6 +16,10 @@ This policy covers PureEQ for Android (package `app.pureeq`), both the version f
 
 Before the listening check, PureEQ can measure the background noise in the room. If you allow the microphone, it listens for 3 seconds and works out the noise level on the phone. Nothing is recorded, stored or sent. Without the permission, PureEQ works the same and skips this check.
 
+## What's playing
+
+In Auto mode, PureEQ asks Android what kind of audio is playing (music, speech, a film or a game), as the playing app labels it, to pick a mode. Android doesn't say which app it is or what is playing, and PureEQ keeps nothing of it.
+
 ## What goes online
 
 PureEQ connects to the internet only for these downloads, always over encrypted connections (HTTPS):
