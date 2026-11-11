@@ -117,8 +117,10 @@
     <string name="check_done_explained_corrected">Chaque point compare une bande à celle d’un auditeur de référence, une fois retiré le son mesuré de vos écouteurs. Plus un point est bas, plus il reçoit d’aide.</string>
     <string name="check_done_left">● Gauche</string>
     <string name="check_done_right">■ Droite</string>
-    <string name="check_done_axis">dB, par rapport à la référence</string>
     <string name="check_done_reliability">Fiabilité</string>
+    <string name="check_done_reference_line">Référence</string>
+    <string name="check_done_good_text">Vos réponses étaient cohérentes.</string>
+    <string name="check_done_fair_text">Quelques réponses ne collaient pas avec le reste, mais le profil est utilisable.</string>
     <string name="check_reliability_good">Bonne</string>
     <string name="check_reliability_fair">Correcte</string>
     <string name="check_reliability_low">Faible</string>

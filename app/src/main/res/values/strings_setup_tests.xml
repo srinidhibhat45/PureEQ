@@ -160,9 +160,11 @@
     <string name="check_done_left">● Left</string>
     <string name="check_done_right">■ Right</string>
     <!-- What the chart's values mean. -->
-    <string name="check_done_axis">dB, relative to the reference</string>
     <!-- A heading and a rating of how consistent the answers were. -->
     <string name="check_done_reliability">Reliability</string>
+    <string name="check_done_reference_line">Reference</string>
+    <string name="check_done_good_text">Your answers were consistent.</string>
+    <string name="check_done_fair_text">A few answers didn\'t fit the rest, but the profile is usable.</string>
     <string name="check_reliability_good">Good</string>
     <string name="check_reliability_fair">Fair</string>
     <string name="check_reliability_low">Low</string>

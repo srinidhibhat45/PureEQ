@@ -1,6 +1,7 @@
 package app.pureeq.ui.screens
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -39,6 +40,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -56,13 +60,16 @@ import app.pureeq.profile.Profile
 import app.pureeq.profile.VolumeBass
 import app.pureeq.system.EqRuntime
 import app.pureeq.taste.TasteBand
+import app.pureeq.taste.TasteSettings
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
 import app.pureeq.ui.components.EqChart
+import app.pureeq.ui.components.ExpandRow
 import app.pureeq.ui.components.ModeSelector
 import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.components.noTickSliderColors
 import app.pureeq.ui.components.StepScaffold
 import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.doesRes
@@ -136,10 +143,6 @@ fun EditorScreen(vm: AppViewModel) {
                     Pill(stringResource(R.string.editor_right), EarColors.Right)
                 } else {
                     Pill(stringResource(R.string.editor_both_ears), MaterialTheme.colorScheme.primary)
-                }
-                Spacer(Modifier.weight(1f))
-                if (eq != null) {
-                    Text(stringResource(R.string.editor_preamp, Exporters.signed(eq.preampDb)), style = MaterialTheme.typography.labelMedium.merge(NumberStyle), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             if (eq != null) EqChart(curvesFor(eq, MaterialTheme.colorScheme.primary), height = 220.dp) else Spacer(Modifier.height(220.dp))
@@ -221,10 +224,16 @@ private fun FineTuning(
         suggestedTaste?.let { t -> TasteBand.entries.filter { p.taste[it] != t[it] }.forEach { add(it.changedRes) } }
         if (p.balanceDb != rec.balanceDb) add(R.string.editor_changed_balance)
     }
+    // Ear tuning, bass and treble up front; the rest under More, opened by itself when something there was changed.
+    val moreChanged = (p.headphoneModel != null && !p.headphoneCorrection) || p.fullSubBass || (!p.volumeBass && p.tasteLevel != null) ||
+        p.balanceDb != rec.balanceDb ||
+        (suggestedTaste != null && TasteBand.entries.any { it !in MAIN_BANDS && p.taste[it] != suggestedTaste[it] })
+    var more by rememberSaveable { mutableStateOf(moreChanged) }
     SectionCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                Text(stringResource(R.string.editor_fine_tuning), style = MaterialTheme.typography.titleMedium)
+                // The screen is already called Fine-tune; the new profile's screen isn't.
+                if (isDraft) Text(stringResource(R.string.editor_fine_tuning), style = MaterialTheme.typography.titleMedium)
                 Text(
                     when {
                         changed.isNotEmpty() -> stringResource(
@@ -253,38 +262,6 @@ private fun FineTuning(
             )
             if (!isDraft) FilledTonalButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.editor_redo_taste_legacy)) }
         }
-        val model = p.headphoneModel
-        if (model != null) {
-            Column {
-                Row(Modifier.switchRow(p.headphoneCorrection) { on -> edit { it.copy(headphoneCorrection = on) } }, verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                        Text(stringResource(R.string.editor_headphone_correction), style = MaterialTheme.typography.titleSmall)
-                        val target = model.target
-                        Text(
-                            if (target != null) {
-                                stringResource(R.string.editor_corrected_to_target, model.name, target)
-                            } else {
-                                stringResource(R.string.editor_corrected_to_autoeq_target, model.name)
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(stringResource(R.string.editor_headphone_data, model.source), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Switch(checked = p.headphoneCorrection, onCheckedChange = null)
-                }
-                TextButton(onClick = onPickModel, contentPadding = PaddingValues(horizontal = 0.dp)) {
-                    // Models picked with 1.3 carry AutoEq's published correction; picking again computes the new one.
-                    Text(stringResource(if (model.path == null && AutoEqTarget.hasMeasurement(model.source)) R.string.editor_update_correction else R.string.editor_change_model))
-                }
-            }
-        } else {
-            OutlinedButton(onClick = onPickModel, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Rounded.Headphones, null, Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.editor_add_correction))
-            }
-        }
         if (p.hearing != null) {
             Control(
                 stringResource(R.string.editor_ear_tuning),
@@ -299,65 +276,118 @@ private fun FineTuning(
                     onValueChange = { v -> edit { it.copy(hearingStrength = (v * 20).roundToInt() / 20.0) } },
                     valueRange = 0f..1f,
                     steps = 19,
+                    // It snaps to 5% steps without drawing twenty dots along the track.
+                    colors = noTickSliderColors(),
                 )
             }
         }
-        TasteBand.entries.forEach { band ->
-            val v = p.taste[band]
-            val r = suggestedTaste?.get(band)
-            Control(
-                stringResource(band.titleRes),
-                "${Exporters.signed(v)} dB",
-                stringResource(if (band == TasteBand.TREBLE && p.taste.legacyTreble) R.string.editor_treble_legacy_hint else band.hintRes),
-                suggested = r?.takeIf { it != v }?.let { "${Exporters.signed(it)} dB" },
-                onRestore = { if (r != null) edit { it.copy(taste = it.taste.with(band, r)) } },
-            ) { m ->
-                Slider(
-                    modifier = m,
-                    value = v.toFloat(),
-                    onValueChange = { x -> edit { it.copy(taste = it.taste.with(band, (x * 2).roundToInt() / 2.0)) } },
-                    valueRange = band.minDb.toFloat()..band.maxDb.toFloat(),
-                )
-            }
-            // Over-ears hold bass below 50 Hz near the 50 Hz level; worth offering only when that saves volume.
-            if (band == TasteBand.BASS && (p.fullSubBass || subBassCostDb >= 0.5)) {
-                Row(
-                    Modifier.switchRow(p.fullSubBass) { on -> edit { it.copy(fullSubBass = on) } },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.editor_full_sub_bass), style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            stringResource(
-                                if (p.fullSubBass) R.string.editor_full_sub_bass_on else R.string.editor_full_sub_bass_off,
-                                "%.1f".format(subBassCostDb),
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(checked = p.fullSubBass, onCheckedChange = null)
+        MAIN_BANDS.forEach { TasteControl(p, it, suggestedTaste, edit) }
+        ExpandRow(stringResource(R.string.editor_more_adjustments), more, onToggle = { more = !more })
+        AnimatedVisibility(more) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                TasteBand.entries.filter { it !in MAIN_BANDS }.forEach { TasteControl(p, it, suggestedTaste, edit) }
+                Control(
+                    stringResource(R.string.editor_balance),
+                    balanceLabel(p.balanceDb),
+                    stringResource(R.string.editor_balance_hint),
+                    suggested = balanceLabel(rec.balanceDb).takeIf { p.balanceDb != rec.balanceDb },
+                    onRestore = { edit { it.copy(balanceDb = rec.balanceDb) } },
+                ) { m ->
+                    Slider(
+                        modifier = m,
+                        value = p.balanceDb.toFloat(),
+                        onValueChange = { x -> edit { it.copy(balanceDb = (x * 2).roundToInt() / 2.0) } },
+                        valueRange = -6f..6f,
+                    )
                 }
+                VolumeBassRow(p, volumeNow, edit)
+                // Over-ears hold bass below 50 Hz near the 50 Hz level; worth offering only when that saves volume.
+                if (p.fullSubBass || subBassCostDb >= 0.5) {
+                    Row(
+                        Modifier.switchRow(p.fullSubBass) { on -> edit { it.copy(fullSubBass = on) } },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(R.string.editor_full_sub_bass), style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                stringResource(
+                                    if (p.fullSubBass) R.string.editor_full_sub_bass_on else R.string.editor_full_sub_bass_off,
+                                    "%.1f".format(subBassCostDb),
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(checked = p.fullSubBass, onCheckedChange = null)
+                    }
+                }
+                HeadphoneCorrection(p, onPickModel, edit)
             }
-            if (band == TasteBand.BASS) VolumeBassRow(p, volumeNow, edit)
-        }
-        Control(
-            stringResource(R.string.editor_balance),
-            balanceLabel(p.balanceDb),
-            stringResource(R.string.editor_balance_hint),
-            suggested = balanceLabel(rec.balanceDb).takeIf { p.balanceDb != rec.balanceDb },
-            onRestore = { edit { it.copy(balanceDb = rec.balanceDb) } },
-        ) { m ->
-            Slider(
-                modifier = m,
-                value = p.balanceDb.toFloat(),
-                onValueChange = { x -> edit { it.copy(balanceDb = (x * 2).roundToInt() / 2.0) } },
-                valueRange = -6f..6f,
-            )
         }
         if (!isDraft && suggestedTaste != null) {
             TextButton(onClick = onRedoTaste, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.editor_redo_taste)) }
+        }
+    }
+}
+
+/** Bass and treble: the two adjustments everyone reaches for. The other taste bands wait under More. */
+private val MAIN_BANDS = listOf(TasteBand.BASS, TasteBand.TREBLE)
+
+/** One taste band's slider, with its suggested value once moved. */
+@Composable
+private fun TasteControl(p: Profile, band: TasteBand, suggestedTaste: TasteSettings?, edit: ((Profile) -> Profile) -> Unit) {
+    val v = p.taste[band]
+    val r = suggestedTaste?.get(band)
+    Control(
+        stringResource(band.titleRes),
+        "${Exporters.signed(v)} dB",
+        stringResource(if (band == TasteBand.TREBLE && p.taste.legacyTreble) R.string.editor_treble_legacy_hint else band.hintRes),
+        suggested = r?.takeIf { it != v }?.let { "${Exporters.signed(it)} dB" },
+        onRestore = { if (r != null) edit { it.copy(taste = it.taste.with(band, r)) } },
+    ) { m ->
+        Slider(
+            modifier = m,
+            value = v.toFloat(),
+            onValueChange = { x -> edit { it.copy(taste = it.taste.with(band, (x * 2).roundToInt() / 2.0)) } },
+            valueRange = band.minDb.toFloat()..band.maxDb.toFloat(),
+        )
+    }
+}
+
+/** The headphone model's measured correction: its switch and source, or a button to add one. */
+@Composable
+private fun HeadphoneCorrection(p: Profile, onPickModel: () -> Unit, edit: ((Profile) -> Profile) -> Unit) {
+    val model = p.headphoneModel
+    if (model != null) {
+        Column {
+            Row(Modifier.switchRow(p.headphoneCorrection) { on -> edit { it.copy(headphoneCorrection = on) } }, verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(stringResource(R.string.editor_headphone_correction), style = MaterialTheme.typography.titleSmall)
+                    val target = model.target
+                    Text(
+                        if (target != null) {
+                            stringResource(R.string.editor_corrected_to_target, model.name, target)
+                        } else {
+                            stringResource(R.string.editor_corrected_to_autoeq_target, model.name)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(stringResource(R.string.editor_headphone_data, model.source), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = p.headphoneCorrection, onCheckedChange = null)
+            }
+            TextButton(onClick = onPickModel, contentPadding = PaddingValues(horizontal = 0.dp)) {
+                // Models picked with 1.3 carry AutoEq's published correction; picking again computes the new one.
+                Text(stringResource(if (model.path == null && AutoEqTarget.hasMeasurement(model.source)) R.string.editor_update_correction else R.string.editor_change_model))
+            }
+        }
+    } else {
+        OutlinedButton(onClick = onPickModel, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Rounded.Headphones, null, Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.editor_add_correction))
         }
     }
 }

@@ -24,7 +24,6 @@
     <string name="home_welcome_text">Um rápido teste de escuta e algumas rodadas A/B com música viram um EQ para seus fones.</string>
     <string name="home_start">Começar</string>
 
-    <string name="home_active">Ativo</string>
     <string name="home_more">Mais</string>
     <string name="home_use_profile">Usar este perfil</string>
     <string name="home_fine_tune">Ajuste fino</string>
@@ -84,7 +83,8 @@
     <string name="settings_start_on_boot">Iniciar após reinício</string>
     <string name="settings_start_on_boot_detail">Reativar o PureEQ depois de um reinício.</string>
     <string name="settings_warble">Tons de teste modulados</string>
-    <string name="settings_warble_detail" formatted="false">Os bipes oscilam ±5 % para que uma ressonância do fone não distorça uma banda.</string>
+    <string name="settings_warble_detail" formatted="false">Os bipes oscilam um pouco para que as peculiaridades do fone não distorçam uma faixa.</string>
+    <string name="settings_advanced">Avançado</string>
 
     <string name="settings_version">PureEQ %1$s</string>
     <string name="settings_import">Importar um perfil do PureEQ</string>
@@ -152,6 +152,9 @@
 
     <!-- Componentes compartilhados. -->
     <string name="common_back">Voltar</string>
+    <string name="common_details">Detalhes</string>
+    <string name="common_expanded">Expandido</string>
+    <string name="common_collapsed">Recolhido</string>
 
     <!-- Música para o teste de preferência. -->
     <string name="music_library_demo_track">Faixa de demonstração do PureEQ</string>

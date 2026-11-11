@@ -28,7 +28,6 @@
     <string name="home_start">Starten</string>
 
     <!-- Home: the profile in use and the other profiles. -->
-    <string name="home_active">Aktiv</string>
     <string name="home_more">Mehr</string>
     <string name="home_use_profile">Dieses Profil verwenden</string>
     <string name="home_fine_tune">Feinabstimmung</string>
@@ -97,7 +96,8 @@
     <string name="settings_start_on_boot_detail">Schaltet PureEQ nach einem Neustart wieder ein.</string>
     <string name="settings_warble">Wobbeltöne</string>
     <!-- "±5 %" is a literal percent (formatted="false": no placeholders). -->
-    <string name="settings_warble_detail" formatted="false">Töne schwanken um ±5 %, damit keine einzelne Resonanz des Ohrhörers ein Band verfälscht.</string>
+    <string name="settings_warble_detail" formatted="false">Töne schwanken leicht, damit Eigenheiten des Ohrhörers kein Band verfälschen.</string>
+    <string name="settings_advanced">Erweitert</string>
 
     <!-- Settings: the app's name and version. -->
     <string name="settings_version">PureEQ %1$s</string>
@@ -177,6 +177,9 @@
 
     <!-- Shared components. -->
     <string name="common_back">Zurück</string>
+    <string name="common_details">Details</string>
+    <string name="common_expanded">Ausgeklappt</string>
+    <string name="common_collapsed">Eingeklappt</string>
 
     <!-- Music for the taste test. -->
     <string name="music_library_demo_track">PureEQ-Demotrack</string>

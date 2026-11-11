@@ -129,8 +129,10 @@
     <!-- The chart's legend; ● and ■ are the shapes of each ear's points on the chart. -->
     <string name="check_done_left">● Izquierdo</string>
     <string name="check_done_right">■ Derecho</string>
-    <string name="check_done_axis">dB respecto a la referencia</string>
     <string name="check_done_reliability">Fiabilidad</string>
+    <string name="check_done_reference_line">Referencia</string>
+    <string name="check_done_good_text">Tus respuestas fueron coherentes.</string>
+    <string name="check_done_fair_text">Algunas respuestas no encajaron con el resto, pero el perfil sirve.</string>
     <string name="check_reliability_good">Buena</string>
     <string name="check_reliability_fair">Aceptable</string>
     <string name="check_reliability_low">Baja</string>

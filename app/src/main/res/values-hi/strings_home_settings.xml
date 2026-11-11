@@ -28,7 +28,6 @@
     <string name="home_start">शुरू करें</string>
 
     <!-- Home: the profile in use and the other profiles. -->
-    <string name="home_active">सक्रिय</string>
     <string name="home_more">ज़्यादा विकल्प</string>
     <string name="home_use_profile">यह प्रोफ़ाइल इस्तेमाल करें</string>
     <string name="home_fine_tune">फ़ाइन-ट्यून</string>
@@ -95,7 +94,8 @@
     <string name="settings_start_on_boot_detail">रीस्टार्ट के बाद PureEQ फिर से चालू करें।</string>
     <string name="settings_warble">वॉर्बल टेस्ट टोन</string>
     <!-- "±5 %" is a literal percent (formatted="false": no placeholders). -->
-    <string name="settings_warble_detail" formatted="false">बीप ±5 % ऊपर-नीचे होती हैं, ताकि ईयरबड का कोई एक रेज़ोनेंस किसी बैंड को न बिगाड़े।</string>
+    <string name="settings_warble_detail" formatted="false">बीप थोड़ी लहराती हैं, ताकि ईयरबड की खासियतें किसी बैंड को न बिगाड़ें।</string>
+    <string name="settings_advanced">उन्नत</string>
 
     <!-- Settings: the app's name and version. -->
     <string name="settings_version">PureEQ %1$s</string>
@@ -172,6 +172,9 @@
 
     <!-- Shared components. -->
     <string name="common_back">वापस जाएं</string>
+    <string name="common_details">विवरण</string>
+    <string name="common_expanded">खुला हुआ</string>
+    <string name="common_collapsed">बंद किया हुआ</string>
 
     <!-- Music for the taste test. -->
     <string name="music_library_demo_track">PureEQ डेमो ट्रैक</string>

@@ -4,16 +4,19 @@ PureEQ goes to Play as the `play` flavour: the same app and package (`app.pureeq
 
 ## Decisions
 
-- **Account (owner, 2026-11-11):** a new personal developer account, not created yet. (On 2026-10-31 the plan assumed an older account; there is none.) A personal account created after 13 November 2023 must run a closed test with at least 12 testers opted in for 14 days in a row before it can apply for production.
+- **Account (owner, 2026-11-11):** a new personal developer account, created on 2026-11-11 with identity verification started the same day; PureEQ is its first app. (On 2026-10-31 the plan assumed an older account; there is none.) A personal account created after 13 November 2023 must run a closed test with at least 12 testers opted in for 14 days in a row before it can apply for production.
+- **Price (owner, 2026-11-11):** a paid app at ₹49 in India and US$0.99 elsewhere (Play converts it into each other country's currency), with no ads and no in-app purchases.
+- **GitHub build (owner, 2026-11-11):** stays free and public at 1.7.3 ("let the free build remain free, But I will continue to charge on the app store if the want the updates and everything"): `pureeq-updates` stays public, and from the Play launch no more `ota/publish.py` releases, so new versions come only through the paid Play app. Moving from the free build to Play means exporting profiles, uninstalling, installing from Play and importing (different signing keys, decision B). The free APK is still distributed outside Play, so once developer verification reaches users' countries (globally in 2027) it installs on certified phones only if its signing key is registered ([key-rotation.md](key-rotation.md#7-register-apppureeq-for-developer-verification)); otherwise new installs of it stop working there.
+- **UI polish (owner, 2026-11-11):** a full pass as 1.8.0 before launch ("I Want the best user experience and cleanest UI possible"; then "calm down the colours" and "use the colours of the logo tastefully"): graphite with the logo's blue as the only accent, the EQ curve blue to coral like the logo's bars, the logo by the name, the on/off switch first on the home screen, plain words with the figures under Details, Fine-tune and Settings split into main and advanced. Later builds can join the closed test mid-way; the 14-day clock doesn't restart. Set the price before the first upload: once an app has been offered free it can never become paid, short of a new app with a new package name (Play Console Help 6334373). See [Selling the app](#selling-the-app).
 - **Signing (2026-10-31):** B below. Google generates and keeps the app signing key; uploads are signed with an upload key you create (Google can reset a lost upload key). Moving a phone between the GitHub and Play builds means exporting profiles, reinstalling and importing.
-- **Launch build:** 1.7.3 (versionCode 16): everything up to 1.6.0, listening modes with Auto (1.7.0, 1.7.2), shorter text (1.7.1) and the sound fixes (1.7.3), with the eight screenshots retaken for it on 2026-11-11 and the graphics in [store/](store/).
+- **Launch build:** 1.8.0 (versionCode 17): everything up to 1.6.0, listening modes with Auto (1.7.0, 1.7.2), shorter text (1.7.1), the sound fixes (1.7.3) and the UI polish (1.8.0), with the eight screenshots retaken for it and the graphics in [store/](store/). It is the first version that is on Play only.
 
 ## Timeline from 11 November 2026
 
 Checked against Play Console Help on 2026-11-11 (answers 14151465, 13628312, 14316361): at least 12 testers opted in continuously for the 14 days right before applying (testers who leave early don't count, and a tester who rejoins starts a new 14 days); Google usually decides on the application within 7 days.
 
 1. **This week:** create the account (US$25, once), verify email and phone by code, verify your identity (government ID, plus proof of address in some countries) and an Android device through the Play Console app. Verification can take a few days; meanwhile make the upload key, publish the privacy policy, and line up at least 15 testers (a margin over 12, in case some drop out).
-2. **As soon as the account is verified (about 15-18 November):** create the app, fill in App content (3) and the store listing (4), upload the 1.7.3 bundle to a closed testing track and send testers the opt-in link. The 14 days start when the twelfth tester has opted in. Later builds can go to the same track during the 14 days; the clock doesn't restart.
+2. **As soon as the account is verified (about 15-18 November):** set up the payments profile (its India merchant verification can take longest), create the app and set its ₹49 price before any upload, fill in App content (3) and the store listing (4), upload the 1.8.0 bundle to a closed testing track and send testers the opt-in link. The 14 days start when the twelfth tester has opted in. Later builds can go to the same track during the 14 days; the clock doesn't restart.
 3. **About 2-4 December:** Dashboard › Apply for production; answer the three sections (closed test, app, readiness).
 4. **About 9-11 December:** once approved, release to production; Google reviews the app itself (new apps can take several days), so expect PureEQ on Play in mid-December.
 
@@ -57,7 +60,7 @@ Android only lets one build replace the other when both are signed with the same
 - [ ] Check what the Play build contains (`./gradlew :app:assemblePlayRelease`, then `"$ANDROID_HOME/build-tools/36.0.0/aapt2" dump permissions app/build/outputs/apk/play/release/app-play-release.apk`): MODIFY_AUDIO_SETTINGS, RECORD_AUDIO, FOREGROUND_SERVICE, FOREGROUND_SERVICE_SPECIAL_USE, POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, INTERNET, plus AndroidX's own DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION. No REQUEST_INSTALL_PACKAGES, UPDATE_PACKAGES_WITHOUT_USER_ACTION or ACCESS_NETWORK_STATE, no update receiver or job, no update checks, and Settings has no Updates section.
 - [x] Checked 2026-11-11 (1.7.3): the permissions are exactly the list above, no update code or debug output hook in the release dex, targetSdk 36, `libandroidx.graphics.path.so` 16 KB aligned on all four ABIs.
 - [x] Checked 2026-10-31 (1.5.3): `lintPlayRelease` passes; targetSdk 36 meets Play's level for new apps (from 31 August 2026); the only native code, AndroidX's `libandroidx.graphics.path.so`, is 16 KB aligned on all four ABIs (`llvm-readelf -lW`: LOAD align 0x4000), as Play requires for apps targeting Android 15+; the debug-only output hook isn't in the release dex.
-- [ ] Version: `versionCode` comes from `version.properties`, shared with the GitHub build. Upload each release to Play with the same versionCode as its GitHub twin, so phones can move between them without a downgrade.
+- [ ] Version: `versionCode` comes from `version.properties`. From 1.8.0 (17) releases are Play-only, so raise it there by hand for each upload; the GitHub build stays at 1.7.3 (16).
 
 ## 2. Developer account and testing
 
@@ -65,6 +68,15 @@ Android only lets one build replace the other when both are signed with the same
 - [ ] Identity verification (government photo ID, and proof of address in some countries) and **Verify that you have access to an Android mobile device** (a Home task: install the Play Console app from its QR code on any physical, unrooted phone with Android 10 or later). The same account registers the GitHub build for developer verification ([key-rotation.md](key-rotation.md#7-register-apppureeq-for-developer-verification)).
 - [ ] Closed test: Testing › Closed testing › create a track, add testers by email list (or a Google Group), upload the bundle, roll it out, and send testers the opt-in link from the track's Testers tab. Each tester needs a Google account on an Android phone, opens the link, taps **Become a tester**, then installs PureEQ from Play. Ask them to stay opted in for the full 14 days and to actually use it: the production application asks what testers did and what you changed.
 - [ ] Apply for production from the Dashboard once at least 12 testers have been opted in for 14 days in a row.
+
+### Selling the app
+
+Checked in Play Console Help and Google Payments Center Help on 2026-11-11 (6334373, 9845334, 13634081; Payments Center 7421525, 7398224, 7161426).
+
+- [ ] Payments profile (merchant account), linked under Setup › Payments profile, as soon as the identity is verified. It needs a physical address (no PO boxes) and a bank account in the same country. For an India profile: the PAN (without it the higher withholding-tax rate applies; Google sends Form 131 certificates each quarter), a GSTIN only if you are registered (optional for individual accounts; ask a tax advisor about GST, which Google leaves to India-based developers), and the BillDesk merchant verification that RBI rules require of every new India merchant account since 1 January 2026. That verification can take a while, and the app can't be priced until the profile is ready, so start it first.
+- **Your address becomes public.** Accounts that sell paid apps show the full address from the payments profile on Google Play (Help 13634081).
+- [ ] Monetize › App pricing, before the first upload: US$0.99 as the default price (Play converts it for each country), then India set to ₹49. The price applies to every track at once.
+- **Testers pay.** Closed and open testers must buy a paid app; only internal testers install it free, and internal testing doesn't count toward the 12 testers (Help 9845334). Expect each closed tester to pay ₹49, and pay them back yourself if you want them out of pocket nothing. Google's pages show no free-copy route for a closed track; check Play Console's promo code screen once the account is open.
 - [x] The in-app wording matches the positioning, since reviewers see the app and its screenshots: since 1.5.0 the screens say "listening check" and "Ear tuning", hearing terms appear only in the disclaimers ("not a hearing test or an audiogram", "Not a medical device"), and the Play build's Privacy text leaves out the update checks (`BuildConfig.SELF_UPDATER`). Checked again for 1.5.3. Other brands appear only as compatibility notes (turn off Samsung's or Dolby's EQ, the Samsung 9-band export, Samsung Music in "Music apps").
 
 ## 3. App content declarations
@@ -106,13 +118,13 @@ Android only lets one build replace the other when both are signed with the same
 
 ### Privacy policy
 
-- [ ] Fill in the contact address in [privacy-policy.md](privacy-policy.md), publish it at a public URL (for example a page in the public `pureeq-updates` repository or GitHub Pages) and enter that URL under App content and in the store listing.
+- [ ] Fill in the contact address in [privacy-policy.md](privacy-policy.md), publish it at a public URL (for example a page in the public `pureeq-updates` repository) and enter that URL under App content and in the store listing. The URL must stay up for as long as the app is on Play.
 
 ### Content rating, audience, ads
 
 - [ ] Content rating (IARC questionnaire): an app, not a game; no violence, sexual content, profanity, drugs, gambling or horror; no user-generated content or user-to-user communication; no location sharing; no purchases. Expect the lowest rating everywhere.
 - [ ] Target audience: 18 and over. The app isn't designed for children, and including ages under 13 brings in the Families policy.
-- [ ] Ads: none. App access: everything works without an account. News, government, financial features, health research: no.
+- [ ] Ads: none. In-app purchases: none (the app itself is paid). App access: everything works without an account. News, government, financial features, health research: no.
 
 ## 4. Store listing draft
 
@@ -154,12 +166,12 @@ Category: Music & Audio. Contact email: the same address as the privacy policy.
 
 **Never in the listing, screenshots or release notes:** "hearing test", "hearing loss", "hearing aid", "audiogram", "dB HL", "screening", "clinically validated", and Apple or Samsung product names. Use "personal sound profile", "listening check" and "tunes your headphones to your ears and taste".
 
-**Graphics:** in [store/](store/): `icon-512.png` (512 × 512) and `feature-graphic-1024x500.png`, drawn by `store/art.py` from the launcher icon, and eight phone screenshots in `store/screenshots/` (1080 × 2160; the listening profile 1080 × 1580, cropped below its reliability card so the not-a-hearing-test line stays out; Settings 1080 × 1750, framed below the line that names other EQs). Upload them in their numbered order: home with the modes, the mode question, the listening check, the listening profile, the taste test, your EQ, Fine-tune, Where it's on. Retaken 2026-11-11 on the emulator from the 1.7.3 Play debug build, with neutral headphone names, a simulated listener and a demo-mode status bar cropped off, and checked against the list above. They show the English app; the translated listings can use them too.
+**Graphics:** in [store/](store/): `icon-512.png` (512 × 512) and `feature-graphic-1024x500.png`, drawn by `store/art.py` from the launcher icon, and eight phone screenshots in `store/screenshots/` (1080 × 2160; the listening profile 1080 × 1640, cropped above the not-a-hearing-test line; Settings 1080 × 1820, down to the Advanced card, which folds away the line that names other EQs). Upload them in their numbered order: home with the on/off card and the modes, the mode question, the listening check, the listening profile, the taste test, your EQ, Fine-tune, Where it's on. Retaken 2026-11-11 on the emulator from the 1.8.0 Play debug build, with neutral headphone names, a simulated listener and taster, and the status bar cropped off, and checked against the list above. They show the English app; the translated listings can use them too.
 
 **Translated listings:** `store/listing-<language>.md` has the app name, short description and full description in Spanish, German, French, Portuguese (Brazil) and Hindi; add each as a translation in Play Console › Store presence › Main store listing.
 
 ## 5. Release
 
-- [ ] Closed testing track with the 1.7.3 bundle; read the pre-launch report (Release › Testing › Pre-launch report) and fix anything it flags before testers' 14 days run out.
+- [ ] Closed testing track with the 1.8.0 bundle; read the pre-launch report (Release › Testing › Pre-launch report) and fix anything it flags before testers' 14 days run out.
 - [ ] Apply for production (see 2), then create the production release from the same bundle.
-- [ ] Each later release: publish the GitHub build (`python3 ota/publish.py`, which may raise the versionCode), then build the Play bundle (`./gradlew :app:bundlePlayRelease`) so it gets the same versionCode, and upload it.
+- [ ] Each later release: raise `versionCode` and `versionName` in `version.properties`, add its CHANGELOG section (the release notes), build the Play bundle (`./gradlew :app:testPlayDebugUnitTest :app:bundlePlayRelease` with the upload key) and upload it. No more `ota/publish.py` runs: the free GitHub build stays at 1.7.3.

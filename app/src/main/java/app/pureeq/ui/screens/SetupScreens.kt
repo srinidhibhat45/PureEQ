@@ -74,6 +74,7 @@ import app.pureeq.ui.components.ListeningOrb
 import app.pureeq.ui.components.ModeChoices
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.components.noTickSliderColors
 import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.detailRes
 import app.pureeq.ui.kindLabel
@@ -211,7 +212,7 @@ fun HeadphonesScreen(vm: AppViewModel) {
                 }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Rounded.CheckCircle, null, tint = StatusColors.Good)
+                    Icon(Icons.Rounded.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(model.name, style = MaterialTheme.typography.bodyLarge)
@@ -307,7 +308,7 @@ fun QuietScreen(vm: AppViewModel) {
             val r = quiet.result
             when {
                 quiet.failed -> Text(stringResource(R.string.setup_quiet_failed), color = StatusColors.Warn)
-                r != null && r < NoiseMeter.QUIET_DB -> Text(stringResource(R.string.setup_quiet_good), color = StatusColors.Good)
+                r != null && r < NoiseMeter.QUIET_DB -> Text(stringResource(R.string.setup_quiet_good), color = MaterialTheme.colorScheme.primary)
                 r != null && r < NoiseMeter.NOISY_DB -> Text(stringResource(R.string.setup_quiet_fair), color = StatusColors.Warn)
                 r != null -> Text(stringResource(R.string.setup_quiet_noisy), color = StatusColors.Bad)
             }
@@ -362,6 +363,7 @@ private fun VolumeSetting(vm: AppViewModel) {
                     onValueChange = { vm.setVolume(it.roundToInt()); volume = it.roundToInt() },
                     valueRange = min.toFloat()..max.toFloat(),
                     steps = (max - min - 1).coerceAtLeast(0),
+                    colors = noTickSliderColors(),
                     modifier = Modifier.weight(1f).padding(horizontal = 8.dp).semantics { contentDescription = volumeName; stateDescription = volumeText },
                 )
                 FilledIconButton(onClick = { vm.setVolume(volume + 1); volume = vm.currentVolume() }) {
@@ -439,7 +441,7 @@ private fun ChannelCheck(vm: AppViewModel, c: ChannelUi) {
                     ChannelVerdict.NOT_HEARD -> false to R.string.setup_channel_missed
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(if (ok) Icons.Rounded.CheckCircle else Icons.Rounded.Warning, null, tint = if (ok) StatusColors.Good else StatusColors.Warn)
+                    Icon(if (ok) Icons.Rounded.CheckCircle else Icons.Rounded.Warning, null, tint = if (ok) MaterialTheme.colorScheme.primary else StatusColors.Warn)
                     Spacer(Modifier.width(12.dp))
                     Text(stringResource(text), style = MaterialTheme.typography.bodyLarge)
                 }

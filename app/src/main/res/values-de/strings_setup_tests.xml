@@ -143,9 +143,11 @@
     <!-- The chart's legend; ● and ■ are the shapes of each ear's points on the chart. -->
     <string name="check_done_left">● Links</string>
     <string name="check_done_right">■ Rechts</string>
-    <string name="check_done_axis">dB, relativ zur Referenz</string>
     <!-- A heading and a rating of how consistent the answers were. -->
     <string name="check_done_reliability">Zuverlässigkeit</string>
+    <string name="check_done_reference_line">Referenz</string>
+    <string name="check_done_good_text">Deine Antworten waren stimmig.</string>
+    <string name="check_done_fair_text">Einige Antworten passten nicht zum Rest, das Profil ist aber brauchbar.</string>
     <string name="check_reliability_good">Gut</string>
     <string name="check_reliability_fair">Mittel</string>
     <string name="check_reliability_low">Niedrig</string>

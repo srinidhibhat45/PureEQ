@@ -16,7 +16,6 @@
     <string name="editor_right">Derecho</string>
     <string name="editor_both_ears">Ambos oídos</string>
     <!-- %1$s: the preamp gain, such as "-6.1". -->
-    <string name="editor_preamp">Preamp %1$s dB</string>
 
     <!-- Card for hearing the profile with music. -->
     <string name="editor_listen">Escuchar</string>
@@ -45,6 +44,7 @@
     <string name="editor_changed_balance">balance</string>
     <string name="editor_as_suggested_no_taste">Ajuste a tus oídos y balance como los sugirió PureEQ.</string>
     <string name="editor_as_suggested">Todo como lo sugirió PureEQ.</string>
+    <string name="editor_more_adjustments">Más ajustes</string>
     <string name="editor_reset">Restablecer</string>
     <string name="editor_legacy_profile">Creado con PureEQ 1.0, así que Restablecer no puede recuperar los graves, la calidez, las voces y los agudos. Repite la prueba de gustos para solucionarlo.</string>
     <string name="editor_redo_taste_legacy">Repetir prueba de gustos</string>

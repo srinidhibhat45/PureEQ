@@ -4,6 +4,8 @@ import android.os.Build
 import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,12 +30,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pureeq.BuildConfig
@@ -46,6 +50,8 @@ import app.pureeq.system.SystemEqStatus
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.Screen
 import app.pureeq.ui.components.SectionCard
+import app.pureeq.ui.components.ExpandRow
+import app.pureeq.ui.components.LogoMark
 import app.pureeq.ui.components.StepScaffold
 import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.detailRes
@@ -61,28 +67,10 @@ fun SettingsScreen(vm: AppViewModel) {
     val status by vm.systemStatus.collectAsStateWithLifecycle()
     val import = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> if (uri != null) vm.importProfile(uri) }
     val update = { f: (AppSettings) -> AppSettings -> vm.store.updateSettings(f) }
+    // Advanced opens by itself when the equalizer reports a problem, so its message is never hidden.
+    var advanced by rememberSaveable { mutableStateOf(false) }
+    val failed = status as? SystemEqStatus.Failed
     StepScaffold(title = stringResource(R.string.settings_title), onBack = { vm.back() }) {
-        SectionCard {
-            Text(stringResource(R.string.settings_system_eq), style = MaterialTheme.typography.titleSmall)
-            SystemEqMode.entries.forEach { m ->
-                Row(
-                    Modifier.fillMaxWidth().selectable(selected = s.mode == m, role = Role.RadioButton) { update { it.copy(mode = m) } },
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    RadioButton(selected = s.mode == m, onClick = null, modifier = Modifier.padding(12.dp))
-                    Column(Modifier.padding(top = 12.dp)) {
-                        Text(stringResource(m.titleRes), style = MaterialTheme.typography.bodyLarge)
-                        Text(stringResource(m.detailRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-            (status as? SystemEqStatus.Failed)?.let { Text(it.message, style = MaterialTheme.typography.bodySmall, color = StatusColors.Bad) }
-            Text(
-                stringResource(R.string.settings_other_eqs),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
         OutputsSection(vm, s)
         QuickTileSection()
         SectionCard {
@@ -92,17 +80,41 @@ fun SettingsScreen(vm: AppViewModel) {
             ToggleRow(stringResource(R.string.settings_start_on_boot), stringResource(R.string.settings_start_on_boot_detail), s.startOnBoot) { v ->
                 update { it.copy(startOnBoot = v) }
             }
-            ToggleRow(
-                stringResource(R.string.settings_warble),
-                stringResource(R.string.settings_warble_detail),
-                s.warbleTones,
-            ) { v -> update { it.copy(warbleTones = v) } }
+        }
+        SectionCard {
+            ExpandRow(stringResource(R.string.settings_advanced), advanced || failed != null, onToggle = { advanced = !advanced })
+            AnimatedVisibility(advanced || failed != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(stringResource(R.string.settings_system_eq), style = MaterialTheme.typography.titleSmall)
+                    SystemEqMode.entries.forEach { m ->
+                        Row(
+                            Modifier.fillMaxWidth().selectable(selected = s.mode == m, role = Role.RadioButton) { update { it.copy(mode = m) } },
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            RadioButton(selected = s.mode == m, onClick = null, modifier = Modifier.padding(12.dp))
+                            Column(Modifier.padding(top = 12.dp)) {
+                                Text(stringResource(m.titleRes), style = MaterialTheme.typography.bodyLarge)
+                                Text(stringResource(m.detailRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                    failed?.let { Text(it.message, style = MaterialTheme.typography.bodySmall, color = StatusColors.Bad) }
+                    Text(
+                        stringResource(R.string.settings_other_eqs),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    ToggleRow(
+                        stringResource(R.string.settings_warble),
+                        stringResource(R.string.settings_warble_detail),
+                        s.warbleTones,
+                    ) { v -> update { it.copy(warbleTones = v) } }
+                }
+            }
         }
         if (BuildConfig.SELF_UPDATER) {
             UpdatesSection(vm, s.autoUpdate) { v -> update { it.copy(autoUpdate = v) } }
-        } else {
-            // The Play build updates through Google Play; only the version is worth showing.
-            SectionCard { Text(stringResource(R.string.settings_version, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.bodyLarge) }
         }
         SectionCard {
             OutlinedButton(onClick = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }, modifier = Modifier.fillMaxWidth()) {
@@ -114,6 +126,16 @@ fun SettingsScreen(vm: AppViewModel) {
                 Icon(Icons.Rounded.Info, null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.settings_how_it_works))
+            }
+            // The Play build updates through Google Play; only the version is worth showing, quietly.
+            if (!BuildConfig.SELF_UPDATER) {
+                Text(
+                    stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                )
             }
         }
     }
@@ -175,7 +197,7 @@ private fun QuickTileSection() {
                 Text(stringResource(R.string.settings_tile_add))
             }
             when (added) {
-                true -> Text(stringResource(R.string.settings_tile_added), style = MaterialTheme.typography.bodySmall, color = StatusColors.Good)
+                true -> Text(stringResource(R.string.settings_tile_added), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 false -> Text(
                     stringResource(R.string.settings_tile_not_added),
                     style = MaterialTheme.typography.bodySmall,
@@ -284,6 +306,10 @@ private fun ToggleRow(title: String, text: String, checked: Boolean, onChange: (
 @Composable
 fun AboutScreen(vm: AppViewModel) {
     StepScaffold(title = stringResource(R.string.about_title), onBack = { vm.back() }) {
+        Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            LogoMark(size = 64.dp)
+            Text(stringResource(R.string.settings_version, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.titleMedium)
+        }
         AboutSection(stringResource(R.string.about_check_title), stringResource(R.string.about_check_text))
         AboutSection(stringResource(R.string.about_eq_title), stringResource(R.string.about_eq_text))
         AboutSection(stringResource(R.string.about_measured_title), stringResource(R.string.about_measured_text))

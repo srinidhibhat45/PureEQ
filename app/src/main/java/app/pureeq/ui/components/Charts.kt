@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -36,8 +37,19 @@ import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.min
 
-/** One curve; [label] names it for TalkBack when a chart shows more than one ("Left ear"). */
-class ChartCurve(val db: DoubleArray, val color: Color, val fill: Boolean = false, val dashed: Boolean = false, val label: String? = null)
+/**
+ * One curve; [label] names it for TalkBack when a chart shows more than one ("Left ear"). With
+ * [gradient], the line runs through those colours from 20 Hz to 20 kHz (the logo's bars, low to
+ * high); [color] still tints the fill under it.
+ */
+class ChartCurve(
+    val db: DoubleArray,
+    val color: Color,
+    val fill: Boolean = false,
+    val dashed: Boolean = false,
+    val label: String? = null,
+    val gradient: List<Color>? = null,
+)
 
 /** Where TalkBack reads a curve's level: bass, low mids, presence, treble. */
 private val SPOKEN_FREQS = listOf(100.0, 1000.0, 4000.0, 10000.0)
@@ -125,8 +137,9 @@ private fun DrawScope.drawCurve(c: ChartCurve, x: (Double) -> Float, y: (Double)
         }
         drawPath(area, Brush.verticalGradient(listOf(c.color.copy(alpha = 0.28f), c.color.copy(alpha = 0.02f))))
     }
+    val line = c.gradient?.let { Brush.horizontalGradient(it, startX = x(FreqGrid.MIN_HZ), endX = x(FreqGrid.MAX_HZ)) } ?: SolidColor(c.color)
     drawPath(
-        path, c.color,
+        path, line,
         style = Stroke(
             width = width, cap = StrokeCap.Round, join = StrokeJoin.Round,
             pathEffect = if (c.dashed) PathEffect.dashPathEffect(floatArrayOf(10f, 8f)) else null,
@@ -138,12 +151,15 @@ class HearingSeries(val points: List<Pair<Double, Double>>, val color: Color, va
 
 /**
  * The relative listening profile: bands that get more help sit lower. Left ear dots, right ear
- * squares, so the ears differ by shape as well as colour, without an audiogram's ✕ and ○.
+ * squares, so the ears differ by shape as well as colour, without an audiogram's ✕ and ○. No dB
+ * numbers on the side: what reads is above or below the reference listener's line, drawn in the
+ * outline colour and named in the chart's legend (TalkBack still gets the values).
  */
 @Composable
 fun HearingChart(series: List<HearingSeries>, modifier: Modifier = Modifier, height: Dp = 200.dp) {
     val measurer = rememberTextMeasurer()
     val grid = MaterialTheme.colorScheme.outlineVariant
+    val zero = MaterialTheme.colorScheme.outline
     val label = MaterialTheme.colorScheme.onSurfaceVariant
     // Axis numbers grow with the phone's text only up to 1.3×; beyond that they'd collide.
     val fontScale = LocalDensity.current.fontScale
@@ -155,7 +171,7 @@ fun HearingChart(series: List<HearingSeries>, modifier: Modifier = Modifier, hei
         val all = series.flatMap { s -> s.points.map { it.second } }
         val lo = min(-10.0, floor(all.min() / 5) * 5 - 5)
         val hi = max(15.0, ceil(all.max() / 5) * 5 + 5)
-        val left = 30.dp.toPx()
+        val left = 0f
         val bottom = 16.dp.toPx()
         val pad = 14.dp.toPx()
         val w = size.width - left - 2 * pad
@@ -167,9 +183,8 @@ fun HearingChart(series: List<HearingSeries>, modifier: Modifier = Modifier, hei
         fun y(v: Double) = ((v - lo) / (hi - lo)).toFloat() * h
         var v = ceil(lo / 10) * 10
         while (v <= hi) {
-            drawLine(grid, Offset(left, y(v)), Offset(size.width, y(v)), 1f)
-            val t = measurer.measure(v.toInt().toString(), labelStyle)
-            drawText(t, topLeft = Offset(left - t.size.width - 4.dp.toPx(), y(v) - t.size.height / 2f))
+            val isZero = kotlin.math.abs(v) < 1e-9
+            drawLine(if (isZero) zero else grid, Offset(left, y(v)), Offset(size.width, y(v)), if (isZero) 1.5f else 1f)
             v += 10
         }
         for (f in freqs) {

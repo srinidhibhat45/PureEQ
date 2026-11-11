@@ -13,7 +13,6 @@
     <string name="editor_left">Gauche</string>
     <string name="editor_right">Droite</string>
     <string name="editor_both_ears">Les deux oreilles</string>
-    <string name="editor_preamp">Préampli %1$s dB</string>
 
     <string name="editor_listen">Écouter</string>
     <string name="editor_play">Lire</string>
@@ -37,6 +36,7 @@
     <string name="editor_changed_balance">balance</string>
     <string name="editor_as_suggested_no_taste">Adaptation aux oreilles et balance telles que PureEQ les a suggérées.</string>
     <string name="editor_as_suggested">Tout est tel que PureEQ l’a suggéré.</string>
+    <string name="editor_more_adjustments">Plus de réglages</string>
     <string name="editor_reset">Réinitialiser</string>
     <string name="editor_legacy_profile">Créé avec PureEQ 1.0 : Réinitialiser ne peut donc pas rétablir les basses, la chaleur, les voix et les aigus. Refaites le test de préférences pour y remédier.</string>
     <string name="editor_redo_taste_legacy">Refaire le test de préférences</string>

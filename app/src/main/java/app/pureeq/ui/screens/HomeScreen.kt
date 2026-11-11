@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.Settings as AndroidSettings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -63,6 +65,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -87,24 +90,22 @@ import app.pureeq.ui.components.AdaptiveButtons
 import app.pureeq.ui.components.ChartCurve
 import app.pureeq.ui.components.EqChart
 import app.pureeq.ui.components.ListeningOrb
+import app.pureeq.ui.components.LogoMark
 import app.pureeq.ui.components.ModeSelector
-import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.PrimaryButton
 import app.pureeq.ui.components.SectionCard
 import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.doesRes
-import app.pureeq.ui.kindLabel
 import app.pureeq.ui.outputInText
 import app.pureeq.ui.outputList
 import app.pureeq.ui.outputName
 import app.pureeq.ui.titleRes
 import app.pureeq.ui.theme.EarColors
 import app.pureeq.ui.theme.StatusColors
+import app.pureeq.ui.theme.logoGradient
 import app.pureeq.update.UpdateState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.text.DateFormat
-import java.util.Date
 
 fun deviceIcon(d: OutputDevice?): ImageVector = when (d?.kind) {
     OutputDevice.Kind.BLUETOOTH -> Icons.Rounded.Bluetooth
@@ -143,20 +144,9 @@ fun HomeScreen(vm: AppViewModel) {
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text("PureEQ", style = MaterialTheme.typography.headlineMedium)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(deviceIcon(output), null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.width(6.dp))
-                        val name = outputName(output.name)
-                        val kind = kindLabel(output.kind)
-                        Text(
-                            if (name == kind) name else "$name · $kind",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
+                LogoMark(size = 34.dp)
+                Spacer(Modifier.width(12.dp))
+                Text("PureEQ", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
                 IconButton(onClick = { vm.go(Screen.Settings) }) { Icon(Icons.Rounded.Settings, stringResource(R.string.home_settings)) }
             }
         }
@@ -168,13 +158,18 @@ fun HomeScreen(vm: AppViewModel) {
             if (askToAllow) item { AllowUpdatesCard(onAllow = { openInstallSettings(context) }, onDismiss = vm::dismissUpdatePrompt) }
         } else {
             item {
-                ActiveProfileCard(
-                    profile = active,
+                PowerCard(
                     output = output,
                     enabled = settings.outputs.isOn(output, profiles),
                     offText = offText(output, settings.outputs, profiles),
                     status = status,
                     onToggle = { if (it) enableSystemEq() else vm.setSystemEq(false) },
+                )
+            }
+            item {
+                ActiveProfileCard(
+                    profile = active,
+                    output = output,
                     live = live,
                     onMode = { vm.setMode(active.id, it) },
                     onAuto = { vm.setAuto(active.id) },
@@ -298,15 +293,58 @@ private fun WelcomeCard(onStart: () -> Unit) {
     }
 }
 
+/**
+ * The switch that matters most, first on the screen: PureEQ on or off for the output playing now.
+ * The card takes the accent while it's on, so the state reads at a glance.
+ */
 @Composable
-private fun ActiveProfileCard(
-    profile: Profile,
+private fun PowerCard(
     output: OutputDevice,
     /** Whether the system-wide EQ is on for [output]. */
     enabled: Boolean,
     offText: String,
     status: SystemEqStatus,
     onToggle: (Boolean) -> Unit,
+) {
+    val lit = enabled && status !is SystemEqStatus.Failed
+    val tint = if (lit) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    Card(
+        Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = if (lit) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Row(Modifier.switchRow(enabled, onChange = onToggle).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(44.dp).clip(CircleShape).background(tint.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) {
+                Icon(deviceIcon(output), null, tint = tint)
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(
+                    stringResource(R.string.home_apply_all_audio),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (lit) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                )
+                val name = outputName(output.name)
+                Text(
+                    when {
+                        enabled && status is SystemEqStatus.Failed -> status.message
+                        enabled -> "$name · ${statusText(status)}"
+                        offText == stringResource(R.string.home_off) -> "$name · $offText"
+                        else -> offText
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = statusColor(enabled, status),
+                )
+            }
+            Switch(checked = enabled, onCheckedChange = null)
+        }
+    }
+}
+
+@Composable
+private fun ActiveProfileCard(
+    profile: Profile,
+    output: OutputDevice,
     /** Auto's pick for what's playing, when it has one. */
     live: ListeningMode?,
     onMode: (ListeningMode) -> Unit,
@@ -324,9 +362,9 @@ private fun ActiveProfileCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(profile.name, style = MaterialTheme.typography.titleLarge)
-                Text(profileSubtitle(profile), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // The mode shows in the chips below, so only the headphones (when not the name) and what made it.
+                Text(profileSubtitle(profile, withMode = false), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Pill(stringResource(R.string.home_active), MaterialTheme.colorScheme.secondary)
             Box {
                 IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.home_more)) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
@@ -362,14 +400,7 @@ private fun ActiveProfileCard(
         if (does != null) {
             Text(stringResource(does), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Row(Modifier.switchRow(enabled, onChange = onToggle), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.home_apply_all_audio), style = MaterialTheme.typography.titleSmall)
-                Text(if (enabled) statusText(status) else offText, style = MaterialTheme.typography.bodySmall, color = statusColor(enabled, status))
-            }
-            Switch(checked = enabled, onCheckedChange = null)
-        }
+        Spacer(Modifier.height(2.dp))
         AdaptiveButtons {
             FilledTonalButton(onClick = onEdit, modifier = Modifier) {
                 Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp))
@@ -442,12 +473,12 @@ private fun ProfileRow(p: Profile, onActivate: () -> Unit, onEdit: () -> Unit, o
     }
 }
 
-/** One curve when both ears share the EQ, otherwise left (blue) and right (red). */
+/** One curve in the logo's colours when both ears share the EQ, otherwise left (blue) and right (coral). */
 @Composable
 fun curvesFor(eq: ProfileEq, combined: Color): List<ChartCurve> {
     val same = eq.leftCurve.indices.all { kotlin.math.abs(eq.leftCurve[it] - eq.rightCurve[it]) < 0.05 }
     return if (same) {
-        listOf(ChartCurve(eq.leftCurve, combined, fill = true))
+        listOf(ChartCurve(eq.leftCurve, combined, fill = true, gradient = logoGradient()))
     } else {
         listOf(
             ChartCurve(eq.leftCurve, EarColors.Left, fill = true, label = stringResource(R.string.ear_left)),
@@ -456,16 +487,19 @@ fun curvesFor(eq: ProfileEq, combined: Color): List<ChartCurve> {
     }
 }
 
-/** "Galaxy Buds2 Pro · Gaming · Ears + taste · 30 Oct 2026": the profile's headphones, mode, what made it, and when. */
+/**
+ * "Galaxy Buds2 Pro · Gaming · Ears + taste": the profile's headphones (left out when the profile is
+ * named after them), its mode, and what made it.
+ */
 @Composable
-internal fun profileSubtitle(p: Profile): String {
-    val date = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(p.createdAt))
+internal fun profileSubtitle(p: Profile, withMode: Boolean = true): String {
     val kind = when {
         p.hearing != null -> stringResource(R.string.home_made_with_ears)
         else -> stringResource(R.string.home_made_with_taste)
     }
-    val mode = if (p.auto) stringResource(R.string.use_auto) else p.mode?.let { stringResource(it.titleRes) }
-    return listOfNotNull(p.deviceName?.let { outputName(it) }, mode, kind, date).joinToString(" · ")
+    val mode = if (!withMode) null else if (p.auto) stringResource(R.string.use_auto) else p.mode?.let { stringResource(it.titleRes) }
+    val device = p.deviceName?.let { outputName(it) }?.takeIf { !it.equals(p.name.trim(), ignoreCase = true) }
+    return listOfNotNull(device, mode, kind).joinToString(" · ")
 }
 
 @Composable
@@ -495,6 +529,6 @@ internal fun offText(output: OutputDevice, outputs: OutputStates, profiles: List
 private fun statusColor(enabled: Boolean, s: SystemEqStatus) = when {
     !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
     s is SystemEqStatus.Failed -> StatusColors.Bad
-    s is SystemEqStatus.Active -> StatusColors.Good
+    s is SystemEqStatus.Active -> MaterialTheme.colorScheme.primary
     else -> MaterialTheme.colorScheme.onSurfaceVariant
 }

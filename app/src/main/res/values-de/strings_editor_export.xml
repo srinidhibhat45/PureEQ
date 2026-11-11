@@ -20,7 +20,6 @@
     <string name="editor_right">Rechts</string>
     <string name="editor_both_ears">Beide Ohren</string>
     <!-- %1$s: the preamp gain, such as "-6.1". -->
-    <string name="editor_preamp">Vorverstärkung %1$s dB</string>
 
     <!-- Card for hearing the profile with music. -->
     <string name="editor_listen">Anhören</string>
@@ -49,6 +48,7 @@
     <string name="editor_changed_balance">Balance</string>
     <string name="editor_as_suggested_no_taste">Ohranpassung und Balance wie von PureEQ vorgeschlagen.</string>
     <string name="editor_as_suggested">Alles wie von PureEQ vorgeschlagen.</string>
+    <string name="editor_more_adjustments">Weitere Einstellungen</string>
     <string name="editor_reset">Zurücksetzen</string>
     <string name="editor_legacy_profile">Mit PureEQ 1.0 erstellt, daher kann „Zurücksetzen“ Bass, Wärme, Stimmen und Höhen nicht wiederherstellen. Wiederhole den Geschmackstest, um das zu beheben.</string>
     <string name="editor_redo_taste_legacy">Geschmackstest wiederholen</string>

@@ -22,7 +22,6 @@
     <string name="home_welcome_text">Un court test d’écoute et quelques tours A/B sur de la musique deviennent un EQ pour vos écouteurs.</string>
     <string name="home_start">Commencer</string>
 
-    <string name="home_active">Actif</string>
     <string name="home_more">Plus d’options</string>
     <string name="home_use_profile">Utiliser ce profil</string>
     <string name="home_fine_tune">Réglage fin</string>
@@ -82,7 +81,8 @@
     <string name="settings_start_on_boot">Démarrer après un redémarrage</string>
     <string name="settings_start_on_boot_detail">Réactiver PureEQ après un redémarrage.</string>
     <string name="settings_warble">Bips de test modulés</string>
-    <string name="settings_warble_detail" formatted="false">Les bips varient de ±5 % pour qu’une résonance des écouteurs ne fausse pas une bande.</string>
+    <string name="settings_warble_detail" formatted="false">Les bips ondulent légèrement pour que les particularités des écouteurs ne faussent pas une bande.</string>
+    <string name="settings_advanced">Avancé</string>
 
     <string name="settings_version">PureEQ %1$s</string>
     <string name="settings_import">Importer un profil PureEQ</string>
@@ -147,6 +147,9 @@
     <string name="picker_data_note">Données via AutoEq (Jaakko Pasanen, licence MIT), mesurées par oratory1990, Rtings, crinacle et d’autres. Quand un modèle figure plusieurs fois, la première entrée est généralement la plus fiable.</string>
 
     <string name="common_back">Retour</string>
+    <string name="common_details">Détails</string>
+    <string name="common_expanded">Développé</string>
+    <string name="common_collapsed">Réduit</string>
 
     <!-- Musique du test de préférences. -->
     <string name="music_library_demo_track">Morceau de démo PureEQ</string>

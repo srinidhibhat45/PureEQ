@@ -15,7 +15,6 @@
     <string name="editor_right">दायां</string>
     <string name="editor_both_ears">दोनों कान</string>
     <!-- %1$s: the preamp gain, such as "-6.1". -->
-    <string name="editor_preamp">प्रीऐम्प %1$s dB</string>
 
     <!-- Card for hearing the profile with music. -->
     <string name="editor_listen">सुनें</string>
@@ -42,6 +41,7 @@
     <string name="editor_changed_balance">बैलेंस</string>
     <string name="editor_as_suggested_no_taste">कान की ट्यूनिंग और बैलेंस वैसे ही जैसे PureEQ ने सुझाए।</string>
     <string name="editor_as_suggested">सब कुछ वैसा ही जैसा PureEQ ने सुझाया।</string>
+    <string name="editor_more_adjustments">और समायोजन</string>
     <string name="editor_reset">रीसेट करें</string>
     <string name="editor_legacy_profile">PureEQ 1.0 से बनी है, इसलिए \"रीसेट करें\" से बेस, गर्माहट, वोकल और ट्रेबल वापस नहीं आएंगे। इसे ठीक करने के लिए पसंद टेस्ट दोबारा करें।</string>
     <string name="editor_redo_taste_legacy">पसंद टेस्ट दोबारा करें</string>

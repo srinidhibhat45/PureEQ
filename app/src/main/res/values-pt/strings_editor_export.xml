@@ -14,7 +14,6 @@
     <string name="editor_left">Esquerdo</string>
     <string name="editor_right">Direito</string>
     <string name="editor_both_ears">Os dois ouvidos</string>
-    <string name="editor_preamp">Pré-amp %1$s dB</string>
 
     <string name="editor_listen">Ouvir</string>
     <string name="editor_play">Tocar</string>
@@ -39,6 +38,7 @@
     <string name="editor_changed_balance">balanço</string>
     <string name="editor_as_suggested_no_taste">Ajuste aos ouvidos e balanço como o PureEQ sugeriu.</string>
     <string name="editor_as_suggested">Tudo como o PureEQ sugeriu.</string>
+    <string name="editor_more_adjustments">Mais ajustes</string>
     <string name="editor_reset">Redefinir</string>
     <string name="editor_legacy_profile">Criado com o PureEQ 1.0, então Redefinir não consegue recuperar graves, calor, vocais e agudos. Refaça o teste de preferência para corrigir isso.</string>
     <string name="editor_redo_taste_legacy">Refazer teste de preferência</string>

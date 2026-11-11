@@ -33,7 +33,6 @@
 
     <!-- Home: the profile in use and the other profiles. -->
     <!-- Badge on the profile in use. -->
-    <string name="home_active">Active</string>
     <!-- Content description of a profile's menu button. -->
     <string name="home_more">More</string>
     <string name="home_use_profile">Use this profile</string>
@@ -123,7 +122,8 @@
     <string name="settings_start_on_boot_detail">Turn PureEQ back on after a restart.</string>
     <string name="settings_warble">Warble test tones</string>
     <!-- "±5 %" is a literal percent (formatted="false": no placeholders). -->
-    <string name="settings_warble_detail" formatted="false">Beeps wobble ±5 % so one earbud resonance can\'t skew a band.</string>
+    <string name="settings_warble_detail" formatted="false">Beeps wobble slightly, so an earbud\'s quirks can\'t throw off a band.</string>
+    <string name="settings_advanced">Advanced</string>
 
     <!-- Settings: the app's name and version. %1$s: the version, such as 1.6.0. -->
     <string name="settings_version">PureEQ %1$s</string>
@@ -219,6 +219,9 @@
     <!-- Shared components. -->
     <!-- Content description of the back arrow at the top of a screen. -->
     <string name="common_back">Back</string>
+    <string name="common_details">Details</string>
+    <string name="common_expanded">Expanded</string>
+    <string name="common_collapsed">Collapsed</string>
 
     <!-- Music for the taste test. -->
     <!-- Title of the built-in music loop. -->

@@ -126,8 +126,10 @@
     <!-- ● and ■ are the shapes of each ear's points on the chart. -->
     <string name="check_done_left">● बायां</string>
     <string name="check_done_right">■ दायां</string>
-    <string name="check_done_axis">dB, रेफ़रेंस के मुकाबले</string>
     <string name="check_done_reliability">विश्वसनीयता</string>
+    <string name="check_done_reference_line">संदर्भ</string>
+    <string name="check_done_good_text">आपके जवाबों में तालमेल था।</string>
+    <string name="check_done_fair_text">कुछ जवाब बाकी से मेल नहीं खाए, फिर भी प्रोफ़ाइल काम की है।</string>
     <string name="check_reliability_good">अच्छी</string>
     <string name="check_reliability_fair">ठीक-ठाक</string>
     <string name="check_reliability_low">कम</string>

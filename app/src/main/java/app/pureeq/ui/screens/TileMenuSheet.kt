@@ -41,7 +41,6 @@ import app.pureeq.ui.components.ModeSelector
 import app.pureeq.ui.components.Pill
 import app.pureeq.ui.components.switchRow
 import app.pureeq.ui.outputInText
-import app.pureeq.ui.theme.StatusColors
 
 /**
  * The Quick Settings tile's long-press menu: the system-wide EQ switch for the output playing now,
@@ -126,6 +125,6 @@ private fun ProfileChoice(p: Profile, selected: Boolean, playingNow: Boolean, on
             Text(p.name, style = MaterialTheme.typography.bodyLarge)
             Text(profileSubtitle(p), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        if (playingNow) Pill(stringResource(R.string.tile_menu_playing_now), StatusColors.Good)
+        if (playingNow) Pill(stringResource(R.string.tile_menu_playing_now), MaterialTheme.colorScheme.primary)
     }
 }

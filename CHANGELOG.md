@@ -2,6 +2,12 @@
 
 Each version's section is the release note shown on the phone (ota/publish.py reads it).
 
+## 1.8.0
+- A calmer look in the logo's colours: quiet graphite throughout, the logo's blue only for what's on or chosen, and your EQ curve drawn blue to coral like the logo's bars. The logo sits by the name on the home screen.
+- The switch that turns PureEQ on now sits at the top of the home screen, tinted while it's on, with the headphones playing now.
+- Profiles show their name once, without dates. Your listening profile shows a reference line instead of dB numbers, and one sentence on how steady your answers were, with the counts under Details.
+- Fine-tune leads with Ear tuning, Bass and Treble; the other adjustments sit under More adjustments, which opens by itself when you've changed one of them. Settings puts the technical options under Advanced.
+
 ## 1.7.3
 - Clearer treble. If room noise covered the quieter beeps of your listening check, or your treble hearing is keener than average, PureEQ used to dull the treble to match. Cuts both ears share are now half as deep. A difference between your ears is still corrected in full. Every profile gets this without a new check.
 - General no longer squeezes music: its leveller now eases only very loud sound, so music keeps its level and dynamics.

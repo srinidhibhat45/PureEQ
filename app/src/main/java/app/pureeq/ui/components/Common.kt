@@ -1,13 +1,16 @@
 package app.pureeq.ui.components
 
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +44,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SliderColors
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -48,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -56,15 +64,19 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.pureeq.R
+import app.pureeq.ui.theme.logoGradient
 
 /** Screen frame for the guided flow: back arrow, title, step progress, scrollable body, pinned actions. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -229,11 +241,51 @@ fun Headline(title: String, subtitle: String? = null) {
     }
 }
 
+/**
+ * A row that shows or hides what follows it ("More adjustments", "Details"): its label and a chevron
+ * that turns, read by TalkBack as a button with its expanded or collapsed state.
+ */
+@Composable
+fun ExpandRow(label: String, expanded: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+    val state = stringResource(if (expanded) R.string.common_expanded else R.string.common_collapsed)
+    val turn by animateFloatAsState(if (expanded) 180f else 0f, label = "chevron")
+    Row(
+        modifier.fillMaxWidth().heightIn(min = 48.dp).clip(RoundedCornerShape(12.dp))
+            .clickable(role = Role.Button, onClick = onToggle)
+            .semantics { stateDescription = state },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))
+        Icon(Icons.Rounded.ExpandMore, null, Modifier.rotate(turn), tint = MaterialTheme.colorScheme.primary)
+    }
+}
+
+/** Slider colours for a slider that snaps to steps without drawing a dot for each one. */
+@Composable
+fun noTickSliderColors(): SliderColors = SliderDefaults.colors(activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent)
+
+/**
+ * The app's logo as it sits on the home screen: the launcher icon's foreground (headphone band over
+ * the five coloured EQ bars) on its navy gradient, in a rounded square of [size].
+ */
+@Composable
+fun LogoMark(modifier: Modifier = Modifier, size: Dp = 32.dp) {
+    Box(
+        modifier.size(size).clip(RoundedCornerShape(size * 0.28f))
+            .background(Brush.linearGradient(listOf(colorResource(R.color.icon_background_start), colorResource(R.color.icon_background_end)))),
+        contentAlignment = Alignment.Center,
+    ) {
+        // The foreground is drawn on 108 units with its art inside the central 66.
+        Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.requiredSize(size * 108f / 66f))
+    }
+}
+
 /** The pulsing rings shown while a beep may be playing. Static when idle. */
 @Composable
 fun ListeningOrb(active: Boolean, modifier: Modifier = Modifier, size: Dp = 200.dp, label: String? = null) {
     val primary = MaterialTheme.colorScheme.primary
-    val secondary = MaterialTheme.colorScheme.secondary
+    // The logo's blue into its lavender.
+    val secondary = logoGradient()[1]
     val t = rememberInfiniteTransition(label = "orb")
     val phase by t.animateFloat(0f, 1f, infiniteRepeatable(tween(1400, easing = LinearEasing), RepeatMode.Restart), label = "phase")
     Box(modifier.size(size), contentAlignment = Alignment.Center) {

@@ -28,7 +28,6 @@
     <string name="home_start">Empezar</string>
 
     <!-- Home: the profile in use and the other profiles. -->
-    <string name="home_active">Activo</string>
     <string name="home_more">Más</string>
     <string name="home_use_profile">Usar este perfil</string>
     <string name="home_fine_tune">Ajuste fino</string>
@@ -99,7 +98,8 @@
     <string name="settings_start_on_boot_detail">Reactiva PureEQ tras un reinicio.</string>
     <string name="settings_warble">Tonos de prueba modulados</string>
     <!-- "±5 %" is a literal percent (formatted="false": no placeholders). -->
-    <string name="settings_warble_detail" formatted="false">Los pitidos oscilan ±5 % para que una resonancia del auricular no distorsione una banda.</string>
+    <string name="settings_warble_detail" formatted="false">Los pitidos oscilan un poco para que las peculiaridades del auricular no desvíen una banda.</string>
+    <string name="settings_advanced">Avanzado</string>
 
     <!-- Settings: the app's name and version. -->
     <string name="settings_version">PureEQ %1$s</string>
@@ -177,6 +177,9 @@
 
     <!-- Shared components. -->
     <string name="common_back">Atrás</string>
+    <string name="common_details">Detalles</string>
+    <string name="common_expanded">Desplegado</string>
+    <string name="common_collapsed">Contraído</string>
 
     <!-- Music for the taste test. -->
     <string name="music_library_demo_track">Pista de demostración de PureEQ</string>

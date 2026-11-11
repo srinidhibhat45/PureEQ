@@ -121,8 +121,10 @@
     <string name="check_done_explained_corrected">Cada ponto compara uma banda com um ouvinte de referência, descontado o som medido dos seus fones. Quanto mais baixo, mais ajuda.</string>
     <string name="check_done_left">● Esquerdo</string>
     <string name="check_done_right">■ Direito</string>
-    <string name="check_done_axis">dB, em relação à referência</string>
     <string name="check_done_reliability">Confiabilidade</string>
+    <string name="check_done_reference_line">Referência</string>
+    <string name="check_done_good_text">Suas respostas foram consistentes.</string>
+    <string name="check_done_fair_text">Algumas respostas não combinaram com o resto, mas o perfil pode ser usado.</string>
     <string name="check_reliability_good">Boa</string>
     <string name="check_reliability_fair">Razoável</string>
     <string name="check_reliability_low">Baixa</string>

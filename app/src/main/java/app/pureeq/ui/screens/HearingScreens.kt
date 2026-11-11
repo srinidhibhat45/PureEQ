@@ -1,8 +1,11 @@
 package app.pureeq.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,11 +44,11 @@ import app.pureeq.dsp.Ear
 import app.pureeq.hearing.HeadphoneType
 import app.pureeq.hearing.Reliability
 import app.pureeq.hearing.ThresholdFlag
-import app.pureeq.profile.Exporters
 import app.pureeq.profile.HearingCompensation
 import app.pureeq.ui.AppViewModel
 import app.pureeq.ui.PauseReason
 import app.pureeq.ui.Screen
+import app.pureeq.ui.components.ExpandRow
 import app.pureeq.ui.components.HearingChart
 import app.pureeq.ui.components.HearingSeries
 import app.pureeq.ui.components.KeepScreenOn
@@ -87,15 +91,12 @@ fun HearingScreen(vm: AppViewModel) {
             modifier = Modifier.fillMaxWidth().height(6.dp),
             strokeCap = StrokeCap.Round,
         )
-        Row(Modifier.fillMaxWidth()) {
-            Text(
-                h.freq?.let { Exporters.freqLabel(it) } ?: "",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-            )
-            Text(stringResource(R.string.check_progress, (h.progress * 100).toInt()), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+        Text(
+            stringResource(R.string.check_progress, (h.progress * 100).toInt()),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.End),
+        )
         Spacer(Modifier.weight(1f))
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { ListeningOrb(active = h.playing, size = 230.dp) }
         Spacer(Modifier.height(8.dp))
@@ -204,7 +205,9 @@ fun HearingDoneScreen(vm: AppViewModel) {
                 Pill(stringResource(R.string.check_done_left), EarColors.Left)
                 Pill(stringResource(R.string.check_done_right), EarColors.Right)
                 Spacer(Modifier.weight(1f))
-                Text(stringResource(R.string.check_done_axis), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // The legend for the chart's reference line.
+                Box(Modifier.size(width = 16.dp, height = 2.dp).background(MaterialTheme.colorScheme.outline))
+                Text(stringResource(R.string.check_done_reference_line), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             HearingChart(series, height = 220.dp)
         }
@@ -212,29 +215,17 @@ fun HearingDoneScreen(vm: AppViewModel) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.check_done_reliability), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                 when (reliability) {
-                    Reliability.GOOD -> Pill(stringResource(R.string.check_reliability_good), StatusColors.Good)
+                    Reliability.GOOD -> Pill(stringResource(R.string.check_reliability_good), MaterialTheme.colorScheme.primary)
                     Reliability.FAIR -> Pill(stringResource(R.string.check_reliability_fair), StatusColors.Warn)
                     Reliability.POOR -> Pill(stringResource(R.string.check_reliability_low), StatusColors.Bad)
                 }
             }
-            // Whole sentences, one resource each, joined into one paragraph.
-            val retest = listOfNotNull(result.retestDiffLeft, result.retestDiffRight).takeIf { it.isNotEmpty() }
-            Text(
-                listOfNotNull(
-                    stringResource(R.string.check_done_false_alarms, result.falseAlarms, result.catchTrials),
-                    retest?.let { stringResource(R.string.check_done_retest, "%.0f".format(it.maxOf { d -> kotlin.math.abs(d) })) },
-                    if (result.trialLog.isNotEmpty()) stringResource(R.string.check_done_inconsistent, result.inconsistent, result.trialLog.size) else null,
-                    pluralStringResource(R.plurals.check_done_answers, result.trials, result.trials, result.durationSec / 60, result.durationSec % 60),
-                ).joinToString(" "),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            val edge = result.points.count { it.flag != ThresholdFlag.OK }
-            if (edge > 0) {
+            // One plain sentence; the counts behind it under Details.
+            if (reliability != Reliability.POOR) {
                 Text(
-                    pluralStringResource(R.plurals.check_done_edge, edge, edge),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = StatusColors.Warn,
+                    stringResource(if (reliability == Reliability.GOOD) R.string.check_done_good_text else R.string.check_done_fair_text),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             if (reliability == Reliability.POOR) {
@@ -243,6 +234,32 @@ fun HearingDoneScreen(vm: AppViewModel) {
                     style = MaterialTheme.typography.bodySmall,
                     color = StatusColors.Bad,
                 )
+            }
+            var details by rememberSaveable { mutableStateOf(false) }
+            ExpandRow(stringResource(R.string.common_details), details, onToggle = { details = !details })
+            AnimatedVisibility(details) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Whole sentences, one resource each, joined into one paragraph.
+                    val retest = listOfNotNull(result.retestDiffLeft, result.retestDiffRight).takeIf { it.isNotEmpty() }
+                    Text(
+                        listOfNotNull(
+                            stringResource(R.string.check_done_false_alarms, result.falseAlarms, result.catchTrials),
+                            retest?.let { stringResource(R.string.check_done_retest, "%.0f".format(it.maxOf { d -> kotlin.math.abs(d) })) },
+                            if (result.trialLog.isNotEmpty()) stringResource(R.string.check_done_inconsistent, result.inconsistent, result.trialLog.size) else null,
+                            pluralStringResource(R.plurals.check_done_answers, result.trials, result.trials, result.durationSec / 60, result.durationSec % 60),
+                        ).joinToString(" "),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    val edge = result.points.count { it.flag != ThresholdFlag.OK }
+                    if (edge > 0) {
+                        Text(
+                            pluralStringResource(R.plurals.check_done_edge, edge, edge),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = StatusColors.Warn,
+                        )
+                    }
+                }
             }
         }
         Text(

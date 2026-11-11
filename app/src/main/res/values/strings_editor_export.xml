@@ -22,7 +22,6 @@
     <string name="editor_right">Right</string>
     <string name="editor_both_ears">Both ears</string>
     <!-- Over the EQ chart. %1$s: the preamp gain, such as "-6.1". -->
-    <string name="editor_preamp">Preamp %1$s dB</string>
 
     <!-- Card for hearing the profile with music. -->
     <string name="editor_listen">Listen</string>
@@ -59,6 +58,7 @@
     <!-- Nothing changed, for a profile made with PureEQ 1.0 (it kept no taste suggestion). -->
     <string name="editor_as_suggested_no_taste">Ear tuning and balance as PureEQ suggested.</string>
     <string name="editor_as_suggested">Everything as PureEQ suggested.</string>
+    <string name="editor_more_adjustments">More adjustments</string>
     <!-- Button: puts every adjustment back to PureEQ's suggestion. -->
     <string name="editor_reset">Reset</string>
     <!-- Warning for a profile made with PureEQ 1.0, then a button under it. -->
