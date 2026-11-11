@@ -178,10 +178,29 @@ def sign_with_lineage(built, apk, key):
     ], cwd=ROOT, check=True, env=env)
 
 
+def signer_certs(text):
+    """SHA-256 digests of the signer certificates in apksigner's `verify --print-certs` output.
+
+    Up to build-tools 36 it prints "Signer #1 certificate SHA-256 digest: …". From 37 it prints a
+    line per signature scheme, "V2 Signer: certificate SHA-256 digest: …" (a rotated APK also has
+    "V3 Signer: …" with the new key), so take the newest scheme's signers: those are what Android
+    compares when it installs an update."""
+    certs = re.findall(r"^Signer #\d+ certificate SHA-256 digest: ([0-9a-f]{64})$", text, re.M)
+    if certs:
+        return certs
+    by_scheme = {}
+    for scheme, digest in re.findall(r"^V(\d+(?:\.\d+)?) Signer(?: \([^)]*\))?: certificate SHA-256 digest: ([0-9a-f]{64})$", text, re.M):
+        by_scheme.setdefault(scheme, []).append(digest)
+    if not by_scheme:
+        return []
+    newest = max(by_scheme, key=lambda v: tuple(int(x) for x in v.split(".")))
+    return list(dict.fromkeys(by_scheme[newest]))
+
+
 def signing_of(apk):
     """(SHA-256 digests of the APK's signer certificates, of its v3 lineage oldest first) by apksigner."""
     tool = apksigner()
-    certs = re.findall(r"^Signer #\d+ certificate SHA-256 digest: ([0-9a-f]{64})$", output([tool, "verify", "--print-certs", str(apk)]), re.M)
+    certs = signer_certs(output([tool, "verify", "--print-certs", str(apk)]))
     lineage = subprocess.run([tool, "lineage", "--in", str(apk), "--print-certs"], cwd=ROOT, capture_output=True, text=True)
     # An APK without a v3 lineage makes apksigner fail here: it has no history then.
     history = re.findall(r"SHA-256 digest: ([0-9a-f]{64})", lineage.stdout) if lineage.returncode == 0 else []
