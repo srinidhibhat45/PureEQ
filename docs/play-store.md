@@ -118,7 +118,7 @@ Checked in Play Console Help and Google Payments Center Help on 2026-11-11 (6334
 
 ### Privacy policy
 
-- [ ] Fill in the contact address in [privacy-policy.md](privacy-policy.md), publish it at a public URL (for example a page in the public `pureeq-updates` repository) and enter that URL under App content and in the store listing. The URL must stay up for as long as the app is on Play.
+- [x] Published 2026-11-12 (owner: "Yes, publish it") as `PRIVACY.md` in the public `pureeq-updates` repository: <https://github.com/srinidhibhat45/pureeq-updates/blob/main/PRIVACY.md> (effective 12 November 2026; contact: that repository's Issues page or the developer email on the Play listing, so no address is written into it). Enter that URL under App content › Privacy policy and in the store listing. It must stay up for as long as the app is on Play; `ota/publish.py` only rewrites the README there. Edit `docs/privacy-policy.md` and republish it the same way when it changes.
 
 ### Content rating, audience, ads
 
@@ -128,9 +128,9 @@ Checked in Play Console Help and Google Payments Center Help on 2026-11-11 (6334
 
 ## 4. Store listing draft
 
-Category: Music & Audio. Contact email: the same address as the privacy policy.
+Category: Music & Audio. Contact email: your developer email (the privacy policy points to it).
 
-**App name** (30 characters max): PureEQ: Personal Sound
+**App name** (30 characters max): PureEQ: Personalised Equaliser (owner, 2026-11-12; exactly 30. Keep "test" out of it: a reviewer could read the listening check as a hearing test.)
 
 **Short description** (80 max):
 

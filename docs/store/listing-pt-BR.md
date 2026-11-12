@@ -3,7 +3,7 @@
 ## App name
 
 ```text
-PureEQ: Som pessoal
+PureEQ: Equalizador pessoal
 ```
 
 ## Short description
@@ -42,4 +42,4 @@ Privacidade desde a concepção:
 O PureEQ não é um dispositivo médico e não diagnostica, não trata, não cura nem previne nenhuma condição médica.
 ```
 
-Character counts (Play Console limits): app name 19/30, short description 79/80, full description 1,958/4,000.
+Character counts (Play Console limits): app name 27/30, short description 79/80, full description 1,958/4,000.

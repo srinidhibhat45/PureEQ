@@ -1,6 +1,6 @@
 # PureEQ privacy policy
 
-Effective: <date of publication>
+Effective: 12 November 2026
 
 This policy covers PureEQ for Android (package `app.pureeq`), both the version from Google Play and the version from GitHub Releases.
 
@@ -54,4 +54,4 @@ If this policy changes, the new version will be published at the same address wi
 
 ## Contact
 
-<contact email>
+For questions about privacy, open an issue at <https://github.com/srinidhibhat45/pureeq-updates/issues>, or write to the developer email shown on PureEQ's Google Play page.

@@ -3,7 +3,7 @@
 ## App name
 
 ```text
-PureEQ: पर्सनल साउंड
+PureEQ: आपका अपना इक्वलाइज़र
 ```
 
 ## Short description
@@ -42,4 +42,4 @@ PureEQ आपके हेडफ़ोन को आपके कानों �
 PureEQ चिकित्सा उपकरण नहीं है और किसी भी चिकित्सीय स्थिति का निदान, उपचार, इलाज या रोकथाम नहीं करता।
 ```
 
-Character counts (Play Console limits): app name 20/30, short description 79/80, full description 1,933/4,000.
+Character counts (Play Console limits): app name 28/30, short description 79/80, full description 1,933/4,000.
