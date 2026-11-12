@@ -57,7 +57,9 @@ android {
         versionName = versionProps.getProperty("versionName")
     }
 
-    // Same app (applicationId) either way; only how it's updated differs.
+    // Two apps that can sit side by side: app.pureeq from GitHub (free, updates itself) and
+    // app.pureeq.play from Google Play (paid). The first Play app, app.pureeq, became free for
+    // good when its internal test went out unpriced (2026-11-12), and Play can't make a free app paid.
     flavorDimensions += "distribution"
     productFlavors {
         // Sideloaded from GitHub Releases: updates itself (src/github, ota/publish.py).
@@ -69,6 +71,7 @@ android {
         // Google Play updates it: no self-updater, install permissions or update checks (src/play).
         create("play") {
             dimension = "distribution"
+            applicationIdSuffix = ".play"
             buildConfigField("boolean", "SELF_UPDATER", "false")
         }
     }

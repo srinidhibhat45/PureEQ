@@ -2,7 +2,8 @@
 
 Run: python3 docs/store/art.py docs/store, then render with rsvg-convert:
   rsvg-convert -w 512 -h 512 docs/store/icon.svg -o docs/store/icon-512.png
-  rsvg-convert -w 1024 -h 500 docs/store/feature-graphic.svg -o docs/store/feature-graphic-1024x500.png
+The feature graphic it also draws (feature-graphic.svg) is the first design; the one uploaded to Play,
+feature-graphic-1024x500.png, now comes from docs/store/promo.py with the captioned screenshots.
 """
 import math, pathlib, sys
 
