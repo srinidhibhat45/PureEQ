@@ -58,8 +58,8 @@ android {
     }
 
     // Two apps that can sit side by side: app.pureeq from GitHub (free, updates itself) and
-    // app.pureeq.play from Google Play (paid). The first Play app, app.pureeq, became free for
-    // good when its internal test went out unpriced (2026-11-12), and Play can't make a free app paid.
+    // app.pureeq.play from Google Play (free since 2026-11-23; it was ₹10 until
+    // then). The first Play app, app.pureeq, stays unpublished on the account.
     flavorDimensions += "distribution"
     productFlavors {
         // Sideloaded from GitHub Releases: updates itself (src/github, ota/publish.py).
